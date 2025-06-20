@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { ProfessionalSlideEditor } from '@/components/slides/ProfessionalSlideEditor'
 import { useAuth } from '@/lib/auth/auth-context'
 import { dbHelpers, PresentationData as DBPresentationData } from '@/lib/supabase/database-helpers'
+import { PresentationManager } from '@/lib/presentations/presentation-helpers'
 import { 
   Save, 
   Download, 
@@ -78,58 +79,83 @@ export default function DeckBuilderPage() {
   }, [params.id, user, authLoading, router])
 
   const loadPresentation = async () => {
-    if (!user) return
-
+    console.log(`📋 Loading presentation: ${params.id}`)
+    setIsLoading(true)
+    
     try {
-      // Try to load from Supabase first
-      const { data: dbPresentation, error } = await dbHelpers.loadPresentation(params.id as string, user.id)
+      // Use enhanced presentation manager for robust loading
+      const presentation = await PresentationManager.loadPresentation(
+        params.id as string, 
+        user?.id
+      )
       
-      if (dbPresentation) {
-        // Convert DB format to local format
-        const presentationData: PresentationData = {
-          id: dbPresentation.id!,
-          title: dbPresentation.title,
-          description: dbPresentation.description || 'Created with AEDRIN AI Brain',
-          slides: dbPresentation.slides || [],
-          metadata: dbPresentation.metadata
+      if (presentation) {
+        console.log(`✅ Presentation loaded: ${presentation.title} with ${presentation.slides.length} slides`)
+        setPresentation(presentation)
+        
+        if (presentation.slides.length > 0) {
+          setSelectedSlideId(presentation.slides[0].id)
+          console.log(`🎨 Selected first slide: ${presentation.slides[0].id}`)
         }
         
-        setPresentation(presentationData)
-        if (presentationData.slides.length > 0) {
-          setSelectedSlideId(presentationData.slides[0].id)
-        }
+        // Show success message
+        toast.success(`Loaded: ${presentation.title}`, { duration: 2000 })
       } else {
-        // Check localStorage as fallback for existing presentations
-        const savedData = localStorage.getItem(`presentation_${params.id}`)
+        console.log('❌ Presentation not found, creating default')
         
-        if (savedData) {
-          const parsedData = JSON.parse(savedData)
-          setPresentation(parsedData)
-          if (parsedData.slides.length > 0) {
-            setSelectedSlideId(parsedData.slides[0].id)
-          }
-          
-          // Migrate localStorage data to Supabase
-          await migrateToDatabase(parsedData)
-        } else {
-          // Create a new default presentation
-          const defaultPresentation: PresentationData = {
-            id: params.id as string,
-            title: 'AI-Generated Presentation',
-            description: 'Created with AEDRIN AI Brain',
-            slides: [],
-            metadata: {
-              generatedAt: new Date().toISOString()
+        // Create a new presentation with sample content
+        const defaultPresentation: PresentationData = {
+          id: params.id as string,
+          title: 'New AI Presentation',
+          description: 'Start building your presentation',
+          slides: [
+            {
+              id: 'slide_1',
+              type: 'title',
+              title: 'Welcome to Your Presentation',
+              content: {
+                title: 'Welcome to Your Presentation',
+                subtitle: 'Upload data to get started with AI analysis'
+              }
             }
+          ],
+          metadata: {
+            generatedAt: new Date().toISOString()
           }
-          setPresentation(defaultPresentation)
         }
+        
+        setPresentation(defaultPresentation)
+        setSelectedSlideId('slide_1')
+        
+        // Save the default presentation
+        if (user) {
+          const enhancedPresentation = {
+            ...defaultPresentation,
+            status: 'draft' as const
+          }
+          await PresentationManager.savePresentation(enhancedPresentation, user.id)
+        }
+        
+        toast.success('Created new presentation - upload data to begin!')
       }
     } catch (error) {
       console.error('Error loading presentation:', error)
-      toast.error('Failed to load presentation')
+      toast.error('Failed to load presentation. Please try again.')
+      
+      // Create minimal fallback to prevent crashes
+      const fallbackPresentation: PresentationData = {
+        id: params.id as string,
+        title: 'Error Recovery',
+        description: 'Please upload data to continue',
+        slides: [],
+        metadata: {
+          generatedAt: new Date().toISOString()
+        }
+      }
+      setPresentation(fallbackPresentation)
     } finally {
       setIsLoading(false)
+      console.log('🏁 Presentation loading completed')
     }
   }
 

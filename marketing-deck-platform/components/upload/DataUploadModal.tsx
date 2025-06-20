@@ -331,7 +331,9 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
                 {selectedTemplate && (
                   <div className="mb-4">
                     <div className="text-blue-200 font-semibold mb-2">Template Preview</div>
-                    <img src={`/template-previews/${selectedTemplate}.png`} alt="Template preview" className="rounded-lg border border-[#23242b] w-full max-w-xs mx-auto" />
+                    <div className="rounded-lg border border-[#23242b] w-full max-w-xs mx-auto h-32 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
+                      {selectedTemplate} Template
+                    </div>
                     <div className="mt-2 text-blue-300">Brand color: <span style={{background: brandColor, color: '#fff', padding: '2px 8px', borderRadius: '4px'}}>{brandColor}</span></div>
                     {brandLogo && <img src={brandLogo} alt="Brand logo" className="h-12 mt-2 mx-auto" />}
                   </div>

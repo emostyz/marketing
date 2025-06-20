@@ -81,7 +81,8 @@ export class AdvancedBrain {
     userContext: string,
     userGoals: string,
     progressCallback: ProgressCallback,
-    iteration: number = 1
+    iteration: number = 1,
+    enhancedResults: any = null
   ): Promise<StrategicInsight> {
     this.currentIteration = iteration;
     
@@ -89,7 +90,7 @@ export class AdvancedBrain {
     
     // Phase 1: Deep Data Profiling and Quality Assessment
     progressCallback(8, '🔍 Brain performing comprehensive data profiling and quality assessment...');
-    const dataProfile = await this.performAdvancedDataProfiling(data, userContext);
+    const dataProfile = await this.performAdvancedDataProfiling(data, userContext, enhancedResults);
     
     // Phase 2: Statistical Analysis and Pattern Recognition
     progressCallback(15, '📊 Brain conducting statistical analysis and pattern recognition...');
@@ -99,18 +100,33 @@ export class AdvancedBrain {
     progressCallback(25, '🎯 Brain integrating business context and strategic objectives...');
     const businessContext = await this.integrateBusinessContext(data, userContext, userGoals, statisticalInsights);
     
-    // User Check-in: Proposed Analysis Structure
-    progressCallback(35, '💭 Brain proposing analysis structure for your review...', true, {
-      stage: 'structure',
-      proposal: {
-        analysisApproach: businessContext.recommendedApproach,
-        keyAreas: businessContext.focusAreas,
-        expectedInsights: businessContext.expectedInsights,
-        chartTypes: businessContext.recommendedVisualizations
-      },
-      question: 'The brain has analyzed your data and business context. Does this analysis approach align with your objectives?',
-      options: ['Proceed as proposed', 'Modify focus areas', 'Change visualization approach', 'Add specific analysis']
-    });
+    // User Check-in: Proposed Analysis Structure with Real Insights
+    if (dataProfile.enhancedAnalysis && dataProfile.realInsights.length > 0) {
+      const topInsight = dataProfile.realInsights[0]
+      progressCallback(35, '💭 Brain presenting real data insights for your review...', true, {
+        stage: 'structure',
+        proposal: {
+          realInsight: topInsight,
+          dataQuality: `${dataProfile.dataQuality.overall}% overall quality`,
+          keyMetrics: dataProfile.numericColumns.slice(0, 3),
+          chartSuggestions: dataProfile.chartSuggestions.slice(0, 2)
+        },
+        question: `Real Data Insight: "${topInsight.description}" (${Math.round(topInsight.confidence * 100)}% confidence). Should the brain focus on this pattern for your strategic analysis?`,
+        options: ['Yes, focus on this insight', 'Show other patterns', 'Combine with additional metrics', 'Continue with full analysis']
+      });
+    } else {
+      progressCallback(35, '💭 Brain proposing analysis structure for your review...', true, {
+        stage: 'structure',
+        proposal: {
+          analysisApproach: businessContext.recommendedApproach,
+          keyAreas: businessContext.focusAreas,
+          expectedInsights: businessContext.expectedInsights,
+          chartTypes: businessContext.recommendedVisualizations
+        },
+        question: 'The brain has analyzed your data and business context. Does this analysis approach align with your objectives?',
+        options: ['Proceed as proposed', 'Modify focus areas', 'Change visualization approach', 'Add specific analysis']
+      });
+    }
     
     // Phase 4: Advanced Analytics and Modeling
     progressCallback(45, '🧮 Brain applying advanced analytics and predictive modeling...');
@@ -120,17 +136,32 @@ export class AdvancedBrain {
     progressCallback(55, '💡 Brain generating strategic insights and recommendations...');
     const strategicInsights = await this.generateStrategicInsights(data, analyticsResults, userContext, userGoals);
     
-    // User Check-in: Key Insights Validation
-    progressCallback(65, '🎯 Brain presenting key insights for validation...', true, {
-      stage: 'insights',
-      proposal: {
-        keyInsights: strategicInsights.keyFindings,
-        recommendations: strategicInsights.recommendations,
-        risks: strategicInsights.risks
-      },
-      question: 'The brain has identified key insights. Do these align with your expectations and business priorities?',
-      options: ['Insights look perfect', 'Refocus on specific areas', 'Add more detail', 'Change recommendation priority']
-    });
+    // User Check-in: Key Insights Validation with Real Data
+    if (dataProfile.enhancedAnalysis && dataProfile.realInsights.length > 1) {
+      const secondInsight = dataProfile.realInsights[1] || dataProfile.realInsights[0]
+      progressCallback(65, '🎯 Brain presenting additional real insights for validation...', true, {
+        stage: 'insights',
+        proposal: {
+          realInsight: secondInsight,
+          dataQualityScore: dataProfile.dataQuality.overall,
+          totalInsights: dataProfile.realInsights.length,
+          recommendations: strategicInsights.recommendations || []
+        },
+        question: `Additional Real Data Insight: "${secondInsight.description}" affecting ${secondInsight.column}. Should this be prioritized in your strategic recommendations?`,
+        options: ['High priority - include prominently', 'Medium priority - include as supporting data', 'Focus on other insights instead', 'Continue with current analysis']
+      });
+    } else {
+      progressCallback(65, '🎯 Brain presenting key insights for validation...', true, {
+        stage: 'insights',
+        proposal: {
+          keyInsights: strategicInsights.keyFindings,
+          recommendations: strategicInsights.recommendations,
+          risks: strategicInsights.risks
+        },
+        question: 'The brain has identified key insights. Do these align with your expectations and business priorities?',
+        options: ['Insights look perfect', 'Refocus on specific areas', 'Add more detail', 'Change recommendation priority']
+      });
+    }
     
     // Phase 6: Visualization Strategy Development
     progressCallback(75, '📈 Brain designing optimal visualization strategy...');
@@ -149,8 +180,40 @@ export class AdvancedBrain {
     return finalResults;
   }
 
-  private async performAdvancedDataProfiling(data: any[], userContext: string): Promise<any> {
-    // Analyze actual data structure
+  private async performAdvancedDataProfiling(data: any[], userContext: string, enhancedResults: any = null): Promise<any> {
+    // Use enhanced results if available (from EnhancedDataProcessor)
+    if (enhancedResults) {
+      console.log('🔍 Brain using enhanced data processing results for profiling')
+      
+      // Create enriched profile using real insights from EnhancedDataProcessor
+      const enrichedProfile = {
+        dataQuality: enhancedResults.quality,
+        columns: enhancedResults.columns,
+        numericColumns: enhancedResults.numericColumns,
+        categoricalColumns: enhancedResults.categoryColumns,
+        dateColumns: enhancedResults.dateColumns,
+        keyMetrics: enhancedResults.numericColumns.slice(0, 4).map((col: string) => ({
+          name: col,
+          importance: 'high',
+          dataType: 'numeric'
+        })),
+        realInsights: enhancedResults.insights.map((insight: any) => ({
+          type: insight.type,
+          description: insight.description,
+          confidence: insight.confidence,
+          column: insight.column,
+          businessRelevance: insight.confidence > 0.7 ? 'high' : 'medium'
+        })),
+        chartSuggestions: enhancedResults.suggestions,
+        enhancedAnalysis: true
+      }
+      
+      console.log(`✅ Using real insights: ${enrichedProfile.realInsights.length} insights, ${enrichedProfile.dataQuality.overall}% quality`)
+      return enrichedProfile
+    }
+    
+    // Fallback to basic analysis if no enhanced results
+    console.log('⚠️ No enhanced results available, performing basic analysis')
     const columns = data.length > 0 ? Object.keys(data[0]) : []
     const numericColumns = columns.filter(col => 
       data.some(row => !isNaN(parseFloat(row[col])))

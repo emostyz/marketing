@@ -124,7 +124,7 @@ export function SlideEditor({ slide, onSlideUpdate, data }: SlideEditorProps) {
         };
         break;
       case 'image':
-        newElement.src = '/placeholder.jpg';
+        newElement.src = undefined; // Will show placeholder UI
         break;
       case 'shape':
         newElement.shapeType = 'rectangle';

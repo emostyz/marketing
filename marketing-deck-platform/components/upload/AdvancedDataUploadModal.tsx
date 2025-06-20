@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Upload, X, Brain, FileText, BarChart3, TrendingUp, DollarSign, Users, Target, MessageSquare } from 'lucide-react'
+import { EnhancedDataProcessor } from '@/lib/data/enhanced-data-processor'
 
 interface AdvancedDataUploadModalProps {
   onClose: () => void
@@ -25,6 +26,9 @@ export function AdvancedDataUploadModal({ onClose, onUpload }: AdvancedDataUploa
   const [presentationName, setPresentationName] = useState('')
   const [uploadedData, setUploadedData] = useState<any[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const [processingStatus, setProcessingStatus] = useState('')
+  const [enhancedResults, setEnhancedResults] = useState<any>(null)
+  const [fileName, setFileName] = useState('')
   const [qaState, setQAState] = useState<QAState>({
     step: 1,
     datasetDescription: '',
@@ -65,36 +69,57 @@ export function AdvancedDataUploadModal({ onClose, onUpload }: AdvancedDataUploa
     if (!file) return
 
     setIsUploading(true)
+    setProcessingStatus(`Processing ${file.name}...`)
+    setFileName(file.name)
+    
     try {
-      const text = await file.text()
-      let data: any[] = []
-
-      if (file.name.endsWith('.csv')) {
-        // Parse CSV
-        const lines = text.split('\n').filter(line => line.trim())
-        const headers = lines[0].split(',').map(h => h.trim())
-        data = lines.slice(1).map(line => {
-          const values = line.split(',')
-          const row: any = {}
-          headers.forEach((header, index) => {
-            const value = values[index]?.trim()
-            // Try to convert to number if possible
-            row[header] = isNaN(Number(value)) ? value : Number(value)
-          })
-          return row
-        })
-      } else if (file.name.endsWith('.json')) {
-        data = JSON.parse(text)
+      // Use enhanced data processor for comprehensive analysis
+      setProcessingStatus('🔍 Analyzing file structure and content...')
+      const processedResult = await EnhancedDataProcessor.processFile(file)
+      
+      setProcessingStatus('📊 Generating data insights and quality assessment...')
+      
+      // Store the enhanced results
+      setEnhancedResults(processedResult)
+      setUploadedData(processedResult.data)
+      
+      // Auto-populate dataset description if not set, based on actual data analysis
+      if (!qaState.datasetDescription.trim() && processedResult.insights.length > 0) {
+        const topInsights = processedResult.insights.slice(0, 2).map(i => i.description).join('; ')
+        setQAState(prev => ({
+          ...prev,
+          datasetDescription: `Dataset with ${processedResult.data.length} records and ${processedResult.columns.length} columns. Key insights: ${topInsights}`
+        }))
       }
-
-      setUploadedData(data)
+      
+      // Auto-detect data type based on columns
+      const columnNames = processedResult.columns.map(c => c.toLowerCase()).join(' ')
+      let detectedType: typeof qaState.dataType = 'other'
+      
+      if (columnNames.includes('revenue') || columnNames.includes('profit') || columnNames.includes('expense')) {
+        detectedType = 'financial'
+      } else if (columnNames.includes('lead') || columnNames.includes('conversion') || columnNames.includes('sale')) {
+        detectedType = 'sales'
+      } else if (columnNames.includes('campaign') || columnNames.includes('click') || columnNames.includes('impression')) {
+        detectedType = 'marketing'
+      } else if (columnNames.includes('client') || columnNames.includes('customer') || columnNames.includes('satisfaction')) {
+        detectedType = 'client'
+      } else if (columnNames.includes('market') || columnNames.includes('competitor') || columnNames.includes('strategy')) {
+        detectedType = 'strategy'
+      }
+      
+      setQAState(prev => ({ ...prev, dataType: detectedType }))
+      setProcessingStatus('')
       setCurrentStep(2) // Move to Q&A after successful upload
+      
     } catch (error) {
-      alert('Error parsing file. Please check format.')
+      console.error('Enhanced processing error:', error)
+      setProcessingStatus('')
+      alert(`Error processing file: ${error}. Please check the file format and try again.`)
     } finally {
       setIsUploading(false)
     }
-  }, [])
+  }, [qaState.datasetDescription])
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -118,15 +143,17 @@ export function AdvancedDataUploadModal({ onClose, onUpload }: AdvancedDataUploa
   }
 
   const handleGeneratePresentation = async () => {
-    // Prepare enhanced data for new AI deck builder
+    // Prepare enhanced data for new AI deck builder with real analysis
     const generationData = {
       title: presentationName || 'AI-Generated Presentation',
       data: uploadedData.length > 0 ? uploadedData : getSampleData(qaState.dataType),
+      fileName: fileName,
       qaResponses: qaState,
       userRequirements: qaState.datasetDescription,
       userGoals: qaState.businessGoals,
       generateWithAI: true,
       useEnhancedBuilder: true,
+      enhancedResults: enhancedResults, // Include comprehensive data analysis
       metadata: {
         dataType: qaState.dataType,
         analysisType: qaState.analysisType,
@@ -134,7 +161,14 @@ export function AdvancedDataUploadModal({ onClose, onUpload }: AdvancedDataUploa
         targetAudience: qaState.targetAudience,
         keyProblems: qaState.keyProblems,
         timestamp: new Date().toISOString(),
-        confidence: 0
+        confidence: enhancedResults?.quality?.overall || 85,
+        hasRealData: uploadedData.length > 0,
+        dataQuality: enhancedResults?.quality,
+        insights: enhancedResults?.insights,
+        chartSuggestions: enhancedResults?.suggestions,
+        numericColumns: enhancedResults?.numericColumns || [],
+        categoryColumns: enhancedResults?.categoryColumns || [],
+        dateColumns: enhancedResults?.dateColumns || []
       }
     }
 
@@ -206,15 +240,25 @@ export function AdvancedDataUploadModal({ onClose, onUpload }: AdvancedDataUploa
           className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          onClick={() => document.getElementById('file-input')?.click()}
+          onClick={() => !isUploading && document.getElementById('file-input')?.click()}
         >
           <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-300 font-semibold mb-2">
-            {isUploading ? 'Processing file...' : uploadedData.length > 0 ? `✅ ${uploadedData.length} rows loaded` : 'Drag & drop your files here'}
+            {isUploading 
+              ? processingStatus || 'Processing file...' 
+              : uploadedData.length > 0 
+                ? `✅ ${uploadedData.length} rows loaded${enhancedResults ? ` • ${enhancedResults.insights.length} insights found` : ''}` 
+                : 'Drag & drop your files here'
+            }
           </p>
-          <p className="text-sm text-gray-400 mb-4">Supports CSV, Excel, and JSON files</p>
+          {enhancedResults && !isUploading && (
+            <div className="text-xs text-blue-400 mb-2">
+              📊 Data Quality: {enhancedResults.quality.overall}% • {enhancedResults.numericColumns.length} metrics • {enhancedResults.categoryColumns.length} categories
+            </div>
+          )}
+          <p className="text-sm text-gray-400 mb-4">Supports CSV, Excel, and JSON files • Advanced analysis included</p>
           <Button variant="secondary" disabled={isUploading}>
-            {isUploading ? 'Loading...' : 'Browse Files'}
+            {isUploading ? 'Processing...' : 'Browse Files'}
           </Button>
         </div>
         <input

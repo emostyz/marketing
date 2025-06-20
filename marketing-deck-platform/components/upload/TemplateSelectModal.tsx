@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const templates = [
@@ -124,8 +123,8 @@ export default function TemplateSelectModal({ open, onClose, onSelect }: Templat
                 onClick={() => setSelected(tpl.id)}
               >
                 <div className="mb-3">
-                  <div className="w-full h-28 relative mb-2 rounded-lg overflow-hidden">
-                    <Image src={tpl.preview} alt={tpl.name} fill className="object-cover rounded-lg" />
+                  <div className="w-full h-28 mb-2 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
+                    {tpl.name} Preview
                   </div>
                   <div className="font-grotesk text-lg text-white mb-1">{tpl.name}</div>
                   <div className="text-blue-200 text-sm mb-2">{tpl.description}</div>

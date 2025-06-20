@@ -97,6 +97,15 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
   const [showDataTable, setShowDataTable] = useState(false)
   const [chartColumns, setChartColumns] = useState<Record<string, boolean>>({})
   const [showSettings, setShowSettings] = useState(false)
+  const [multiSelected, setMultiSelected] = useState<string[]>([])
+  const [snapToGrid, setSnapToGrid] = useState(true)
+  const [gridSize, setGridSize] = useState(20)
+  const [history, setHistory] = useState<SlideData[]>([slide])
+  const [historyIndex, setHistoryIndex] = useState(0)
+  const [clipboard, setClipboard] = useState<SlideElement[]>([])
+  const [showComponentPalette, setShowComponentPalette] = useState(false)
+  const [draggedComponent, setDraggedComponent] = useState<string | null>(null)
+  const [dropZone, setDropZone] = useState<{x: number, y: number} | null>(null)
 
   // Initialize slide elements if not present
   const elements = slide.elements || []
@@ -110,6 +119,158 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
       setChartColumns(columns)
     }
   }, [slide.categories])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey)) {
+        switch (e.key.toLowerCase()) {
+          case 'z':
+            e.preventDefault()
+            if (e.shiftKey) {
+              redo()
+            } else {
+              undo()
+            }
+            break
+          case 'c':
+            e.preventDefault()
+            copySelected()
+            break
+          case 'v':
+            e.preventDefault()
+            pasteElements()
+            break
+          case 'a':
+            e.preventDefault()
+            selectAll()
+            break
+          case 'd':
+            e.preventDefault()
+            duplicateSelected()
+            break
+        }
+      }
+      
+      // Delete key
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault()
+        deleteSelected()
+      }
+      
+      // Arrow keys for nudging
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault()
+        nudgeSelected(e.key, e.shiftKey ? 10 : 1)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedElement, multiSelected, history, historyIndex])
+
+  // Snap to grid function
+  const snapPosition = (value: number) => {
+    if (!snapToGrid) return value
+    return Math.round(value / gridSize) * gridSize
+  }
+
+  // History management
+  const saveToHistory = (newSlide: SlideData) => {
+    const newHistory = history.slice(0, historyIndex + 1)
+    newHistory.push(newSlide)
+    setHistory(newHistory)
+    setHistoryIndex(newHistory.length - 1)
+  }
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1
+      setHistoryIndex(prevIndex)
+      onUpdate(history[prevIndex])
+    }
+  }
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      const nextIndex = historyIndex + 1
+      setHistoryIndex(nextIndex)
+      onUpdate(history[nextIndex])
+    }
+  }
+
+  // Multi-selection functions
+  const selectAll = () => {
+    setMultiSelected(elements.map(el => el.id))
+    setSelectedElement(null)
+  }
+
+  const copySelected = () => {
+    const selectedElements = multiSelected.length > 0 
+      ? elements.filter(el => multiSelected.includes(el.id))
+      : selectedElement ? [elements.find(el => el.id === selectedElement)!] : []
+    
+    setClipboard(selectedElements.filter(Boolean))
+  }
+
+  const pasteElements = () => {
+    if (clipboard.length === 0) return
+
+    const newElements = clipboard.map(el => ({
+      ...el,
+      id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      x: el.x + 20,
+      y: el.y + 20
+    }))
+
+    const updatedSlide = {
+      ...slide,
+      elements: [...elements, ...newElements]
+    }
+    
+    onUpdate(updatedSlide)
+    saveToHistory(updatedSlide)
+    setMultiSelected(newElements.map(el => el.id))
+  }
+
+  const duplicateSelected = () => {
+    copySelected()
+    pasteElements()
+  }
+
+  const deleteSelected = () => {
+    const toDelete = multiSelected.length > 0 ? multiSelected : selectedElement ? [selectedElement] : []
+    if (toDelete.length === 0) return
+
+    const updatedElements = elements.filter(el => !toDelete.includes(el.id))
+    const updatedSlide = { ...slide, elements: updatedElements }
+    
+    onUpdate(updatedSlide)
+    saveToHistory(updatedSlide)
+    setMultiSelected([])
+    setSelectedElement(null)
+  }
+
+  const nudgeSelected = (direction: string, amount: number) => {
+    const toNudge = multiSelected.length > 0 ? multiSelected : selectedElement ? [selectedElement] : []
+    if (toNudge.length === 0) return
+
+    const updatedElements = elements.map(el => {
+      if (!toNudge.includes(el.id)) return el
+
+      const deltaX = direction === 'ArrowLeft' ? -amount : direction === 'ArrowRight' ? amount : 0
+      const deltaY = direction === 'ArrowUp' ? -amount : direction === 'ArrowDown' ? amount : 0
+
+      return {
+        ...el,
+        x: snapPosition(el.x + deltaX),
+        y: snapPosition(el.y + deltaY)
+      }
+    })
+
+    const updatedSlide = { ...slide, elements: updatedElements }
+    onUpdate(updatedSlide)
+  }
 
   const handleMouseDown = (e: React.MouseEvent, elementId: string, action: 'drag' | 'resize') => {
     e.preventDefault()
@@ -137,8 +298,11 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
     if (!element) return
 
     if (isDragging) {
-      const newX = e.clientX - dragStart.x
-      const newY = e.clientY - dragStart.y
+      const newX = snapPosition(e.clientX - dragStart.x)
+      const newY = snapPosition(e.clientY - dragStart.y)
+      
+      // Update drop zone for visual feedback
+      setDropZone({ x: newX, y: newY })
       
       updateElement(selectedElement, { x: newX, y: newY })
     } else if (isResizing) {
@@ -146,23 +310,31 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
       const deltaY = e.clientY - dragStart.y
       
       updateElement(selectedElement, {
-        width: Math.max(50, elementStart.width + deltaX),
-        height: Math.max(50, elementStart.height + deltaY)
+        width: Math.max(50, snapPosition(elementStart.width + deltaX)),
+        height: Math.max(50, snapPosition(elementStart.height + deltaY))
       })
     }
   }
 
   const handleMouseUp = () => {
+    if (isDragging || isResizing) {
+      // Save to history when drag/resize operation completes
+      saveToHistory(slide)
+    }
     setIsDragging(false)
     setIsResizing(false)
+    setDropZone(null)
   }
 
-  const addElement = (type: SlideElement['type'], shapeType?: string) => {
+  const addElement = (type: SlideElement['type'], shapeType?: string, position?: { x: number, y: number }) => {
+    const defaultX = position?.x || 100
+    const defaultY = position?.y || 100
+    
     const newElement: SlideElement = {
       id: `element_${Date.now()}`,
       type,
-      x: 100,
-      y: 100,
+      x: snapPosition(defaultX),
+      y: snapPosition(defaultY),
       width: type === 'text' ? 300 : 200,
       height: type === 'text' ? 50 : 200,
       content: type === 'text' ? 'Click to edit text' : shapeType || '',
@@ -187,7 +359,61 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
       elements: [...elements, newElement]
     }
     onUpdate(updatedSlide)
+    saveToHistory(updatedSlide)
     setSelectedElement(newElement.id)
+  }
+
+  // Component palette functions
+  const componentTemplates = [
+    { type: 'text', label: 'Heading', style: { fontSize: 32, fontWeight: 'bold' } },
+    { type: 'text', label: 'Subheading', style: { fontSize: 24, fontWeight: '600' } },
+    { type: 'text', label: 'Body Text', style: { fontSize: 16 } },
+    { type: 'text', label: 'Caption', style: { fontSize: 12, color: '#6B7280' } },
+    { type: 'shape', label: 'Button', shapeType: 'rectangle', style: { backgroundColor: '#3B82F6', borderRadius: 8 } },
+    { type: 'shape', label: 'Card', shapeType: 'rectangle', style: { backgroundColor: '#F9FAFB', borderWidth: 1, borderRadius: 8 } },
+    { type: 'shape', label: 'Badge', shapeType: 'rectangle', style: { backgroundColor: '#10B981', borderRadius: 20 } },
+    { type: 'shape', label: 'Divider', shapeType: 'rectangle', style: { backgroundColor: '#E5E7EB', height: 2 } }
+  ]
+
+  const handlePaletteDragStart = (componentType: string) => {
+    setDraggedComponent(componentType)
+  }
+
+  const handleCanvasDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (!draggedComponent) return
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+
+    const template = componentTemplates.find(t => `${t.type}_${t.label}` === draggedComponent)
+    if (template) {
+      const position = { x, y }
+      addElement(template.type as SlideElement['type'], template.shapeType, position)
+      
+      // Apply template style
+      setTimeout(() => {
+        if (selectedElement) {
+          updateElementStyle(selectedElement, template.style)
+        }
+      }, 100)
+    }
+
+    setDraggedComponent(null)
+  }
+
+  const handleCanvasDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    const rect = e.currentTarget.getBoundingClientRect()
+    setDropZone({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
+  }
+
+  const handleCanvasDragLeave = () => {
+    setDropZone(null)
   }
 
   const updateElement = (elementId: string, updates: Partial<SlideElement>) => {
@@ -351,13 +577,51 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
 
   return (
     <div className="flex h-screen bg-gray-900">
-      {/* Left Toolbar */}
-      <div className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 gap-2">
+      {/* Enhanced Left Toolbar */}
+      <div className="w-20 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 gap-2">
+        {/* Undo/Redo */}
+        <div className="flex flex-col gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={undo}
+            disabled={historyIndex === 0}
+            className="w-16 h-8 p-0 text-xs"
+            title="Undo (Ctrl+Z)"
+          >
+            ↶
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={redo}
+            disabled={historyIndex === history.length - 1}
+            className="w-16 h-8 p-0 text-xs"
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            ↷
+          </Button>
+        </div>
+
+        <div className="w-full h-px bg-gray-600 my-2" />
+
+        {/* Component Palette Toggle */}
+        <Button
+          size="sm"
+          variant={showComponentPalette ? "default" : "outline"}
+          onClick={() => setShowComponentPalette(!showComponentPalette)}
+          className="w-16 h-12 p-0"
+          title="Component Palette"
+        >
+          <Layers className="w-5 h-5" />
+        </Button>
+
+        {/* Basic Tools */}
         <Button
           size="sm"
           variant="outline"
           onClick={() => addElement('text')}
-          className="w-12 h-12 p-0"
+          className="w-16 h-12 p-0"
           title="Add Text"
         >
           <Type className="w-5 h-5" />
@@ -369,23 +633,100 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
             size="sm"
             variant="outline"
             onClick={() => addElement('shape', shape.type)}
-            className="w-12 h-12 p-0"
+            className="w-16 h-12 p-0"
             title={`Add ${shape.label}`}
           >
             <shape.icon className="w-5 h-5" />
           </Button>
         ))}
 
+        <div className="w-full h-px bg-gray-600 my-2" />
+
+        {/* Snap to Grid Toggle */}
+        <Button
+          size="sm"
+          variant={snapToGrid ? "default" : "outline"}
+          onClick={() => setSnapToGrid(!snapToGrid)}
+          className="w-16 h-10 p-0 text-xs"
+          title={`Snap to Grid (${gridSize}px)`}
+        >
+          ⊞
+        </Button>
+
+        {/* Multi-selection indicator */}
+        {multiSelected.length > 0 && (
+          <div className="w-16 bg-blue-900/30 border border-blue-500 rounded p-1 text-xs text-center text-blue-400">
+            {multiSelected.length} sel
+          </div>
+        )}
+
         <Button
           size="sm"
           variant="outline"
           onClick={() => setShowSettings(!showSettings)}
-          className="w-12 h-12 p-0 mt-auto"
+          className="w-16 h-12 p-0 mt-auto"
           title="Settings"
         >
           <Settings className="w-5 h-5" />
         </Button>
       </div>
+
+      {/* Component Palette Panel */}
+      {showComponentPalette && (
+        <div className="w-64 bg-gray-800 border-r border-gray-700 p-4 overflow-y-auto">
+          <h3 className="text-white font-semibold mb-4">Component Palette</h3>
+          
+          <div className="space-y-3">
+            <div>
+              <h4 className="text-gray-300 text-sm font-medium mb-2">Text Components</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {componentTemplates.filter(t => t.type === 'text').map((template, idx) => (
+                  <div
+                    key={idx}
+                    draggable
+                    onDragStart={() => handlePaletteDragStart(`${template.type}_${template.label}`)}
+                    className="p-3 bg-gray-700 hover:bg-gray-600 rounded cursor-grab active:cursor-grabbing border border-gray-600 hover:border-gray-500"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Type className="w-4 h-4 text-gray-400" />
+                      <span className="text-white text-sm">{template.label}</span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {template.style.fontSize}px, {template.style.fontWeight}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-gray-300 text-sm font-medium mb-2">UI Components</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {componentTemplates.filter(t => t.type === 'shape').map((template, idx) => (
+                  <div
+                    key={idx}
+                    draggable
+                    onDragStart={() => handlePaletteDragStart(`${template.type}_${template.label}`)}
+                    className="p-3 bg-gray-700 hover:bg-gray-600 rounded cursor-grab active:cursor-grabbing border border-gray-600 hover:border-gray-500"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Square className="w-4 h-4 text-gray-400" />
+                      <span className="text-white text-sm">{template.label}</span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      Styled {template.shapeType}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 p-3 bg-gray-700 rounded text-xs text-gray-400">
+            <strong className="text-gray-300">Tip:</strong> Drag components to the canvas to add them
+          </div>
+        </div>
+      )}
 
       {/* Main Canvas */}
       <div className="flex-1 p-8 overflow-auto">
@@ -409,10 +750,10 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
             </div>
           </Card>
 
-          {/* Slide Canvas */}
+          {/* Enhanced Slide Canvas */}
           <div
             ref={canvasRef}
-            className="relative bg-white rounded-lg shadow-xl"
+            className="relative bg-white rounded-lg shadow-xl overflow-hidden"
             style={{
               width: '100%',
               paddingBottom: '56.25%', // 16:9 aspect ratio
@@ -423,8 +764,42 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onDrop={handleCanvasDrop}
+            onDragOver={handleCanvasDragOver}
+            onDragLeave={handleCanvasDragLeave}
           >
             <div className="absolute inset-0">
+              {/* Grid Overlay */}
+              {snapToGrid && (
+                <div className="absolute inset-0 pointer-events-none opacity-20">
+                  <svg width="100%" height="100%" className="absolute inset-0">
+                    <defs>
+                      <pattern
+                        id="grid"
+                        width={gridSize}
+                        height={gridSize}
+                        patternUnits="userSpaceOnUse"
+                      >
+                        <circle cx={gridSize/2} cy={gridSize/2} r="1" fill="#94A3B8" />
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                  </svg>
+                </div>
+              )}
+
+              {/* Drop Zone Indicator */}
+              {dropZone && (
+                <div
+                  className="absolute w-4 h-4 bg-blue-500 border-2 border-blue-300 rounded-full pointer-events-none z-50"
+                  style={{
+                    left: dropZone.x - 8,
+                    top: dropZone.y - 8,
+                    animation: 'pulse 1s infinite'
+                  }}
+                />
+              )}
+
               {/* Render chart if it's a chart slide */}
               {slide.type === 'chart' && slide.data && (
                 <div className="w-full h-full p-8">
@@ -447,33 +822,95 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
               )}
 
               {/* Render custom elements */}
-              {elements.map(element => (
-                <motion.div
-                  key={element.id}
-                  className={`absolute ${element.locked ? 'pointer-events-none' : ''}`}
-                  style={{
-                    left: element.x,
-                    top: element.y,
-                    width: element.width,
-                    height: element.height,
-                    zIndex: element.zIndex,
-                    cursor: selectedElement === element.id ? 'move' : 'pointer'
-                  }}
-                  onMouseDown={(e) => handleMouseDown(e, element.id, 'drag')}
-                  whileHover={{ scale: element.locked ? 1 : 1.01 }}
-                  whileTap={{ scale: element.locked ? 1 : 0.99 }}
-                >
-                  {renderElement(element)}
-                  
-                  {/* Resize Handle */}
-                  {selectedElement === element.id && !element.locked && (
-                    <div
-                      className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize"
-                      onMouseDown={(e) => handleMouseDown(e, element.id, 'resize')}
-                    />
-                  )}
-                </motion.div>
-              ))}
+              {elements.map(element => {
+                const isSelected = selectedElement === element.id
+                const isMultiSelected = multiSelected.includes(element.id)
+                const isHighlighted = isSelected || isMultiSelected
+
+                return (
+                  <motion.div
+                    key={element.id}
+                    className={`absolute ${element.locked ? 'pointer-events-none' : ''} ${
+                      isHighlighted ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+                    }`}
+                    style={{
+                      left: element.x,
+                      top: element.y,
+                      width: element.width,
+                      height: element.height,
+                      zIndex: element.zIndex,
+                      cursor: isSelected ? 'move' : 'pointer'
+                    }}
+                    onMouseDown={(e) => {
+                      // Handle multi-selection with Ctrl/Cmd key
+                      if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault()
+                        if (multiSelected.includes(element.id)) {
+                          setMultiSelected(prev => prev.filter(id => id !== element.id))
+                        } else {
+                          setMultiSelected(prev => [...prev, element.id])
+                        }
+                        setSelectedElement(null)
+                      } else {
+                        handleMouseDown(e, element.id, 'drag')
+                        setMultiSelected([])
+                      }
+                    }}
+                    whileHover={{ scale: element.locked ? 1 : 1.01 }}
+                    whileTap={{ scale: element.locked ? 1 : 0.99 }}
+                  >
+                    {renderElement(element)}
+                    
+                    {/* Selection Indicators */}
+                    {isHighlighted && !element.locked && (
+                      <>
+                        {/* Corner handles for resize */}
+                        <div
+                          className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 cursor-se-resize border border-white"
+                          onMouseDown={(e) => handleMouseDown(e, element.id, 'resize')}
+                        />
+                        <div
+                          className="absolute top-0 left-0 w-3 h-3 bg-blue-500 cursor-nw-resize border border-white"
+                          onMouseDown={(e) => handleMouseDown(e, element.id, 'resize')}
+                        />
+                        <div
+                          className="absolute top-0 right-0 w-3 h-3 bg-blue-500 cursor-ne-resize border border-white"
+                          onMouseDown={(e) => handleMouseDown(e, element.id, 'resize')}
+                        />
+                        <div
+                          className="absolute bottom-0 left-0 w-3 h-3 bg-blue-500 cursor-sw-resize border border-white"
+                          onMouseDown={(e) => handleMouseDown(e, element.id, 'resize')}
+                        />
+                        
+                        {/* Multi-selection indicator */}
+                        {isMultiSelected && (
+                          <div className="absolute -top-6 -left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                            {multiSelected.indexOf(element.id) + 1}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </motion.div>
+                )
+              })}
+
+              {/* Keyboard Shortcuts Help */}
+              {elements.length === 0 && !draggedComponent && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="text-center text-gray-400 max-w-md">
+                    <h3 className="text-lg font-medium mb-4">Enhanced Slide Editor</h3>
+                    <div className="text-sm space-y-2">
+                      <div>• Drag components from the palette</div>
+                      <div>• Ctrl+Z/Y for undo/redo</div>
+                      <div>• Ctrl+C/V for copy/paste</div>
+                      <div>• Ctrl+A to select all</div>
+                      <div>• Arrow keys to nudge elements</div>
+                      <div>• Ctrl+click for multi-selection</div>
+                      <div>• Delete key to remove elements</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

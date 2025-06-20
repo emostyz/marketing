@@ -38,11 +38,19 @@ interface EnhancedChartProps {
   showLegend?: boolean
   enableInteractivity?: boolean
   onColumnToggle?: (column: string) => void
+  onDataSelection?: (selectedData: any[]) => void
+  onDataFilter?: (filters: Record<string, any>) => void
+  onDrillDown?: (dataPoint: any, level: number) => void
   title?: string
   subtitle?: string
   valueFormatter?: (value: number) => string
   showDataTable?: boolean
   className?: string
+  drillDownLevels?: string[]
+  allowDataExport?: boolean
+  enableCrossFilter?: boolean
+  chartId?: string
+  onChartInteraction?: (chartId: string, interaction: any) => void
 }
 
 // Professional color schemes with better contrast
@@ -64,16 +72,31 @@ export function EnhancedWorldClassChart({
   showLegend = true,
   enableInteractivity = false,
   onColumnToggle,
+  onDataSelection,
+  onDataFilter,
+  onDrillDown,
   title,
   subtitle,
   valueFormatter = (value) => value.toLocaleString(),
   showDataTable = false,
-  className = ''
+  className = '',
+  drillDownLevels = [],
+  allowDataExport = true,
+  enableCrossFilter = false,
+  chartId = 'chart',
+  onChartInteraction
 }: EnhancedChartProps) {
   const [visibleCategories, setVisibleCategories] = useState<string[]>(categories)
   const [selectedColorScheme, setSelectedColorScheme] = useState('corporate')
   const [showSettings, setShowSettings] = useState(false)
   const [currentColors, setCurrentColors] = useState(colors)
+  const [selectedData, setSelectedData] = useState<any[]>([])
+  const [dataFilters, setDataFilters] = useState<Record<string, any>>({})
+  const [currentDrillLevel, setCurrentDrillLevel] = useState(0)
+  const [showFilterPanel, setShowFilterPanel] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState(1)
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
+  const [annotations, setAnnotations] = useState<Array<{id: string, x: number, y: number, text: string}>>([])
   const chartRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -99,9 +122,113 @@ export function EnhancedWorldClassChart({
     setCurrentColors(COLOR_SCHEMES[scheme as keyof typeof COLOR_SCHEMES])
   }
 
-  const exportChart = () => {
-    // Implementation for chart export
-    console.log('Exporting chart...')
+  // Advanced data selection handler
+  const handleDataSelection = (selectedPoints: any[]) => {
+    setSelectedData(selectedPoints)
+    if (onDataSelection) onDataSelection(selectedPoints)
+    if (onChartInteraction) {
+      onChartInteraction(chartId, { type: 'selection', data: selectedPoints })
+    }
+  }
+
+  // Advanced filtering
+  const applyFilter = (column: string, value: any, operator: 'equals' | 'contains' | 'greaterThan' | 'lessThan' = 'equals') => {
+    const newFilters = { ...dataFilters, [column]: { value, operator } }
+    setDataFilters(newFilters)
+    if (onDataFilter) onDataFilter(newFilters)
+    if (onChartInteraction) {
+      onChartInteraction(chartId, { type: 'filter', filters: newFilters })
+    }
+  }
+
+  // Drill-down functionality
+  const handleDrillDown = (dataPoint: any) => {
+    if (drillDownLevels.length > currentDrillLevel + 1) {
+      const nextLevel = currentDrillLevel + 1
+      setCurrentDrillLevel(nextLevel)
+      if (onDrillDown) onDrillDown(dataPoint, nextLevel)
+      if (onChartInteraction) {
+        onChartInteraction(chartId, { type: 'drillDown', dataPoint, level: nextLevel })
+      }
+    }
+  }
+
+  // Chart export functionality
+  const exportChart = async () => {
+    if (!chartRef.current) return
+    
+    try {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+
+      canvas.width = chartRef.current.offsetWidth
+      canvas.height = chartRef.current.offsetHeight
+
+      // Create downloadable image
+      const link = document.createElement('a')
+      link.download = `${title || 'chart'}_${new Date().toISOString().split('T')[0]}.png`
+      link.href = canvas.toDataURL()
+      link.click()
+
+      // Also export data as CSV
+      exportDataAsCSV()
+    } catch (error) {
+      console.error('Chart export failed:', error)
+    }
+  }
+
+  // Data export as CSV
+  const exportDataAsCSV = () => {
+    const filteredData = getFilteredData()
+    const headers = [index, ...visibleCategories]
+    const csvContent = [
+      headers.join(','),
+      ...filteredData.map(row => headers.map(header => row[header] || '').join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const link = document.createElement('a')
+    link.download = `${title || 'chart'}_data_${new Date().toISOString().split('T')[0]}.csv`
+    link.href = URL.createObjectURL(blob)
+    link.click()
+  }
+
+  // Get filtered data based on current filters
+  const getFilteredData = () => {
+    return data.filter(row => {
+      return Object.entries(dataFilters).every(([column, filter]) => {
+        const value = row[column]
+        switch (filter.operator) {
+          case 'contains':
+            return String(value).toLowerCase().includes(String(filter.value).toLowerCase())
+          case 'greaterThan':
+            return Number(value) > Number(filter.value)
+          case 'lessThan':
+            return Number(value) < Number(filter.value)
+          case 'equals':
+          default:
+            return value === filter.value
+        }
+      })
+    })
+  }
+
+  // Add annotation
+  const addAnnotation = (x: number, y: number, text: string) => {
+    const newAnnotation = {
+      id: `annotation_${Date.now()}`,
+      x,
+      y,
+      text
+    }
+    setAnnotations(prev => [...prev, newAnnotation])
+  }
+
+  // Zoom functionality
+  const handleZoom = (delta: number) => {
+    const newZoom = Math.max(0.5, Math.min(3, zoomLevel + delta))
+    setZoomLevel(newZoom)
   }
 
   const getChartColors = () => {
@@ -112,8 +239,9 @@ export function EnhancedWorldClassChart({
   }
 
   const renderChart = () => {
+    const filteredData = getFilteredData()
     const chartProps = {
-      data,
+      data: filteredData,
       index,
       categories: visibleCategories,
       colors: getChartColors(),
@@ -122,14 +250,26 @@ export function EnhancedWorldClassChart({
       showLegend: showLegend && visibleCategories.length > 1,
       showGridLines: true,
       valueFormatter,
-      className: "mt-4"
+      className: "mt-4",
+      onValueChange: enableInteractivity ? handleDataSelection : undefined,
+      allowDecimals: true,
+      enableLegendSlider: true,
+      rotateLabelX: { angle: -45 }
     }
 
     switch (type) {
       case 'area':
         return (
           <AreaChart 
-            {...chartProps}
+            data={data}
+            index={index}
+            categories={visibleCategories}
+            colors={getChartColors()}
+            showAnimation={true}
+            showTooltip={true}
+            showLegend={showLegend}
+            showGridLines={true}
+            valueFormatter={valueFormatter}
             showGradient={true}
             stack={true}
             curveType="monotone"
@@ -140,7 +280,15 @@ export function EnhancedWorldClassChart({
       case 'line':
         return (
           <LineChart 
-            {...chartProps}
+            data={data}
+            index={index}
+            categories={visibleCategories}
+            colors={getChartColors()}
+            showAnimation={true}
+            showTooltip={true}
+            showLegend={showLegend}
+            showGridLines={true}
+            valueFormatter={valueFormatter}
             curveType="monotone"
             connectNulls={false}
           />
@@ -164,16 +312,29 @@ export function EnhancedWorldClassChart({
         return (
           <div className="relative">
             <BarChart 
-              {...chartProps}
+              data={data}
+              index={index}
+              categories={visibleCategories}
+              colors={getChartColors()}
+              showAnimation={true}
+              showTooltip={true}
+              showLegend={showLegend}
+              showGridLines={true}
+              valueFormatter={valueFormatter}
               stack={false}
             />
             <div className="absolute inset-0 pointer-events-none">
               <LineChart 
-                {...chartProps}
+                data={data}
+                index={index}
                 categories={[visibleCategories[visibleCategories.length - 1]]}
                 colors={['#EF4444']}
                 showLegend={false}
                 className="opacity-80"
+                showAnimation={true}
+                showTooltip={true}
+                showGridLines={true}
+                valueFormatter={valueFormatter}
               />
             </div>
           </div>
@@ -182,7 +343,15 @@ export function EnhancedWorldClassChart({
       default:
         return (
           <BarChart 
-            {...chartProps}
+            data={data}
+            index={index}
+            categories={visibleCategories}
+            colors={getChartColors()}
+            showAnimation={true}
+            showTooltip={true}
+            showLegend={showLegend}
+            showGridLines={true}
+            valueFormatter={valueFormatter}
             stack={false}
           />
         )
@@ -198,10 +367,10 @@ export function EnhancedWorldClassChart({
         </div>
       )}
 
-      {/* Chart Controls */}
+      {/* Enhanced Chart Controls */}
       {enableInteractivity && (
         <div className="flex items-center justify-between mb-4">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               size="sm"
               variant="outline"
@@ -214,12 +383,23 @@ export function EnhancedWorldClassChart({
             <Button
               size="sm"
               variant="outline"
-              onClick={exportChart}
+              onClick={() => setShowFilterPanel(!showFilterPanel)}
               className="text-xs"
             >
-              <Download className="w-3 h-3 mr-1" />
-              Export
+              <RefreshCw className="w-3 h-3 mr-1" />
+              Filter
             </Button>
+            {allowDataExport && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={exportChart}
+                className="text-xs"
+              >
+                <Download className="w-3 h-3 mr-1" />
+                Export
+              </Button>
+            )}
             {showDataTable !== undefined && (
               <Button
                 size="sm"
@@ -231,6 +411,42 @@ export function EnhancedWorldClassChart({
                 Data
               </Button>
             )}
+            {drillDownLevels.length > 0 && currentDrillLevel > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentDrillLevel(prev => Math.max(0, prev - 1))}
+                className="text-xs"
+              >
+                <TrendingUp className="w-3 h-3 mr-1" />
+                Drill Up
+              </Button>
+            )}
+          </div>
+          
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleZoom(-0.2)}
+              className="text-xs px-2"
+              disabled={zoomLevel <= 0.5}
+            >
+              -
+            </Button>
+            <span className="text-xs text-gray-600 min-w-[3rem] text-center">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleZoom(0.2)}
+              className="text-xs px-2"
+              disabled={zoomLevel >= 3}
+            >
+              +
+            </Button>
           </div>
         </div>
       )}
@@ -297,10 +513,168 @@ export function EnhancedWorldClassChart({
         )}
       </AnimatePresence>
 
-      {/* Chart Container */}
-      <div style={{ height: `${height}px` }} className="relative">
+      {/* Advanced Filter Panel */}
+      <AnimatePresence>
+        {showFilterPanel && enableInteractivity && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4"
+          >
+            <Card className="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-3">
+                <Text className="text-sm font-medium">Advanced Filters</Text>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDataFilters({})}
+                  className="text-xs"
+                >
+                  Clear All
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[index, ...categories].map(column => {
+                  const uniqueValues = [...new Set(data.map(row => row[column]))].slice(0, 10)
+                  const isNumeric = typeof data[0]?.[column] === 'number'
+                  
+                  return (
+                    <div key={column} className="space-y-2">
+                      <Text className="text-xs font-medium text-gray-600 dark:text-gray-400 capitalize">
+                        {column}
+                      </Text>
+                      
+                      {isNumeric ? (
+                        <div className="space-y-2">
+                          <select
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                const [operator, value] = e.target.value.split(':')
+                                applyFilter(column, Number(value), operator as any)
+                              }
+                            }}
+                            className="w-full text-xs p-2 border rounded bg-white dark:bg-gray-700"
+                          >
+                            <option value="">No filter</option>
+                            <option value={`greaterThan:${Math.min(...data.map(r => r[column]))}`}>
+                              Greater than min
+                            </option>
+                            <option value={`lessThan:${Math.max(...data.map(r => r[column]))}`}>
+                              Less than max
+                            </option>
+                          </select>
+                        </div>
+                      ) : (
+                        <select
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              applyFilter(column, e.target.value, 'equals')
+                            } else {
+                              const newFilters = { ...dataFilters }
+                              delete newFilters[column]
+                              setDataFilters(newFilters)
+                            }
+                          }}
+                          className="w-full text-xs p-2 border rounded bg-white dark:bg-gray-700"
+                        >
+                          <option value="">All values</option>
+                          {uniqueValues.map(value => (
+                            <option key={String(value)} value={String(value)}>
+                              {String(value)}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      
+                      {dataFilters[column] && (
+                        <div className="flex items-center justify-between text-xs bg-blue-100 dark:bg-blue-900/30 p-2 rounded">
+                          <span className="text-blue-700 dark:text-blue-300">
+                            {dataFilters[column].operator}: {String(dataFilters[column].value)}
+                          </span>
+                          <button
+                            onClick={() => {
+                              const newFilters = { ...dataFilters }
+                              delete newFilters[column]
+                              setDataFilters(newFilters)
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              
+              {Object.keys(dataFilters).length > 0 && (
+                <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
+                  <Text className="text-xs text-gray-600 dark:text-gray-400">
+                    Showing {getFilteredData().length} of {data.length} records
+                  </Text>
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chart Container with Enhanced Interactivity */}
+      <div 
+        style={{ 
+          height: `${height}px`,
+          transform: `scale(${zoomLevel}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+          transformOrigin: 'top left'
+        }} 
+        className="relative overflow-hidden"
+        onDoubleClick={(e) => {
+          if (enableInteractivity) {
+            const rect = e.currentTarget.getBoundingClientRect()
+            const x = e.clientX - rect.left
+            const y = e.clientY - rect.top
+            const text = prompt('Add annotation:')
+            if (text) addAnnotation(x, y, text)
+          }
+        }}
+      >
         {visibleCategories.length > 0 ? (
-          renderChart()
+          <>
+            {renderChart()}
+            
+            {/* Annotations Overlay */}
+            {annotations.map(annotation => (
+              <div
+                key={annotation.id}
+                className="absolute bg-yellow-200 dark:bg-yellow-800 text-black dark:text-white text-xs p-2 rounded shadow-lg border border-yellow-400 pointer-events-none"
+                style={{
+                  left: annotation.x,
+                  top: annotation.y,
+                  transform: 'translate(-50%, -100%)',
+                  zIndex: 10
+                }}
+              >
+                {annotation.text}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-yellow-400"></div>
+              </div>
+            ))}
+            
+            {/* Selection Indicator */}
+            {selectedData.length > 0 && (
+              <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                {selectedData.length} point{selectedData.length !== 1 ? 's' : ''} selected
+              </div>
+            )}
+            
+            {/* Drill-down Indicator */}
+            {drillDownLevels.length > 0 && currentDrillLevel > 0 && (
+              <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                Level {currentDrillLevel + 1}: {drillDownLevels[currentDrillLevel]}
+              </div>
+            )}
+          </>
         ) : (
           <div className="h-full flex items-center justify-center text-gray-400">
             <div className="text-center">
@@ -312,28 +686,78 @@ export function EnhancedWorldClassChart({
         )}
       </div>
 
-      {/* Data Summary */}
+      {/* Enhanced Data Summary */}
       {data.length > 0 && visibleCategories.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          {/* Filter and Selection Summary */}
+          {(Object.keys(dataFilters).length > 0 || selectedData.length > 0) && (
+            <div className="mb-4 flex flex-wrap gap-2 text-xs">
+              {Object.keys(dataFilters).length > 0 && (
+                <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  {Object.keys(dataFilters).length} filter{Object.keys(dataFilters).length !== 1 ? 's' : ''} active
+                </Badge>
+              )}
+              {selectedData.length > 0 && (
+                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  {selectedData.length} point{selectedData.length !== 1 ? 's' : ''} selected
+                </Badge>
+              )}
+              {getFilteredData().length !== data.length && (
+                <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                  Showing {getFilteredData().length} of {data.length} records
+                </Badge>
+              )}
+            </div>
+          )}
+          
+          {/* Statistics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             {visibleCategories.slice(0, 4).map(category => {
-              const values = data.map(d => parseFloat(d[category]) || 0)
+              const filteredData = getFilteredData()
+              const values = filteredData.map(d => parseFloat(d[category]) || 0).filter(v => !isNaN(v))
+              
+              if (values.length === 0) return null
+              
               const sum = values.reduce((a, b) => a + b, 0)
               const avg = sum / values.length
               const max = Math.max(...values)
               const min = Math.min(...values)
+              const change = data.length > filteredData.length ? 
+                ((avg - (data.map(d => parseFloat(d[category]) || 0).reduce((a, b) => a + b, 0) / data.length)) / avg * 100) : 0
               
               return (
-                <div key={category}>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">{category}</Text>
+                <div key={category} className="relative">
+                  <Text className="text-xs text-gray-500 dark:text-gray-400 capitalize">{category}</Text>
                   <Metric className="text-sm mt-1">{valueFormatter(avg)}</Metric>
                   <Text className="text-xs text-gray-400 dark:text-gray-500">
                     {valueFormatter(min)} - {valueFormatter(max)}
                   </Text>
+                  {Math.abs(change) > 1 && (
+                    <div className={`text-xs mt-1 ${change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {change > 0 ? '↗' : '↘'} {Math.abs(change).toFixed(1)}%
+                    </div>
+                  )}
                 </div>
               )
             })}
           </div>
+          
+          {/* Interactive Help */}
+          {enableInteractivity && (
+            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <Text className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-medium">
+                Interactive Features:
+              </Text>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div>• Double-click to add annotations</div>
+                <div>• Use Filter panel for data exploration</div>
+                <div>• Zoom with +/- controls</div>
+                {drillDownLevels.length > 0 && <div>• Click data points to drill down</div>}
+                {allowDataExport && <div>• Export chart and data</div>}
+                <div>• Toggle columns in settings</div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

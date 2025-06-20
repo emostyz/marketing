@@ -2,7 +2,6 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import Image from 'next/image'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 
@@ -73,8 +72,8 @@ export default async function TemplatesPage() {
             >
               <Card className="cursor-pointer border-2 border-white/20 hover:border-blue-500 transition-all">
                 <div className="mb-3">
-                  <div className="w-full h-32 relative mb-2 rounded-lg overflow-hidden">
-                    <Image src={tpl.preview} alt={tpl.name} fill className="object-cover rounded-lg" />
+                  <div className="w-full h-32 mb-2 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
+                    {tpl.name} Preview
                   </div>
                   <div className="font-grotesk text-lg text-white mb-1">{tpl.name}</div>
                   <div className="text-blue-200 text-sm mb-2">{tpl.description}</div>

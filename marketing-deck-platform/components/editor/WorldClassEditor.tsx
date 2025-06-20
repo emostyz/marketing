@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { Toaster, toast } from 'react-hot-toast'
 import { advancedBrain, StrategicInsight } from '@/lib/brain/advanced-brain'
+import { PresentationManager, DataFlowManager, NavigationManager } from '@/lib/presentations/presentation-helpers'
 
 interface UserApprovalRequest {
   stage: string;
@@ -86,12 +87,14 @@ export function WorldClassEditor() {
     try {
       toast.loading('🧠 Brain starting world-class analysis...', { id: 'brain-analysis' })
       
-      // ADVANCED BRAIN ANALYSIS - World-class capabilities
+      // ADVANCED BRAIN ANALYSIS - World-class capabilities with real data insights
       const analysis = await advancedBrain.analyzeDataForWorldClassInsights(
         uploadData.data || [],
         uploadData.userRequirements || uploadData.qaResponses?.datasetDescription || 'Comprehensive data analysis',
         uploadData.userGoals || uploadData.qaResponses?.businessGoals || 'Generate strategic insights',
-        handleBrainProgress
+        handleBrainProgress,
+        1, // iteration
+        uploadData.enhancedResults // Pass real insights from EnhancedDataProcessor
       )
       
       // Analysis completed successfully - proceed with slide generation
@@ -297,58 +300,34 @@ export function WorldClassEditor() {
         throw new Error('No slides generated')
       }
 
-      const presentationId = `adv_pres_${Date.now()}`
+      // Process upload data
+      const processedData = DataFlowManager.processUploadData(uploadData)
       
-      const presentationData = {
-        id: presentationId,
-        title: uploadData.title || 'Strategic Intelligence Report',
-        description: `Advanced brain analysis with ${slides.length} slides and ${analysis.dataPoints.length} key insights`,
-        slides: slides,
-        metadata: {
-          datasetName: uploadData.fileName || 'Advanced Dataset',
-          analysisType: 'world-class-strategic',
-          confidence: analysis.confidence,
-          dataQuality: analysis.dataQuality,
-          generatedAt: new Date().toISOString(),
-          dataPoints: uploadData.data?.length || 0,
-          brainGenerated: true,
-          strategicInsights: analysis.dataPoints.length,
-          recommendations: analysis.strategicRecommendations.length,
-          risks: analysis.riskAssessment.length,
-          version: '2.0',
-          worldClass: true
-        },
-        strategicInsights: analysis,
-        status: 'completed'
-      }
-
-      // Save to localStorage first
-      localStorage.setItem(`presentation_${presentationId}`, JSON.stringify(presentationData))
+      // Generate presentation using enhanced helpers
+      const presentation = await DataFlowManager.generatePresentationFromAnalysis(
+        analysis,
+        processedData,
+        slides
+      )
       
-      // If user is authenticated, also save to database
-      if (user) {
-        try {
-          await dbHelpers.savePresentation({
-            ...presentationData,
-            user_id: user.id,
-            status: 'completed'
-          })
-          console.log('Successfully saved to database')
-        } catch (dbError) {
-          console.error('Database save failed:', dbError)
-          // Continue with localStorage as fallback
-        }
+      // Save presentation with enhanced manager
+      const saveSuccess = await PresentationManager.savePresentation(
+        presentation,
+        user?.id
+      )
+      
+      if (!saveSuccess) {
+        throw new Error('Failed to save presentation')
       }
       
-      setPresentationId(presentationId)
+      setPresentationId(presentation.id)
       
-      // Show success and navigate
-      toast.success('🎉 World-class presentation created! Opening advanced deck builder...', { duration: 3000 })
+      // Show success message
+      toast.success('🎉 World-class presentation created! Opening deck builder...', { duration: 2000 })
       
-      // Navigate to advanced deck builder with slight delay
-      setTimeout(() => {
-        router.push(`/deck-builder/${presentationId}`)
-      }, 2000)
+      // Navigate with enhanced navigation manager
+      await NavigationManager.navigateToPresentation(presentation.id, router, 1500)
+      
     } catch (error) {
       console.error('Error saving presentation:', error)
       toast.error('Failed to save presentation. Please try again.')
@@ -373,58 +352,93 @@ export function WorldClassEditor() {
       handleBrainProgress(phase.progress, phase.status)
     }
 
-    // Generate enhanced fallback analysis based on actual data
+    // Use enhanced results if available, otherwise generate fallback analysis
     const actualData = uploadData.data || []
-    const dataKeys = actualData.length > 0 ? Object.keys(actualData[0]) : []
+    const enhancedResults = uploadData.enhancedResults
     
     setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 🔍 Analyzing data structure and patterns...`])
     
-    // Analyze the actual data structure
-    const numericColumns = dataKeys.filter(key => 
+    if (enhancedResults) {
+      setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ✅ Using enhanced data processing results with ${enhancedResults.insights.length} real insights`])
+      setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 📊 Data quality: ${enhancedResults.quality.overall}% • ${enhancedResults.numericColumns.length} metrics • ${enhancedResults.categoryColumns.length} categories`])
+    } else {
+      setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ⚠️ No enhanced results, performing basic analysis`])
+    }
+    
+    // Use enhanced results or fallback to basic analysis
+    const dataKeys = enhancedResults?.columns || (actualData.length > 0 ? Object.keys(actualData[0]) : [])
+    const numericColumns = enhancedResults?.numericColumns || dataKeys.filter((key: string) => 
       actualData.some((row: any) => typeof row[key] === 'number' || !isNaN(parseFloat(row[key])))
     )
-    const categoricalColumns = dataKeys.filter(key => 
+    const categoricalColumns = enhancedResults?.categoryColumns || dataKeys.filter((key: string) => 
       !numericColumns.includes(key) && actualData.some((row: any) => row[key])
     )
     
     setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 📊 Found ${numericColumns.length} numeric metrics and ${categoricalColumns.length} categories`])
     
-    // Calculate actual insights from the data
-    const insights = numericColumns.map(col => {
-      const values = actualData.map((row: any) => parseFloat(row[col])).filter((v: number) => !isNaN(v))
-      if (values.length === 0) return null
-      
-      const sum = values.reduce((a: number, b: number) => a + b, 0)
-      const avg = sum / values.length
-      const max = Math.max(...values)
-      const min = Math.min(...values)
-      const trend = values.length > 1 ? 
-        ((values[values.length - 1] - values[0]) / values[0] * 100) : 0
-      
-      return {
-        metric: col,
-        average: avg,
-        maximum: max,
-        minimum: min,
-        trend: trend.toFixed(1) + '%',
-        insight: trend > 10 ? 'Strong positive growth' : 
-                trend > 0 ? 'Moderate growth' : 
-                trend > -10 ? 'Stable performance' : 'Declining trend'
-      }
-    }).filter(Boolean)
+    // Use real insights from enhanced results or calculate fallback insights
+    let insights: any[] = []
     
-    setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 💡 Generated ${insights.length} key insights from your data`])
+    if (enhancedResults && enhancedResults.insights.length > 0) {
+      // Use real insights from EnhancedDataProcessor
+      insights = enhancedResults.insights.map((insight: any) => ({
+        metric: insight.column,
+        type: insight.type,
+        description: insight.description,
+        confidence: Math.round(insight.confidence * 100),
+        insight: insight.description,
+        value: insight.value,
+        businessRelevance: insight.confidence > 0.7 ? 'High impact' : 'Medium impact'
+      }))
+      setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 💡 Using ${insights.length} real insights from enhanced data processing`])
+    } else {
+      // Calculate fallback insights from basic analysis
+      insights = numericColumns.map((col: string) => {
+        const values = actualData.map((row: any) => parseFloat(row[col])).filter((v: number) => !isNaN(v))
+        if (values.length === 0) return null
+        
+        const sum = values.reduce((a: number, b: number) => a + b, 0)
+        const avg = sum / values.length
+        const max = Math.max(...values)
+        const min = Math.min(...values)
+        const trend = values.length > 1 ? 
+          ((values[values.length - 1] - values[0]) / values[0] * 100) : 0
+        
+        return {
+          metric: col,
+          average: avg,
+          maximum: max,
+          minimum: min,
+          trend: trend.toFixed(1) + '%',
+          insight: trend > 10 ? 'Strong positive growth' : 
+                  trend > 0 ? 'Moderate growth' : 
+                  trend > -10 ? 'Stable performance' : 'Declining trend'
+        }
+      }).filter(Boolean)
+      setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 💡 Generated ${insights.length} basic insights from data analysis`])
+    }
     
     // Show user check-in with real insights
     if (insights.length > 0) {
       const topInsight = insights[0]
       if (topInsight) {
-        setUserApprovalRequest({
-          stage: 'insights',
-          proposal: topInsight,
-          question: `Brain Analysis: Your ${topInsight.metric} shows ${topInsight.insight.toLowerCase()} with ${topInsight.trend} change. Current average: ${topInsight.average.toFixed(2)}. Should I focus on this metric for optimization?`,
-          options: ['Yes, focus on this metric', 'Show other metrics instead', 'Continue with all metrics', 'Skip insights review']
-        })
+        if (enhancedResults && topInsight.confidence) {
+          // Show real insight with confidence and business relevance
+          setUserApprovalRequest({
+            stage: 'insights',
+            proposal: topInsight,
+            question: `Real Data Insight: "${topInsight.description}" affecting ${topInsight.metric} (${topInsight.confidence}% confidence, ${topInsight.businessRelevance}). Should the brain prioritize this pattern in your strategic analysis?`,
+            options: ['High priority - focus analysis here', 'Medium priority - include with others', 'Show different insights', 'Continue with full analysis']
+          })
+        } else {
+          // Show basic insight
+          setUserApprovalRequest({
+            stage: 'insights',
+            proposal: topInsight,
+            question: `Brain Analysis: Your ${topInsight.metric} shows ${topInsight.insight.toLowerCase()} with ${topInsight.trend || 'trend analysis'}. Should I focus on this metric for optimization?`,
+            options: ['Yes, focus on this metric', 'Show other metrics instead', 'Continue with all metrics', 'Skip insights review']
+          })
+        }
       }
       
       // Wait for user response
@@ -455,7 +469,27 @@ export function WorldClassEditor() {
     })
 
     const fallbackAnalysis: StrategicInsight = {
-      dataPoints: [
+      dataPoints: enhancedResults?.suggestions?.map((suggestion: any, index: number) => ({
+        title: suggestion.title,
+        insight: suggestion.reasoning,
+        supportingData: { chartType: suggestion.type, priority: suggestion.priority },
+        visualizationType: suggestion.type,
+        story: `${suggestion.title}: ${suggestion.reasoning}`,
+        priority: suggestion.priority > 8 ? 'critical' : suggestion.priority > 6 ? 'high' : 'medium',
+        businessImpact: suggestion.priority > 8 ? 'transformational' : 'significant',
+        actionability: 'immediate',
+        chartConfig: {
+          index: suggestion.xAxis,
+          categories: suggestion.yAxis,
+          colors: ['blue', 'emerald', 'violet'],
+          data: processedData.length > 0 ? processedData : actualData.slice(0, 10),
+          advanced: {
+            trendlines: true,
+            drillDown: true,
+            annotations: []
+          }
+        }
+      })) || [
         {
           title: `${dataKeys.join(', ')} Analysis`,
           insight: `Analysis of ${actualData.length} data points across ${dataKeys.length} dimensions reveals key patterns and opportunities`,
@@ -536,8 +570,8 @@ export function WorldClassEditor() {
           frequency: 'Monthly'
         }
       ],
-      confidence: 88,
-      dataQuality: {
+      confidence: enhancedResults?.quality?.overall || 88,
+      dataQuality: enhancedResults?.quality || {
         completeness: 92,
         accuracy: 89,
         consistency: 87,
@@ -547,6 +581,7 @@ export function WorldClassEditor() {
 
     const slides = await generateWorldClassSlides(fallbackAnalysis, uploadData)
     await saveAndNavigateToAdvancedBuilder(slides, uploadData, fallbackAnalysis)
+    console.log('✅ Fallback presentation saved and navigation initiated')
   }
 
   if (isAnalyzing) {
