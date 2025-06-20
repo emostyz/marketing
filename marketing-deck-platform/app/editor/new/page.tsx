@@ -1,18 +1,12 @@
 import { Suspense } from 'react'
-import { SimpleEditor } from '@/components/editor/SimpleEditor'
-// import { AdvancedPresentationEditor } from '@/components/editor/AdvancedPresentationEditor'
+import { WorldClassEditor } from '@/components/editor/WorldClassEditor'
 import Skeleton from '@/components/ui/Skeleton'
 
 export default function NewEditorPage() {
-  // Temporarily using SimpleEditor to test
   return (
     <div className="min-h-screen">
       <Suspense fallback={<EditorSkeleton />}>
-        <SimpleEditor />
-        {/* <AdvancedPresentationEditor 
-          userId={1}
-          mode="new"
-        /> */}
+        <WorldClassEditor />
       </Suspense>
     </div>
   )

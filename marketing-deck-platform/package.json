@@ -53,7 +53,7 @@
     "googleapis": "^150.0.1",
     "jose": "^6.0.11",
     "lucide-react": "^0.511.0",
-    "next": "15.4.0-canary.47",
+    "next": "^15.4.0-canary.47",
     "openai": "^5.5.1",
     "papaparse": "^5.5.3",
     "pdf-lib": "^1.17.1",
@@ -62,10 +62,10 @@
     "pptx2json": "^0.0.10",
     "pptxgenjs": "^4.0.0",
     "radix-ui": "^1.4.2",
-    "react": "19.1.0",
+    "react": "^19.1.0",
     "react-chartjs-2": "^5.3.0",
     "react-color": "^2.19.3",
-    "react-dom": "19.1.0",
+    "react-dom": "^19.1.0",
     "react-dropzone": "^14.3.8",
     "react-hot-toast": "^2.5.2",
     "react-resizable": "^3.0.5",
@@ -84,5 +84,16 @@
     "@types/papaparse": "^5.3.16",
     "@types/react-color": "^3.0.13",
     "eslint": "^9.29.0"
-  }
+  },
+  "name": "marketing-deck-platform",
+  "version": "1.0.0",
+  "description": "This is a starter template for building a SaaS application using **Next.js** with support for authentication, Stripe integration for payments, and a dashboard for logged-in users.",
+  "main": "button_functionality_test.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
 }

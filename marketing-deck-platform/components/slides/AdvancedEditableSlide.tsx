@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { TremorChart } from '@/components/charts/TremorChart'
+import { WorldClassChart } from '@/components/charts/WorldClassChart'
 import { 
   Edit3, 
   Save, 
@@ -328,18 +328,23 @@ export function AdvancedEditableSlide({
               </>
             )}
 
-            {/* Render Actual Tremor Chart */}
+            {/* Render World-Class Chart */}
             {slide.data && slide.categories && slide.index && (
-              <TremorChart
+              <WorldClassChart
                 data={slide.data}
                 chartType={slide.chartType || 'bar'}
                 title={`${slide.title} Visualization`}
-                subtitle="Interactive data visualization"
+                subtitle="Strategic data visualization"
                 index={slide.index}
                 categories={slide.categories}
                 colors={slide.tremorConfig?.colors || ['blue', 'emerald', 'violet']}
-                height={slide.tremorConfig?.height || 64}
+                height={slide.tremorConfig?.height || 80}
                 showCustomization={!isEditing}
+                businessImpact={slide.content?.businessContext?.businessImpact || 'significant'}
+                actionability={slide.content?.businessContext?.actionability || 'immediate'}
+                priority={slide.content?.businessContext?.priority || 'high'}
+                confidence={slide.content?.confidence || 85}
+                advanced={slide.advanced || {}}
                 onDataChange={(newData) => {
                   setEditedSlide(prev => ({ ...prev, data: newData }))
                 }}
