@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { AdvancedEditableSlide } from '@/components/slides/AdvancedEditableSlide'
+import { ProfessionalSlideEditor } from '@/components/slides/ProfessionalSlideEditor'
+import { useAuth } from '@/lib/auth/auth-context'
+import { dbHelpers, PresentationData as DBPresentationData } from '@/lib/supabase/database-helpers'
 import { 
   Save, 
   Download, 
@@ -33,10 +35,10 @@ interface SlideContent {
 
 interface SlideData {
   id: string
-  type: 'title' | 'content' | 'chart' | 'image'
+  type: string
   title: string
   content: SlideContent
-  chartType?: 'area' | 'bar' | 'line' | 'donut'
+  chartType?: string
   data?: any[]
   categories?: string[]
   index?: string
@@ -59,38 +61,69 @@ interface PresentationData {
 export default function DeckBuilderPage() {
   const params = useParams()
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const [presentation, setPresentation] = useState<PresentationData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [selectedSlideId, setSelectedSlideId] = useState<string | null>(null)
 
   useEffect(() => {
-    loadPresentation()
-  }, [params.id])
+    if (!authLoading && !user) {
+      router.push('/auth/login')
+      return
+    }
+    if (user) {
+      loadPresentation()
+    }
+  }, [params.id, user, authLoading, router])
 
   const loadPresentation = async () => {
+    if (!user) return
+
     try {
-      // Check if there's a saved presentation in localStorage first
-      const savedData = localStorage.getItem(`presentation_${params.id}`)
+      // Try to load from Supabase first
+      const { data: dbPresentation, error } = await dbHelpers.loadPresentation(params.id as string, user.id)
       
-      if (savedData) {
-        const parsedData = JSON.parse(savedData)
-        setPresentation(parsedData)
-        if (parsedData.slides.length > 0) {
-          setSelectedSlideId(parsedData.slides[0].id)
+      if (dbPresentation) {
+        // Convert DB format to local format
+        const presentationData: PresentationData = {
+          id: dbPresentation.id!,
+          title: dbPresentation.title,
+          description: dbPresentation.description || 'Created with AEDRIN AI Brain',
+          slides: dbPresentation.slides || [],
+          metadata: dbPresentation.metadata
+        }
+        
+        setPresentation(presentationData)
+        if (presentationData.slides.length > 0) {
+          setSelectedSlideId(presentationData.slides[0].id)
         }
       } else {
-        // If no saved data, create a default presentation
-        const defaultPresentation: PresentationData = {
-          id: params.id as string,
-          title: 'AI-Generated Presentation',
-          description: 'Created with AEDRIN AI Brain',
-          slides: [],
-          metadata: {
-            generatedAt: new Date().toISOString()
+        // Check localStorage as fallback for existing presentations
+        const savedData = localStorage.getItem(`presentation_${params.id}`)
+        
+        if (savedData) {
+          const parsedData = JSON.parse(savedData)
+          setPresentation(parsedData)
+          if (parsedData.slides.length > 0) {
+            setSelectedSlideId(parsedData.slides[0].id)
           }
+          
+          // Migrate localStorage data to Supabase
+          await migrateToDatabase(parsedData)
+        } else {
+          // Create a new default presentation
+          const defaultPresentation: PresentationData = {
+            id: params.id as string,
+            title: 'AI-Generated Presentation',
+            description: 'Created with AEDRIN AI Brain',
+            slides: [],
+            metadata: {
+              generatedAt: new Date().toISOString()
+            }
+          }
+          setPresentation(defaultPresentation)
         }
-        setPresentation(defaultPresentation)
       }
     } catch (error) {
       console.error('Error loading presentation:', error)
@@ -100,19 +133,70 @@ export default function DeckBuilderPage() {
     }
   }
 
+  const migrateToDatabase = async (localPresentation: PresentationData) => {
+    if (!user) return
+
+    try {
+      const dbPresentation: DBPresentationData = {
+        id: localPresentation.id,
+        user_id: user.id,
+        title: localPresentation.title,
+        description: localPresentation.description,
+        slides: localPresentation.slides,
+        metadata: localPresentation.metadata,
+        status: localPresentation.slides.length > 0 ? 'completed' : 'draft'
+      }
+
+      await dbHelpers.savePresentation(dbPresentation)
+      
+      // Remove from localStorage after successful migration
+      localStorage.removeItem(`presentation_${localPresentation.id}`)
+    } catch (error) {
+      console.error('Error migrating presentation to database:', error)
+    }
+  }
+
   const savePresentation = async () => {
-    if (!presentation) return
+    if (!presentation || !user) return
 
     setIsSaving(true)
     try {
-      // Save to localStorage for now
-      localStorage.setItem(`presentation_${presentation.id}`, JSON.stringify(presentation))
+      const dbPresentation: DBPresentationData = {
+        id: presentation.id,
+        user_id: user.id,
+        title: presentation.title,
+        description: presentation.description,
+        slides: presentation.slides,
+        metadata: presentation.metadata,
+        status: presentation.slides.length > 0 ? 'completed' : 'draft'
+      }
+
+      const { data, error } = await dbHelpers.savePresentation(dbPresentation)
       
-      // Here you would typically save to your backend/Supabase
-      toast.success('Presentation saved successfully!')
+      if (error) {
+        throw new Error(error)
+      }
+
+      // Update local state with the saved data
+      if (data) {
+        const updatedPresentation: PresentationData = {
+          id: data.id!,
+          title: data.title,
+          description: data.description || 'Created with AEDRIN AI Brain',
+          slides: data.slides,
+          metadata: data.metadata
+        }
+        setPresentation(updatedPresentation)
+      }
+      
+      toast.success('Presentation saved to your account!')
     } catch (error) {
       console.error('Error saving presentation:', error)
-      toast.error('Failed to save presentation')
+      toast.error('Failed to save presentation to your account')
+      
+      // Fallback to localStorage
+      localStorage.setItem(`presentation_${presentation.id}`, JSON.stringify(presentation))
+      toast.success('Saved locally as backup')
     } finally {
       setIsSaving(false)
     }
@@ -401,12 +485,10 @@ export default function DeckBuilderPage() {
                   const slideIndex = presentation.slides.findIndex(s => s.id === selectedSlideId)
                   
                   return selectedSlide ? (
-                    <AdvancedEditableSlide
+                    <ProfessionalSlideEditor
                       slide={selectedSlide}
                       slideNumber={slideIndex + 1}
                       onUpdate={updateSlide}
-                      onDelete={deleteSlide}
-                      onDuplicate={duplicateSlide}
                     />
                   ) : null
                 })()}

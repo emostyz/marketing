@@ -164,7 +164,6 @@ export function WorldClassChart({
             category={filteredCategories[0]}
             index={index}
             colors={filteredColors}
-            height={chartHeight}
             showAnimation={true}
             showTooltip={true}
             showLabel={true}
@@ -459,7 +458,7 @@ export function WorldClassChart({
               Columns: {filteredCategories.length}
             </Text>
             <Text className="text-xs text-gray-400">
-              Type: {CHART_TYPE_CONFIGS[currentChartType]?.label}
+              Type: {CHART_TYPE_CONFIGS[currentChartType as keyof typeof CHART_TYPE_CONFIGS]?.label || currentChartType}
             </Text>
           </div>
           <Text className="text-xs text-gray-400">

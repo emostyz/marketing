@@ -18,5 +18,5 @@ export default function SimpleDashboard() {
     logo: null
   }
 
-  return <DashboardClient initialPresentations={presentations} userId={1} />
+  return <DashboardClient />
 }

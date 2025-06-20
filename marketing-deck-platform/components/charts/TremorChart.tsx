@@ -84,7 +84,6 @@ export function TremorChart({
             category={filteredCategories[0]}
             index={index}
             colors={filteredColors}
-            height={chartHeight}
             showAnimation={true}
             showTooltip={true}
             showLabel={true}
@@ -117,7 +116,7 @@ export function TremorChart({
         </div>
         {showCustomization && (
           <Button
-            size="xs"
+            size="sm"
             variant="secondary"
             onClick={() => setShowSettings(!showSettings)}
             className="ml-auto"

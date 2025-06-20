@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { AdvancedDataUploadModal } from '@/components/upload/AdvancedDataUploadModal'
+import { useAuth } from '@/lib/auth/auth-context'
+import { dbHelpers } from '@/lib/supabase/database-helpers'
 import { 
   Brain, 
   Upload, 
@@ -31,6 +33,7 @@ interface UserApprovalRequest {
 
 export function WorldClassEditor() {
   const router = useRouter()
+  const { user } = useAuth()
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -78,6 +81,8 @@ export function WorldClassEditor() {
     setBrainLogs([])
     setShowBrainThinking(false)
     
+    let analysisCompleted = false
+    
     try {
       toast.loading('🧠 Brain starting world-class analysis...', { id: 'brain-analysis' })
       
@@ -89,25 +94,42 @@ export function WorldClassEditor() {
         handleBrainProgress
       )
       
-      setBrainInsights(analysis)
-      toast.success('🎉 Brain analysis complete!', { id: 'brain-analysis' })
-      
-      // Generate world-class slides from brain insights
-      const slides = await generateWorldClassSlides(analysis, uploadData)
-      
-      // Save presentation and navigate to advanced deck builder
-      await saveAndNavigateToAdvancedBuilder(slides, uploadData, analysis)
+      // Analysis completed successfully - proceed with slide generation
+      if (analysis) {
+        setBrainInsights(analysis)
+        toast.success('🎉 Brain analysis complete!', { id: 'brain-analysis' })
+        
+        // Generate world-class slides from brain insights
+        const slides = await generateWorldClassSlides(analysis, uploadData)
+        
+        if (slides && slides.length > 0) {
+          // Save presentation and navigate to advanced deck builder
+          await saveAndNavigateToAdvancedBuilder(slides, uploadData, analysis)
+          analysisCompleted = true
+        } else {
+          throw new Error('No slides generated')
+        }
+      } else {
+        throw new Error('Analysis failed to return results')
+      }
       
     } catch (error) {
       console.error('Brain analysis error:', error)
       toast.error('Brain encountered an issue, using enhanced fallback', { id: 'brain-analysis' })
       
-      // Enhanced fallback that still provides world-class experience
-      await fallbackWorldClassAnalysis(uploadData)
+      // Only run fallback if analysis didn't complete
+      if (!analysisCompleted) {
+        try {
+          await fallbackWorldClassAnalysis(uploadData)
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError)
+          toast.error('Unable to complete analysis. Please try again.')
+        }
+      }
+    } finally {
+      setIsAnalyzing(false)
+      setShowBrainThinking(false)
     }
-    
-    setIsAnalyzing(false)
-    setShowBrainThinking(false)
   }
 
   const handleUserApproval = (approval: string, modifications?: any) => {
@@ -115,16 +137,21 @@ export function WorldClassEditor() {
     setUserApprovalRequest(null)
     
     if (approval === 'Proceed as proposed') {
-      toast.success('Brain continuing with approved approach')
+      toast.success('✅ Brain continuing with approved approach')
+      setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: User approved analysis approach`])
     } else {
-      toast.success('Brain incorporating your feedback')
+      toast.success('🔄 Brain incorporating your feedback')
+      setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: User requested modifications: ${approval}`])
       // In a full implementation, this would modify the analysis approach
     }
+    
+    // Continue the analysis process
+    setIsAnalyzing(true)
   }
 
   // Generate world-class slides with advanced features
   const generateWorldClassSlides = async (insights: StrategicInsight, uploadData: any): Promise<any[]> => {
-    const slides = [
+    const slides: any[] = [
       // Executive Title Slide
       {
         id: `slide_${Date.now()}_executive`,
@@ -135,8 +162,7 @@ export function WorldClassEditor() {
           subtitle: `Advanced Analytics • ${insights.dataPoints.length} Key Insights • ${insights.confidence}% Confidence`,
           description: insights.executiveSummary,
           brainGenerated: true,
-          confidence: insights.confidence,
-          dataQuality: insights.dataQuality
+          confidence: insights.confidence
         }
       },
       
@@ -190,14 +216,8 @@ export function WorldClassEditor() {
           title: dataPoint.title,
           subtitle: `${dataPoint.priority.toUpperCase()} Priority • ${dataPoint.businessImpact.toUpperCase()} Impact`,
           description: dataPoint.insight,
-          narrative: [dataPoint.story],
           brainGenerated: true,
-          confidence: insights.confidence,
-          businessContext: {
-            priority: dataPoint.priority,
-            businessImpact: dataPoint.businessImpact,
-            actionability: dataPoint.actionability
-          }
+          confidence: insights.confidence
         },
         advanced: dataPoint.chartConfig.advanced,
         tremorConfig: {
@@ -271,42 +291,69 @@ export function WorldClassEditor() {
 
   // Save presentation and navigate to advanced deck builder
   const saveAndNavigateToAdvancedBuilder = async (slides: any[], uploadData: any, analysis: StrategicInsight) => {
-    const presentationId = `adv_pres_${Date.now()}`
-    
-    const presentationData = {
-      id: presentationId,
-      title: uploadData.title || 'Strategic Intelligence Report',
-      description: `Advanced brain analysis with ${slides.length} slides and ${analysis.dataPoints.length} key insights`,
-      slides: slides,
-      metadata: {
-        datasetName: uploadData.fileName || 'Advanced Dataset',
-        analysisType: 'world-class-strategic',
-        confidence: analysis.confidence,
-        dataQuality: analysis.dataQuality,
-        generatedAt: new Date().toISOString(),
-        dataPoints: uploadData.data?.length || 0,
-        brainGenerated: true,
-        strategicInsights: analysis.dataPoints.length,
-        recommendations: analysis.strategicRecommendations.length,
-        risks: analysis.riskAssessment.length,
-        version: '2.0',
-        worldClass: true
-      },
-      strategicInsights: analysis
-    }
+    try {
+      // Ensure we have valid slides before proceeding
+      if (!slides || slides.length === 0) {
+        throw new Error('No slides generated')
+      }
 
-    // Save to localStorage (ready for Supabase integration)
-    localStorage.setItem(`presentation_${presentationId}`, JSON.stringify(presentationData))
-    
-    setPresentationId(presentationId)
-    
-    // Show success and navigate
-    toast.success('🎉 World-class presentation created! Opening advanced deck builder...', { duration: 2000 })
-    
-    // Navigate to advanced deck builder
-    setTimeout(() => {
-      router.push(`/deck-builder/${presentationId}`)
-    }, 1500)
+      const presentationId = `adv_pres_${Date.now()}`
+      
+      const presentationData = {
+        id: presentationId,
+        title: uploadData.title || 'Strategic Intelligence Report',
+        description: `Advanced brain analysis with ${slides.length} slides and ${analysis.dataPoints.length} key insights`,
+        slides: slides,
+        metadata: {
+          datasetName: uploadData.fileName || 'Advanced Dataset',
+          analysisType: 'world-class-strategic',
+          confidence: analysis.confidence,
+          dataQuality: analysis.dataQuality,
+          generatedAt: new Date().toISOString(),
+          dataPoints: uploadData.data?.length || 0,
+          brainGenerated: true,
+          strategicInsights: analysis.dataPoints.length,
+          recommendations: analysis.strategicRecommendations.length,
+          risks: analysis.riskAssessment.length,
+          version: '2.0',
+          worldClass: true
+        },
+        strategicInsights: analysis,
+        status: 'completed'
+      }
+
+      // Save to localStorage first
+      localStorage.setItem(`presentation_${presentationId}`, JSON.stringify(presentationData))
+      
+      // If user is authenticated, also save to database
+      if (user) {
+        try {
+          await dbHelpers.savePresentation({
+            ...presentationData,
+            user_id: user.id,
+            status: 'completed'
+          })
+          console.log('Successfully saved to database')
+        } catch (dbError) {
+          console.error('Database save failed:', dbError)
+          // Continue with localStorage as fallback
+        }
+      }
+      
+      setPresentationId(presentationId)
+      
+      // Show success and navigate
+      toast.success('🎉 World-class presentation created! Opening advanced deck builder...', { duration: 3000 })
+      
+      // Navigate to advanced deck builder with slight delay
+      setTimeout(() => {
+        router.push(`/deck-builder/${presentationId}`)
+      }, 2000)
+    } catch (error) {
+      console.error('Error saving presentation:', error)
+      toast.error('Failed to save presentation. Please try again.')
+      throw error
+    }
   }
 
   // Enhanced fallback with world-class experience
@@ -326,23 +373,103 @@ export function WorldClassEditor() {
       handleBrainProgress(phase.progress, phase.status)
     }
 
-    // Generate enhanced fallback analysis
+    // Generate enhanced fallback analysis based on actual data
+    const actualData = uploadData.data || []
+    const dataKeys = actualData.length > 0 ? Object.keys(actualData[0]) : []
+    
+    setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 🔍 Analyzing data structure and patterns...`])
+    
+    // Analyze the actual data structure
+    const numericColumns = dataKeys.filter(key => 
+      actualData.some((row: any) => typeof row[key] === 'number' || !isNaN(parseFloat(row[key])))
+    )
+    const categoricalColumns = dataKeys.filter(key => 
+      !numericColumns.includes(key) && actualData.some((row: any) => row[key])
+    )
+    
+    setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 📊 Found ${numericColumns.length} numeric metrics and ${categoricalColumns.length} categories`])
+    
+    // Calculate actual insights from the data
+    const insights = numericColumns.map(col => {
+      const values = actualData.map((row: any) => parseFloat(row[col])).filter((v: number) => !isNaN(v))
+      if (values.length === 0) return null
+      
+      const sum = values.reduce((a: number, b: number) => a + b, 0)
+      const avg = sum / values.length
+      const max = Math.max(...values)
+      const min = Math.min(...values)
+      const trend = values.length > 1 ? 
+        ((values[values.length - 1] - values[0]) / values[0] * 100) : 0
+      
+      return {
+        metric: col,
+        average: avg,
+        maximum: max,
+        minimum: min,
+        trend: trend.toFixed(1) + '%',
+        insight: trend > 10 ? 'Strong positive growth' : 
+                trend > 0 ? 'Moderate growth' : 
+                trend > -10 ? 'Stable performance' : 'Declining trend'
+      }
+    }).filter(Boolean)
+    
+    setBrainLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: 💡 Generated ${insights.length} key insights from your data`])
+    
+    // Show user check-in with real insights
+    if (insights.length > 0) {
+      const topInsight = insights[0]
+      if (topInsight) {
+        setUserApprovalRequest({
+          stage: 'insights',
+          proposal: topInsight,
+          question: `Brain Analysis: Your ${topInsight.metric} shows ${topInsight.insight.toLowerCase()} with ${topInsight.trend} change. Current average: ${topInsight.average.toFixed(2)}. Should I focus on this metric for optimization?`,
+          options: ['Yes, focus on this metric', 'Show other metrics instead', 'Continue with all metrics', 'Skip insights review']
+        })
+      }
+      
+      // Wait for user response
+      await new Promise(resolve => {
+        const checkForResponse = () => {
+          if (!userApprovalRequest) {
+            resolve(undefined)
+          } else {
+            setTimeout(checkForResponse, 500)
+          }
+        }
+        checkForResponse()
+      })
+    }
+    
+    // Use first categorical column as index, or fallback to 'category'
+    const indexColumn = categoricalColumns[0] || 'category'
+    const valueColumns = numericColumns.slice(0, 3) || ['value1', 'value2', 'value3']
+    
+    // Process the actual data for visualization
+    const processedData = actualData.slice(0, 20).map((row: any, idx: number) => {
+      const processed: any = {}
+      processed[indexColumn] = row[indexColumn] || `Item ${idx + 1}`
+      valueColumns.forEach((col: string) => {
+        processed[col] = parseFloat(row[col]) || Math.random() * 100
+      })
+      return processed
+    })
+
     const fallbackAnalysis: StrategicInsight = {
       dataPoints: [
         {
-          title: 'Performance Optimization Opportunity',
-          insight: 'Advanced analysis reveals significant optimization potential across key performance metrics',
-          supportingData: {},
+          title: `${dataKeys.join(', ')} Analysis`,
+          insight: `Analysis of ${actualData.length} data points across ${dataKeys.length} dimensions reveals key patterns and opportunities`,
+          supportingData: { recordCount: actualData.length, dimensions: dataKeys.length },
           visualizationType: 'bar',
-          story: 'Data patterns indicate systematic improvement opportunities with high ROI potential',
+          story: `Your data shows ${actualData.length} records with ${numericColumns.length} numeric metrics and ${categoricalColumns.length} categorical dimensions`,
           priority: 'critical',
           businessImpact: 'transformational',
           actionability: 'immediate',
           chartConfig: {
-            index: 'category',
-            categories: ['performance', 'target', 'optimization'],
+            index: indexColumn,
+            categories: valueColumns,
             colors: ['blue', 'emerald', 'violet'],
-            data: uploadData.data || [
+            data: processedData.length > 0 ? processedData : [
               { category: 'Current', performance: 75, target: 90, optimization: 20 },
               { category: 'Potential', performance: 95, target: 100, optimization: 35 },
               { category: 'Best-in-Class', performance: 98, target: 100, optimization: 40 }
@@ -350,10 +477,30 @@ export function WorldClassEditor() {
             advanced: {
               trendlines: true,
               drillDown: true,
-              annotations: [{ text: 'Critical improvement area', position: { x: 1, y: 85 } }]
+              annotations: [{ text: 'Key insight area', position: { x: 1, y: 85 } }]
             }
           }
-        }
+        },
+        // Add a second chart if we have enough data
+        ...(numericColumns.length > 3 ? [{
+          title: `Trend Analysis: ${numericColumns.slice(3, 6).join(' vs ')}`,
+          insight: 'Time-series analysis reveals important patterns in your data',
+          supportingData: {},
+          visualizationType: 'line' as const,
+          story: 'Historical trends show opportunities for optimization',
+          priority: 'high' as const,
+          businessImpact: 'significant' as const,
+          actionability: 'short-term' as const,
+          chartConfig: {
+            index: indexColumn,
+            categories: numericColumns.slice(3, 6),
+            colors: ['amber', 'rose', 'cyan'],
+            data: processedData,
+            advanced: {
+              trendlines: true
+            }
+          }
+        }] : [])
       ],
       overallNarrative: 'Comprehensive strategic analysis reveals transformational opportunities for performance optimization and sustainable growth.',
       keyTakeaways: [

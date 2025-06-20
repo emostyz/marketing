@@ -4,45 +4,88 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Plus, FileText, Calendar, TrendingUp, Play, Settings, User, LogOut, Brain } from 'lucide-react'
-import Link from 'next/link'
+import { UserHeader } from '@/components/ui/UserHeader'
+import { useAuth } from '@/lib/auth/auth-context'
+import { dbHelpers, PresentationData } from '@/lib/supabase/database-helpers'
+import { Plus, FileText, Calendar, TrendingUp, Play, Brain, Settings } from 'lucide-react'
 
-interface DashboardClientProps {
-  initialPresentations: any[]
-  userId: number
-}
-
-export function DashboardClient({ initialPresentations, userId }: DashboardClientProps) {
+export function DashboardClient() {
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [presentations, setPresentations] = useState(initialPresentations)
+  const [presentations, setPresentations] = useState<PresentationData[]>([])
   const [loading, setLoading] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/auth/login')
+      return
+    }
+    if (user) {
+      loadUserPresentations()
+    }
+  }, [user, authLoading, router])
+
+  const loadUserPresentations = async () => {
+    if (!user) return
+
+    setLoading(true)
+    try {
+      const { data, error } = await dbHelpers.loadUserPresentations(user.id)
+      if (data) {
+        setPresentations(data)
+      } else if (error) {
+        console.error('Error loading presentations:', error)
+        // Fallback to localStorage check for migration
+        loadFromLocalStorage()
+      }
+    } catch (error) {
+      console.error('Error loading presentations:', error)
+      loadFromLocalStorage()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadFromLocalStorage = () => {
+    const localPresentations: PresentationData[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith('presentation_')) {
+        const data = localStorage.getItem(key)
+        if (data) {
+          try {
+            const presentation = JSON.parse(data)
+            localPresentations.push(presentation)
+          } catch (error) {
+            console.error('Error parsing localStorage presentation:', error)
+          }
+        }
+      }
+    }
+    setPresentations(localPresentations)
+  }
 
   const stats = {
     total: presentations.length,
     thisMonth: presentations.filter(p => {
-      const createdDate = new Date(p.createdAt)
+      const createdDate = new Date(p.created_at || p.metadata.generatedAt)
       const now = new Date()
       return createdDate.getMonth() === now.getMonth() && 
              createdDate.getFullYear() === now.getFullYear()
     }).length,
     inProgress: presentations.filter(p => p.status === 'draft').length,
-    completed: presentations.filter(p => p.status === 'completed').length
+    completed: presentations.filter(p => p.status === 'completed' || p.status === 'published').length
   }
 
   const handleCreatePresentation = () => {
     router.push('/editor/new')
   }
 
-  const handlePresentationClick = (id: number) => {
-    router.push(`/editor/${id}`)
+  const handlePresentationClick = (id: string) => {
+    router.push(`/deck-builder/${id}`)
   }
 
-  const handleLogout = () => {
-    // Clear demo cookie
-    document.cookie = 'demo-user=; path=/; max-age=0'
-    router.push('/auth/login')
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
@@ -53,20 +96,7 @@ export function DashboardClient({ initialPresentations, userId }: DashboardClien
             <Brain className="w-8 h-8 text-blue-400" />
             <h1 className="text-2xl font-bold">AEDRIN</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm">
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </Button>
-            <Button variant="ghost" size="sm">
-              <User className="w-4 h-4 mr-2" />
-              Profile
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
+          <UserHeader />
         </div>
       </header>
 
@@ -184,7 +214,7 @@ export function DashboardClient({ initialPresentations, userId }: DashboardClien
                 <Card 
                   key={presentation.id} 
                   className="p-6 hover:border-blue-500/50 transition-all cursor-pointer group"
-                  onClick={() => handlePresentationClick(presentation.id)}
+                  onClick={() => presentation.id && handlePresentationClick(presentation.id)}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="text-3xl">📊</div>
@@ -202,7 +232,7 @@ export function DashboardClient({ initialPresentations, userId }: DashboardClien
                   </h4>
                   
                   <div className="text-sm text-gray-400 mb-4">
-                    <p>Updated {new Date(presentation.updatedAt).toLocaleDateString()}</p>
+                    <p>Updated {new Date(presentation.updated_at || presentation.metadata.generatedAt).toLocaleDateString()}</p>
                   </div>
 
                   <div className="flex gap-2">

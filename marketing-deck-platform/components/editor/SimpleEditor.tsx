@@ -75,7 +75,7 @@ export function SimpleEditor() {
 
   // Generate slides from real OpenAI brain insights
   const generateSlidesFromBrainInsights = async (insights: DeckInsight, uploadData: any): Promise<any[]> => {
-    const slides = [
+    const slides: any[] = [
       // Title slide
       {
         id: `slide_${Date.now()}_title`,
@@ -119,7 +119,6 @@ export function SimpleEditor() {
           title: dataPoint.title,
           subtitle: `Priority: ${dataPoint.priority.toUpperCase()}`,
           description: dataPoint.insight,
-          narrative: [dataPoint.story],
           brainGenerated: true,
           confidence: insights.confidence
         },

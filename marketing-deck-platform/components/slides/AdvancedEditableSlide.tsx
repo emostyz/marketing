@@ -340,11 +340,11 @@ export function AdvancedEditableSlide({
                 colors={slide.tremorConfig?.colors || ['blue', 'emerald', 'violet']}
                 height={slide.tremorConfig?.height || 80}
                 showCustomization={!isEditing}
-                businessImpact={slide.content?.businessContext?.businessImpact || 'significant'}
-                actionability={slide.content?.businessContext?.actionability || 'immediate'}
-                priority={slide.content?.businessContext?.priority || 'high'}
+                businessImpact={'significant'}
+                actionability={'immediate'}
+                priority={'high'}
                 confidence={slide.content?.confidence || 85}
-                advanced={slide.advanced || {}}
+                advanced={{}}
                 onDataChange={(newData) => {
                   setEditedSlide(prev => ({ ...prev, data: newData }))
                 }}

@@ -4,8 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 const BRAIN_API_KEY = process.env.OPENAI_API_KEY
 
 export async function POST(request: NextRequest) {
+  let phase = 'unknown'
   try {
-    const { data, userContext, userGoals, phase, prompt } = await request.json()
+    const requestData = await request.json()
+    const { data, userContext, userGoals, prompt } = requestData
+    phase = requestData.phase || phase
 
     if (!BRAIN_API_KEY) {
       return NextResponse.json({ 
@@ -158,7 +161,7 @@ Create visualization strategies that transform complex data into compelling, act
       error: 'Brain analysis encountered an issue',
       fallback: true,
       details: error instanceof Error ? error.message : 'Unknown error',
-      phase: request.body?.phase || 'unknown'
+      phase: phase
     }, { status: 200 })
   }
 }
