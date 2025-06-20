@@ -1,0 +1,85 @@
+import { Suspense } from 'react'
+import { redirect } from 'next/navigation'
+import { getUser } from '@/lib/db/queries'
+import { DashboardClient } from '@/components/dashboard/DashboardClient'
+import { db } from '@/lib/db/drizzle'
+import { deckDrafts, decks } from '@/lib/db/schema'
+import { eq, desc } from 'drizzle-orm'
+import Skeleton from '@/components/ui/Skeleton'
+
+export default async function DashboardPage() {
+  const user = await getUser()
+  
+  if (!user?.id) {
+    redirect('/auth/login')
+  }
+
+  try {
+    // Fetch user's presentations (both drafts and completed)
+    const [userDrafts, userDecks] = await Promise.all([
+      db
+        .select()
+        .from(deckDrafts)
+        .where(eq(deckDrafts.userId, user.id))
+        .orderBy(desc(deckDrafts.updatedAt))
+        .limit(10),
+      
+      db
+        .select()
+        .from(decks)
+        .where(eq(decks.userId, user.id))
+        .orderBy(desc(decks.updatedAt))
+        .limit(10)
+    ])
+
+    // Combine and format presentations
+    const allPresentations = [
+      ...userDrafts.map(draft => ({
+        ...draft,
+        status: draft.status || 'draft',
+        type: 'draft' as const
+      })),
+      ...userDecks.map(deck => ({
+        ...deck,
+        status: 'completed' as const,
+        type: 'deck' as const
+      }))
+    ].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+
+    return (
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardClient 
+          initialPresentations={allPresentations}
+          userId={user.id}
+        />
+      </Suspense>
+    )
+  } catch (error) {
+    console.error('Dashboard error:', error)
+    return <DashboardError />
+  }
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="container mx-auto p-6">
+      <Skeleton className="h-12 w-64 mb-8" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-48 w-full" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DashboardError() {
+  return (
+    <div className="container mx-auto p-6">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 className="text-red-800 font-semibold mb-2">Dashboard Error</h2>
+        <p className="text-red-600">Unable to load your dashboard. Please try again.</p>
+      </div>
+    </div>
+  )
+}

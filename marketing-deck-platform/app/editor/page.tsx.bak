@@ -1,0 +1,25 @@
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import PresentationEditor from '../../components/editor/PresentationEditor'
+
+export default async function EditorPage({ params }: { params: { id: string } }) {
+  const supabase = createServerComponentClient({ cookies })
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  if (!session) {
+    redirect('/auth/login')
+  }
+
+  const { data: presentation } = await supabase
+    .from('presentations')
+    .select('*, templates(*)')
+    .eq('id', params.id)
+    .single()
+
+  if (!presentation) {
+    redirect('/dashboard')
+  }
+
+  return <PresentationEditor presentation={presentation} />
+}

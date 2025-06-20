@@ -1,0 +1,189 @@
+"use client"
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Brain } from 'lucide-react'
+import { OAuthManager } from '@/lib/auth/oauth-config'
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        router.push('/dashboard')
+      } else {
+        setError(data.error || 'Login failed')
+        setLoading(false)
+      }
+    } catch (err) {
+      setError('Network error occurred')
+      setLoading(false)
+    }
+  }
+
+  const handleDemoLogin = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ demo: true })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        router.push('/dashboard')
+      } else {
+        setError('Failed to start demo')
+        setLoading(false)
+      }
+    } catch (error) {
+      setError('Failed to start demo')
+      setLoading(false)
+    }
+  }
+
+  const handleOAuthLogin = async (provider: 'google' | 'github' | 'microsoft') => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      await OAuthManager.signInWithProvider(provider)
+      // OAuth will redirect to callback page
+    } catch (error) {
+      console.error(`OAuth ${provider} error:`, error)
+      setError(`Failed to sign in with ${provider}`)
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      <div className="w-full max-w-md mx-auto rounded-2xl p-8 bg-gray-900/50 border border-gray-700 shadow-xl backdrop-blur-sm">
+        <div className="flex flex-col items-center mb-8">
+          <Brain className="w-12 h-12 text-blue-400 mb-4" />
+          <h2 className="text-3xl font-bold mb-2 text-white">Welcome to AEDRIN</h2>
+          <p className="text-gray-400 text-center">AI-powered marketing decks for visionary teams</p>
+        </div>
+        
+        {error && (
+          <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={handleLogin} className="space-y-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="demo@aedrin.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="password123"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Loading...' : 'Sign In (Demo)'}
+          </button>
+        </form>
+
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-600"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-gray-900/50 text-gray-400">or continue with</span>
+          </div>
+        </div>
+
+        {/* OAuth Buttons */}
+        <div className="space-y-3 mb-6">
+          <button
+            onClick={() => handleOAuthLogin('google')}
+            disabled={loading}
+            className="w-full bg-white hover:bg-gray-50 text-gray-900 rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            🔍 Continue with Google
+          </button>
+          <button
+            onClick={() => handleOAuthLogin('github')}
+            disabled={loading}
+            className="w-full bg-gray-800 hover:bg-gray-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            🐙 Continue with GitHub
+          </button>
+          <button
+            onClick={() => handleOAuthLogin('microsoft')}
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            🏢 Continue with Microsoft
+          </button>
+        </div>
+
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-600"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-gray-900/50 text-gray-400">or</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleDemoLogin}
+          disabled={loading}
+          className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+        >
+          🚀 Try Demo (No Account Required)
+        </button>
+
+        <div className="flex justify-between text-sm">
+          <Link href="/auth/signup" className="text-blue-400 hover:text-blue-300 transition-colors">
+            Create an account
+          </Link>
+          <Link href="#" className="text-gray-400 hover:text-gray-300 transition-colors">
+            Forgot password?
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
