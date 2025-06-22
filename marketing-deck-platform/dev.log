@@ -1,0 +1,114 @@
+
+> marketing-deck-platform@1.0.0 dev
+> next dev --turbopack
+
+ ⚠ Warning: Found multiple lockfiles. Selecting /Users/emilmostrom/pnpm-lock.yaml.
+   Consider removing the lockfiles at:
+   * /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/package-lock.json
+
+   ▲ Next.js 15.4.0-canary.88 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.207:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ ppr
+     ✓ nodeMiddleware
+     ✓ clientSegmentCache
+
+ ✓ Starting...
+ ✓ Compiled middleware in 88ms
+ ✓ Ready in 961ms
+ ○ Compiling /api/openai/enhanced-analyze ...
+ ✓ Compiled /api/openai/enhanced-analyze in 510ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2025-01-01',
+    end: '2025-01-31',
+    label: '2025-01-01 to 2025-01-31'
+  },
+  analysisType: 'm/m',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 5,
+  targetDuration: 10,
+  structure: 'ai_suggested',
+  keyPoints: [ 'trends' ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 DEBUG: Prompt length: 1428 characters
+🧠 DEBUG: Prompt preview (first 500 chars): You are an expert data analyst performing an initial scan of business data.
+
+CONTEXT:
+- Industry: Technology
+- Business Context: Test
+- Data Description: Test
+- Data Quality: undefined
+- Influencing Factors: test
+
+TIME FRAME:
+- Primary Period: 2025-01-01 to 2025-01-31
+- Analysis Type: m/m
+- Include Trends: true
+- Include Seasonality: false
+- Include Outliers: true
+
+DATA SAMPLE (truncated for token limits):
+[Limited sample due to OpenAI token constraints - Full analysis will be performed on compl
+🧠 DEBUG: Data sample from prompt: NOT using prepareDataForAnalysis
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+ POST /api/openai/enhanced-analyze 200 in 60009ms
+🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation

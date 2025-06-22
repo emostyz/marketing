@@ -127,6 +127,51 @@ export class EnhancedBrainV2 {
     this.openai = new OpenAI({ apiKey })
   }
 
+  // Simple method to get a safe, small data sample  
+  private getTruncatedDataSample(data: any): string {
+    try {
+      console.log('🧠 DEBUG: getTruncatedDataSample called with data type:', typeof data);
+      
+      // If it's an array, just take first 3 items
+      if (Array.isArray(data)) {
+        const sample = data.slice(0, 3);
+        const result = JSON.stringify(sample, null, 2);
+        console.log('🧠 DEBUG: Array sample length:', result.length);
+        return result;
+      }
+      
+      // If it's a ParsedDataset, take very small sample
+      if (this.isParsedDataset(data)) {
+        const sampleRows = data.rows.slice(0, 3);
+        const sampleData = {
+          summary: {
+            totalRows: data.rows.length,
+            totalColumns: data.columns.length,
+            dataTypes: data.columns.slice(0, 5).map(col => ({ name: col.name, type: col.type }))
+          },
+          sampleRows: sampleRows
+        };
+        const result = JSON.stringify(sampleData, null, 2);
+        console.log('🧠 DEBUG: ParsedDataset sample length:', result.length);
+        return result;
+      }
+      
+      // For any other object, stringify and aggressively truncate
+      const stringified = JSON.stringify(data, null, 2);
+      if (stringified.length > 5000) {
+        const truncated = stringified.substring(0, 5000) + '\n... (truncated)';
+        console.log('🧠 DEBUG: Object truncated to 5000 chars');
+        return truncated;
+      }
+      
+      console.log('🧠 DEBUG: Object sample length:', stringified.length);
+      return stringified;
+    } catch (error) {
+      console.log('🧠 DEBUG: Error in getTruncatedDataSample:', error);
+      return 'Error processing data sample';
+    }
+  }
+
   // Helper method to intelligently chunk data for OpenAI analysis
   private prepareDataForAnalysis(data: any, maxTokens: number = 25000): string {
     try {
@@ -375,8 +420,8 @@ TIME FRAME:
 - Include Seasonality: ${timeFrame.includeSeasonality}
 - Include Outliers: ${timeFrame.includeOutliers}
 
-DATA SAMPLE (first 10 rows):
-${JSON.stringify(Array.isArray(data) ? data.slice(0, 10) : data, null, 2)}
+DATA SAMPLE (truncated for token limits):
+[Limited sample due to OpenAI token constraints - Full analysis will be performed on complete dataset]
 
 TASK: Perform an initial comprehensive scan of this data and identify:
 1. Data structure and key variables
@@ -468,8 +513,8 @@ TIME FRAME ANALYSIS:
 ${statisticalAnalysis ? `ADVANCED STATISTICAL ANALYSIS:
 ${JSON.stringify(statisticalAnalysis, null, 2)}` : ''}
 
-DATA SAMPLE (first 10 rows):
-${JSON.stringify(Array.isArray(data) ? data.slice(0, 10) : data, null, 2)}
+DATA SAMPLE (truncated for token limits):
+[Limited sample due to OpenAI token constraints - Full analysis will be performed on complete dataset]
 
 TASK: Perform deep pattern analysis focusing on:
 1. Temporal patterns (seasonality, trends, cycles)

@@ -17,6 +17,7 @@ import { motion } from 'framer-motion'
 import { TemplateStep, Template } from './TemplateStep'
 import { EnhancedBrainV2 } from '@/lib/ai/enhanced-brain-v2'
 import { UploadedFile } from '@/lib/types/upload'
+import { WorldClassPresentationEditor } from '@/components/editor/WorldClassPresentationEditor'
 // import { Progress } from '@/components/ui/progress'
 
 // Helper function to convert file to base64
@@ -103,7 +104,7 @@ export function UltimateDeckBuilder({ className = '' }) {
     }
   })
 
-  const [analysisResult, setAnalysisResult] = useState(null)
+  const [analysisResult, setAnalysisResult] = useState<any>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -326,8 +327,10 @@ export function UltimateDeckBuilder({ className = '' }) {
           // We don't want to block the user if saving fails, so we don't set loading to false here.
         }
 
-        // Move to the next step
-        nextStep()
+        // Move to the template selection step
+        setIsAnalyzing(false);
+        setIsLoading(false);
+        nextStep();
       } else {
         throw new Error(result.error || 'Unknown error during analysis');
       }
@@ -338,7 +341,7 @@ export function UltimateDeckBuilder({ className = '' }) {
       setError(error.message || 'An unexpected error occurred. Please try again.');
       setIsAnalyzing(false);
       setIsLoading(false);
-      setCurrentStep(3); // Go back to upload step on error
+      setCurrentStep(4); // Go back to upload step on error
     }
   };
 
@@ -386,15 +389,51 @@ export function UltimateDeckBuilder({ className = '' }) {
           />
         )
       case 5:
-        return isAnalyzing ? (
+        return (
           <AIAnalysisStep status={analysisStatus} progress={analysisProgress} />
-        ) : (
+        )
+      case 6:
+        return (
           <TemplateStep
             onTemplateSelect={handleTemplateSelect}
             nextStep={nextStep}
             prevStep={prevStep}
           />
         )
+      case 7:
+        // If we have analysis results and a template, show the presentation editor
+        if (analysisResult && selectedTemplate) {
+          return (
+            <WorldClassPresentationEditor
+              initialData={{
+                slides: analysisResult.slideStructure || [],
+                template: selectedTemplate,
+                theme: {
+                  colors: selectedTemplate.colors,
+                  fonts: selectedTemplate.fonts
+                }
+              }}
+              onSave={async (data) => {
+                console.log('Saving presentation:', data)
+                toast.success('Presentation saved!')
+                router.push('/dashboard')
+              }}
+              onExport={async (format) => {
+                console.log('Exporting as:', format)
+                toast.success(`Exported as ${format}`)
+              }}
+            />
+          )
+        } else {
+          // Fallback if data is missing
+          return (
+            <Card className="p-8 text-center">
+              <h2 className="text-2xl font-bold text-white mb-2">Error</h2>
+              <p className="text-gray-400 mb-8">Missing analysis data or template selection.</p>
+              <Button onClick={() => setCurrentStep(1)}>Start Over</Button>
+            </Card>
+          )
+        }
       default:
         return (
             <Card className="p-8 text-center">
