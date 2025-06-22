@@ -16,24 +16,27 @@ interface FactorsStepProps {
 
 export const FactorsStep: React.FC<FactorsStepProps> = ({ dataContext, setDataContext, nextStep, prevStep }) => {
   const handleAddFactor = () => {
-    setDataContext((prev: any) => ({
-      ...prev,
-      factors: [...prev.factors, '']
-    }))
+    const currentFactors = dataContext.factors || ['']
+    setDataContext({
+      ...dataContext,
+      factors: [...currentFactors, '']
+    })
   }
 
   const handleRemoveFactor = (index: number) => {
-    setDataContext((prev: any) => ({
-      ...prev,
-      factors: prev.factors.filter((_: string, i: number) => i !== index)
-    }))
+    const currentFactors = dataContext.factors || ['']
+    setDataContext({
+      ...dataContext,
+      factors: currentFactors.filter((_: string, i: number) => i !== index)
+    })
   }
 
   const handleFactorChange = (index: number, value: string) => {
-    setDataContext((prev: any) => ({
-      ...prev,
-      factors: prev.factors.map((factor: string, i: number) => (i === index ? value : factor))
-    }))
+    const currentFactors = dataContext.factors || ['']
+    setDataContext({
+      ...dataContext,
+      factors: currentFactors.map((factor: string, i: number) => (i === index ? value : factor))
+    })
   }
 
   return (
@@ -49,7 +52,7 @@ export const FactorsStep: React.FC<FactorsStepProps> = ({ dataContext, setDataCo
         <p className="text-gray-400 mb-8">What external or internal factors might have influenced this data? (e.g., market conditions, seasonality, new product launch)</p>
 
         <div className="space-y-4">
-          {dataContext.factors.map((factor: string, index: number) => (
+          {(dataContext.factors || ['']).map((factor: string, index: number) => (
             <div key={index} className="flex items-center space-x-2">
               <Input
                 type="text"
@@ -57,7 +60,7 @@ export const FactorsStep: React.FC<FactorsStepProps> = ({ dataContext, setDataCo
                 value={factor}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFactorChange(index, e.target.value)}
               />
-              <Button variant="ghost" size="icon" onClick={() => handleRemoveFactor(index)} disabled={dataContext.factors.length <= 1}>
+              <Button variant="ghost" size="icon" onClick={() => handleRemoveFactor(index)} disabled={(dataContext.factors || ['']).length <= 1}>
                 <X className="w-4 h-4" />
               </Button>
             </div>

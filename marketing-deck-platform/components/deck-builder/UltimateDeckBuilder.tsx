@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast'
 import { ArrowRight, Brain, FileText, Palette, Settings, TrendingUp, Upload, AlertCircle } from 'lucide-react'
 import { DescribeDataStep } from './DataIntake'
 import { SimpleDataIntake } from './SimpleDataIntake'
+import { TimePeriodAnalysisStep } from './TimePeriodAnalysisStep'
 import { FactorsStep } from './FactorsStep'
 import { UploadStep } from './UploadStep'
 import { useAuth } from '@/lib/auth/auth-context'
@@ -84,14 +85,21 @@ export function UltimateDeckBuilder({ className = '' }) {
     timeFrame: {
       start: new Date().toISOString().split('T')[0],
       end: new Date().toISOString().split('T')[0],
-      dataFrequency: 'monthly'
+      dataFrequency: 'monthly',
+      comparisons: [], // Selected comparison types (q/q, m/m, y/y, w/w)
+      focusPeriods: [], // Specific periods to highlight
+      analysisType: 'trend', // trend, comparison, seasonal, cohort
+      granularity: 'monthly' // daily, weekly, monthly, quarterly, yearly
     },
     requirements: {
       slidesCount: 10,
       presentationDuration: 15,
       tone: 'professional',
       style: 'modern',
-      focusAreas: []
+      focusAreas: [],
+      includeComparisons: true,
+      comparisonTypes: [], // Will be populated from timeFrame.comparisons
+      chartPreferences: []
     }
   })
 
@@ -106,11 +114,12 @@ export function UltimateDeckBuilder({ className = '' }) {
 
   const steps = [
     { id: 1, title: 'Data Context', icon: <FileText /> },
-    { id: 2, title: 'Influencing Factors', icon: <TrendingUp /> },
-    { id: 3, title: 'Upload Data', icon: <Upload /> },
-    { id: 4, title: 'AI Analysis', icon: <Brain /> },
-    { id: 5, title: 'Template', icon: <Palette /> },
-    { id: 6, title: 'Customize', icon: <Settings /> },
+    { id: 2, title: 'Time Period Analysis', icon: <TrendingUp /> },
+    { id: 3, title: 'Influencing Factors', icon: <TrendingUp /> },
+    { id: 4, title: 'Upload Data', icon: <Upload /> },
+    { id: 5, title: 'AI Analysis', icon: <Brain /> },
+    { id: 6, title: 'Template', icon: <Palette /> },
+    { id: 7, title: 'Customize', icon: <Settings /> },
   ]
 
   const nextStep = () => setCurrentStep(prev => prev + 1)
@@ -137,6 +146,18 @@ export function UltimateDeckBuilder({ className = '' }) {
     }
   }
 
+  const handleTimeFrameUpdate = (newTimeFrame: any) => {
+    setIntakeData(prev => ({ 
+      ...prev, 
+      timeFrame: { ...prev.timeFrame, ...newTimeFrame },
+      requirements: {
+        ...prev.requirements,
+        comparisonTypes: newTimeFrame.comparisons || [],
+        includeComparisons: (newTimeFrame.comparisons || []).length > 0
+      }
+    }))
+  }
+
   const handleFilesUpdate = (newFiles: any) => {
     setIntakeData(prev => ({ ...prev, files: newFiles }))
   }
@@ -150,7 +171,7 @@ export function UltimateDeckBuilder({ className = '' }) {
     setAnalysisProgress(10)
     
     // Move to the analysis step visually
-    setCurrentStep(4) 
+    setCurrentStep(5) 
 
     // Simulate progress updates for a better UX
     const progressUpdates = [
@@ -217,21 +238,27 @@ export function UltimateDeckBuilder({ className = '' }) {
           industry: intakeData.context.industry || 'Technology',
           targetAudience: intakeData.context.targetAudience || 'Executives',
           businessContext: intakeData.context.businessContext || 'Business presentation',
-          description: intakeData.context.description || 'Data analysis presentation'
+          description: intakeData.context.description || 'Data analysis presentation',
+          factors: intakeData.context.factors || []
         },
         timeFrame: {
-          start: '2024-01',
-          end: '2024-12',
-          dataFrequency: 'monthly',
-          analysisType: 'trend'
+          start: intakeData.timeFrame.start,
+          end: intakeData.timeFrame.end,
+          dataFrequency: intakeData.timeFrame.granularity || 'monthly',
+          analysisType: intakeData.timeFrame.analysisType || 'trend',
+          comparisons: intakeData.timeFrame.comparisons || [],
+          granularity: intakeData.timeFrame.granularity || 'monthly',
+          focusPeriods: intakeData.timeFrame.focusPeriods || []
         },
         requirements: {
-          slidesCount: 12,
-          presentationDuration: 15,
-          focusAreas: ['Key Insights', 'Trends', 'Recommendations'],
-          style: 'modern',
+          slidesCount: intakeData.requirements.slidesCount || 12,
+          presentationDuration: intakeData.requirements.presentationDuration || 15,
+          focusAreas: ['Key Insights', 'Trends', 'Recommendations', 'Time Comparisons'],
+          style: intakeData.requirements.style || 'modern',
           includeCharts: true,
-          includeExecutiveSummary: true
+          includeExecutiveSummary: true,
+          includeComparisons: intakeData.requirements.includeComparisons || false,
+          comparisonTypes: intakeData.requirements.comparisonTypes || []
         }
       }
 
@@ -333,6 +360,15 @@ export function UltimateDeckBuilder({ className = '' }) {
         )
       case 2:
         return (
+          <TimePeriodAnalysisStep
+            timeFrameData={intakeData.timeFrame}
+            setTimeFrameData={handleTimeFrameUpdate}
+            nextStep={nextStep}
+            prevStep={prevStep}
+          />
+        )
+      case 3:
+        return (
           <FactorsStep
             dataContext={intakeData.context}
             setDataContext={handleDataContextUpdate}
@@ -340,7 +376,7 @@ export function UltimateDeckBuilder({ className = '' }) {
             prevStep={prevStep}
           />
         )
-      case 3:
+      case 4:
         return (
           <UploadStep
             files={intakeData.files}
@@ -349,7 +385,7 @@ export function UltimateDeckBuilder({ className = '' }) {
             prevStep={prevStep}
           />
         )
-      case 4:
+      case 5:
         return isAnalyzing ? (
           <AIAnalysisStep status={analysisStatus} progress={analysisProgress} />
         ) : (

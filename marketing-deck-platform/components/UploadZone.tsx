@@ -15,6 +15,12 @@ export default function UploadZone({ onDataParsed }: UploadZoneProps) {
 
   const parseCSV = (file: File): Promise<any[]> => {
     return new Promise((resolve, reject) => {
+      // Ensure we're in browser environment  
+      if (typeof window === 'undefined') {
+        reject(new Error('File upload is only available in browser environment'));
+        return;
+      }
+      
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
@@ -32,6 +38,12 @@ export default function UploadZone({ onDataParsed }: UploadZoneProps) {
 
   const parseExcel = (file: File): Promise<any[]> => {
     return new Promise((resolve, reject) => {
+      // Ensure we're in browser environment
+      if (typeof window === 'undefined') {
+        reject(new Error('File upload is only available in browser environment'));
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         try {

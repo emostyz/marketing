@@ -1,0 +1,624 @@
+
+> marketing-deck-platform@1.0.0 dev
+> next dev --turbopack
+
+ ⚠ Warning: Found multiple lockfiles. Selecting /Users/emilmostrom/pnpm-lock.yaml.
+   Consider removing the lockfiles at:
+   * /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/package-lock.json
+
+   ▲ Next.js 15.4.0-canary.88 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.207:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ ppr
+     ✓ nodeMiddleware
+     ✓ clientSegmentCache
+
+ ✓ Starting...
+ ✓ Compiled middleware in 80ms
+ ✓ Ready in 922ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1123ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET / 200 in 1318ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 656ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /dashboard 200 in 700ms
+ ✓ Compiled /api/presentations in 252ms
+Error: Route "/api/presentations" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/presentations" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/presentations" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at <unknown> (../../src/GoTrueClient.ts:1162:18)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+Error: Route "/api/presentations" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at <unknown> (../../src/GoTrueClient.ts:1162:18)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+ GET /api/presentations 200 in 392ms
+Error: Route "/api/presentations" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/presentations" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/presentations" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at <unknown> (../../src/GoTrueClient.ts:1162:18)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+Error: Route "/api/presentations" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at <unknown> (../../src/GoTrueClient.ts:1162:18)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+ GET /api/presentations 200 in 69ms
+ ○ Compiling /deck-builder/new ...
+ ✓ Compiled /deck-builder/new in 515ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /deck-builder/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /deck-builder/new 200 in 551ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET / 200 in 57ms
+ ✓ Compiled /api/user/profile in 248ms
+ POST /api/user/profile 200 in 311ms
+ POST /api/user/profile 200 in 180ms
+ POST /api/user/profile 200 in 218ms
+ POST /api/user/profile 200 in 31ms
+ POST /api/user/profile 200 in 31ms
+ POST /api/user/profile 200 in 26ms
+ POST /api/user/profile 200 in 28ms
+ POST /api/user/profile 200 in 31ms
+ POST /api/user/profile 200 in 24ms
+ POST /api/user/profile 200 in 33ms
+ POST /api/user/profile 200 in 50ms
+ POST /api/user/profile 200 in 43ms
+ POST /api/user/profile 200 in 38ms
+ POST /api/user/profile 200 in 29ms
+ POST /api/user/profile 200 in 30ms
+ POST /api/user/profile 200 in 31ms
+ POST /api/user/profile 200 in 25ms
+ POST /api/user/profile 200 in 27ms
+ ✓ Compiled /api/presentations/session in 190ms
+Error: Route "/api/presentations/session" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/presentations/session" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/presentations/session" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at <unknown> (../../src/GoTrueClient.ts:1162:18)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+Error: Route "/api/presentations/session" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at <unknown> (../../src/GoTrueClient.ts:1162:18)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+Saved data_intake data to localStorage for user demo@aedrin.com: {
+  description: 'fds',
+  industry: 'fds',
+  targetAudience: 'fdsfds',
+  businessContext: 'fdsfds',
+  keyMetrics: '',
+  factors: [ '' ],
+  dataQuality: 'good',
+  dataSource: '',
+  collectionMethod: '',
+  lastUpdated: '2025-06-22',
+  confidence: 80
+}
+ POST /api/presentations/session 200 in 574ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 592ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.6dtf0tvtmya'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.6dtf0tvtmya'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.m3n06unq04'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.m3n06unq04'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.l7azz489ml'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.l7azz489ml'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.qqfxkl16dor'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.qqfxkl16dor'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.1zrlxmprjuq'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.1zrlxmprjuq'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.75xb69379y9'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.75xb69379y9'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ry2xtntzrh'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ry2xtntzrh'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.z3xlqkrskh'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.z3xlqkrskh'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.zvbzvzt7qk'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.zvbzvzt7qk'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ummsb8axep'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ummsb8axep'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.038xixec6cex'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.038xixec6cex'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.iw283n0uzw'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.iw283n0uzw'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.5kdybj80uji'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.5kdybj80uji'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.izv4wwhac4'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.izv4wwhac4'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.du5sks0oh75'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.du5sks0oh75'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.f1svuvxohmb'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.f1svuvxohmb'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.c1o26crgemq'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.c1o26crgemq'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.uska0qkmb3b'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.uska0qkmb3b'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.pth0a7cr3t'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.pth0a7cr3t'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.pmu324dqi6'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.pmu324dqi6'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.sws35icq5f'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.sws35icq5f'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.h8x568fe0w7'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.h8x568fe0w7'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.oedzqsbesyf'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.oedzqsbesyf'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.kehha4nzuik'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.kehha4nzuik'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.cv3528um8pw'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.cv3528um8pw'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.xftxy48587'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.xftxy48587'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ujpkso3mvlg'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ujpkso3mvlg'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.pxyhl6m4bqs'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.pxyhl6m4bqs'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.gmcmjlf1nb'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.gmcmjlf1nb'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.mpl1058d1zq'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.mpl1058d1zq'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.cmbecc1of4q'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.cmbecc1of4q'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ugi4px91fb9'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ugi4px91fb9'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.e1352o1twgi'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.e1352o1twgi'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.hwou0x8rmte'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.hwou0x8rmte'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.0zrhb6172wsg'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.0zrhb6172wsg'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.cch49d6bg5l'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.cch49d6bg5l'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.4bcyatm5d6r'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.4bcyatm5d6r'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/app/api/user/profile/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.dt3ybfyxgbj'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.dt3ybfyxgbj'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.5sjsz9nsiop'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.5sjsz9nsiop'
+}
+ ✓ Compiled /api/upload in 255ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ywr6l5bnyok'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ywr6l5bnyok'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.t7rmmf6e7u9'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.t7rmmf6e7u9'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ywr6l5bnyok'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.ywr6l5bnyok'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.e4vjbajiamq'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.e4vjbajiamq'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.jegb2wnx8tp'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.jegb2wnx8tp'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.vv1gf99ttz'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.vv1gf99ttz'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.bvrtfshrais'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.bvrtfshrais'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.vv1gf99ttz'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.vv1gf99ttz'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.8cd5yq52am3'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.8cd5yq52am3'
+}
+[Error: ENOENT: no such file or directory, open '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.2c6wplugna9'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/static/development/_buildManifest.js.tmp.2c6wplugna9'
+}

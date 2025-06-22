@@ -196,3 +196,17 @@ export const Text: React.FC<TextProps> = ({ children, className }) => {
     </p>
   )
 }
+
+// Title component
+interface TitleProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export const Title: React.FC<TitleProps> = ({ children, className }) => {
+  return (
+    <h3 className={cn("text-lg font-semibold text-gray-900", className)}>
+      {children}
+    </h3>
+  )
+}
