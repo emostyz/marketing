@@ -127,41 +127,83 @@ export class EnhancedBrainV2 {
     this.openai = new OpenAI({ apiKey })
   }
 
-  // Helper method to safely sample data for OpenAI analysis
-  private getDataSample(data: any, maxRows: number = 20): string {
+  // Helper method to intelligently chunk data for OpenAI analysis
+  private prepareDataForAnalysis(data: any, maxTokens: number = 25000): string {
     try {
       if (!data) return 'No data provided'
       
-      // If it's a ParsedDataset, sample from rows
+      // If it's a ParsedDataset, create intelligent summary
       if (this.isParsedDataset(data)) {
-        const sampleRows = data.rows.slice(0, maxRows)
+        const totalRows = data.rows.length
+        const sampleSize = Math.min(totalRows, 50) // Sample up to 50 rows for analysis
+        
+        // Take a representative sample: first 25, middle 15, last 10
+        const firstPart = data.rows.slice(0, 25)
+        const middleStart = Math.floor(totalRows / 2) - 7
+        const middlePart = totalRows > 50 ? data.rows.slice(middleStart, middleStart + 15) : []
+        const lastPart = totalRows > 40 ? data.rows.slice(-10) : []
+        
+        const representativeSample = [...firstPart, ...middlePart, ...lastPart]
+        
         return JSON.stringify({
-          totalRows: data.rows.length,
-          columns: data.columns.map(col => ({
+          datasetInfo: {
+            totalRows: totalRows,
+            totalColumns: data.columns.length,
+            samplingStrategy: `Representative sample of ${representativeSample.length} rows from ${totalRows} total records`,
+            dataQuality: data.insights.dataQuality,
+            completeness: data.insights.completeness
+          },
+          columnAnalysis: data.columns.map(col => ({
             name: col.name,
             type: col.type,
+            uniqueCount: col.uniqueCount,
+            nullCount: col.nullCount,
             samples: col.samples.slice(0, 3)
           })),
-          sampleData: sampleRows,
-          summary: data.summary,
-          insights: data.insights
+          statisticalSummary: data.summary,
+          insights: data.insights,
+          representativeData: representativeSample,
+          dataPatterns: {
+            numericColumns: data.summary.numericColumns,
+            dateColumns: data.summary.dateColumns,
+            categoryColumns: data.summary.categoryColumns,
+            keyColumns: data.summary.keyColumns
+          }
         }, null, 2)
       }
       
-      // If it's an array, sample it
+      // If it's an array, take representative sample
       if (Array.isArray(data)) {
-        const sample = data.slice(0, maxRows)
+        const totalRecords = data.length
+        const sampleSize = Math.min(totalRecords, 50)
+        
+        let sample: any[]
+        if (totalRecords <= 50) {
+          sample = data
+        } else {
+          // Representative sampling: first 25, middle 15, last 10
+          const firstPart = data.slice(0, 25)
+          const middleStart = Math.floor(totalRecords / 2) - 7
+          const middlePart = data.slice(middleStart, middleStart + 15)
+          const lastPart = data.slice(-10)
+          sample = [...firstPart, ...middlePart, ...lastPart]
+        }
+        
         return JSON.stringify({
-          totalRecords: data.length,
-          sampleData: sample,
-          columns: data.length > 0 ? Object.keys(data[0]) : []
+          datasetInfo: {
+            totalRecords: totalRecords,
+            sampleSize: sample.length,
+            samplingStrategy: totalRecords > 50 ? "Representative sample from beginning, middle, and end" : "Complete dataset",
+            columns: data.length > 0 ? Object.keys(data[0]) : []
+          },
+          representativeData: sample
         }, null, 2)
       }
       
-      // For other data types, try to limit size
+      // For other data types, try to limit size intelligently
       const stringified = JSON.stringify(data, null, 2)
-      if (stringified.length > 10000) {
-        return JSON.stringify(data, null, 2).substring(0, 10000) + '\n... (truncated for size)'
+      if (stringified.length > maxTokens * 3) { // Rough estimate: 1 token ≈ 3 characters
+        return stringified.substring(0, maxTokens * 3) + '\n... (truncated for token limits)'
       }
       
       return stringified
@@ -334,7 +376,7 @@ TIME FRAME:
 - Include Outliers: ${timeFrame.includeOutliers}
 
 DATA:
-${JSON.stringify(data, null, 2)}
+${this.prepareDataForAnalysis(data)}
 
 TASK: Perform an initial comprehensive scan of this data and identify:
 1. Data structure and key variables
@@ -427,7 +469,7 @@ ${statisticalAnalysis ? `ADVANCED STATISTICAL ANALYSIS:
 ${JSON.stringify(statisticalAnalysis, null, 2)}` : ''}
 
 DATA:
-${JSON.stringify(data, null, 2)}
+${this.prepareDataForAnalysis(data)}
 
 TASK: Perform deep pattern analysis focusing on:
 1. Temporal patterns (seasonality, trends, cycles)
