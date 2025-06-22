@@ -99,7 +99,7 @@ export default function EnhancedDeckBuilder({
       updateProgress(5, '🧠 Brain initializing deep data analysis...')
       
       const brainInsights = await deckBrain.analyzeDataForInsights(
-        initialData || [],
+        (initialData && Array.isArray(initialData.data)) ? initialData.data : [],
         userRequirements,
         userGoals,
         updateProgress
@@ -155,7 +155,7 @@ export default function EnhancedDeckBuilder({
           createdAt: new Date(),
           userRequirements,
           userGoals,
-          dataPoints: Array.isArray(initialData) ? initialData.length : 0,
+          dataPoints: (initialData && Array.isArray(initialData.data)) ? initialData.data.length : 0,
           confidence: insights.confidence,
           title: `AI-Generated Presentation - ${new Date().toLocaleDateString()}`
         }
@@ -193,7 +193,7 @@ export default function EnhancedDeckBuilder({
       title: 'Data-Driven Insights',
       content: {
         title: 'Strategic Analysis Results',
-        subtitle: `Generated from ${Array.isArray(initialData) ? initialData.length : 0} data points`,
+        subtitle: `Generated from ${(initialData && Array.isArray(initialData.data)) ? initialData.data.length : 0} data points`,
         description: insights.executiveSummary,
         context: userRequirements.length > 0 ? userRequirements.join(', ').slice(0, 100) + '...' : 'Strategic analysis',
         bulletPoints: [],
@@ -224,7 +224,7 @@ export default function EnhancedDeckBuilder({
       // Ensure we have real data for the chart
       const chartData = dataPoint.chartConfig.data && dataPoint.chartConfig.data.length > 0 
         ? dataPoint.chartConfig.data 
-        : Array.isArray(initialData) ? initialData.slice(0, 20) : [] // Use original data if chart data is empty
+        : (initialData && Array.isArray(initialData.data)) ? initialData.data.slice(0, 20) : [] // Use original data if chart data is empty
       
       const slide = {
         id: `chart-slide-${index}`,
@@ -307,7 +307,7 @@ export default function EnhancedDeckBuilder({
     updateProgress(20, '🔄 Using enhanced fallback analysis...')
     
     // Ensure we have some data to work with
-    const sampleData = Array.isArray(initialData) && initialData.length > 0 ? initialData : [
+    const sampleData = (initialData && Array.isArray(initialData.data) && initialData.data.length > 0) ? initialData.data : [
       { Month: 'Jan', Revenue: 45000, Leads: 1200, Conversion: 12 },
       { Month: 'Feb', Revenue: 52000, Leads: 1350, Conversion: 15 },
       { Month: 'Mar', Revenue: 48000, Leads: 1180, Conversion: 14 },
