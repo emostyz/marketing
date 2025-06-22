@@ -70,7 +70,7 @@ export class FileParser {
             }
             resolve(results.data)
           },
-          error: (error) => {
+          error: (error: any) => {
             reject(new Error(`CSV parsing failed: ${error.message}`))
           }
         })
