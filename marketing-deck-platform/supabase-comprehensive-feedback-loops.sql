@@ -215,7 +215,69 @@ CREATE INDEX idx_collaboration_sessions_session_id ON collaboration_sessions(ses
 CREATE INDEX idx_collaboration_sessions_last_activity_at ON collaboration_sessions(last_activity_at);
 
 -- ================================================
--- 8. UPDATE EXISTING TABLES FOR BACKWARD COMPATIBILITY
+-- 8. TIME PERIOD ANALYSIS TRACKING
+-- ================================================
+CREATE TABLE time_period_analysis (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  presentation_id UUID REFERENCES presentations(id),
+  session_id TEXT NOT NULL,
+  analysis_type TEXT NOT NULL CHECK (analysis_type IN ('trend', 'comparison', 'seasonal', 'cohort')),
+  time_range_start DATE NOT NULL,
+  time_range_end DATE NOT NULL,
+  granularity TEXT NOT NULL CHECK (granularity IN ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')),
+  comparison_types TEXT[] DEFAULT '{}', -- ['qq', 'mm', 'yy', 'ww']
+  focus_periods JSONB DEFAULT '[]'::jsonb,
+  data_points_analyzed INTEGER,
+  insights_generated JSONB DEFAULT '[]'::jsonb,
+  comparison_results JSONB DEFAULT '{}'::jsonb,
+  trend_analysis JSONB DEFAULT '{}'::jsonb,
+  seasonal_patterns JSONB DEFAULT '{}'::jsonb,
+  ai_confidence NUMERIC(3,2) DEFAULT 0,
+  processing_time_ms INTEGER,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add indexes for time period analysis
+CREATE INDEX idx_time_period_analysis_presentation_id ON time_period_analysis(presentation_id);
+CREATE INDEX idx_time_period_analysis_session_id ON time_period_analysis(session_id);
+CREATE INDEX idx_time_period_analysis_type ON time_period_analysis(analysis_type);
+CREATE INDEX idx_time_period_analysis_time_range ON time_period_analysis(time_range_start, time_range_end);
+CREATE INDEX idx_time_period_analysis_granularity ON time_period_analysis(granularity);
+
+-- Enable RLS for time period analysis
+ALTER TABLE time_period_analysis ENABLE ROW LEVEL SECURITY;
+
+-- RLS policies for time period analysis
+CREATE POLICY "Users can view time analysis for own presentations" ON time_period_analysis
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM presentations 
+      WHERE presentations.id = time_period_analysis.presentation_id 
+      AND presentations.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can create time analysis for own presentations" ON time_period_analysis
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM presentations 
+      WHERE presentations.id = time_period_analysis.presentation_id 
+      AND presentations.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can update own time analysis" ON time_period_analysis
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM presentations 
+      WHERE presentations.id = time_period_analysis.presentation_id 
+      AND presentations.user_id = auth.uid()
+    )
+  );
+
+-- ================================================
+-- 9. UPDATE EXISTING TABLES FOR BACKWARD COMPATIBILITY
 -- ================================================
 
 -- Update profiles table with missing fields
@@ -224,7 +286,12 @@ ADD COLUMN IF NOT EXISTS industry TEXT,
 ADD COLUMN IF NOT EXISTS target_audience TEXT,
 ADD COLUMN IF NOT EXISTS business_context TEXT,
 ADD COLUMN IF NOT EXISTS key_metrics JSONB,
-ADD COLUMN IF NOT EXISTS data_preferences JSONB;
+ADD COLUMN IF NOT EXISTS data_preferences JSONB,
+ADD COLUMN IF NOT EXISTS time_analysis_preferences JSONB DEFAULT '{
+  "preferred_comparisons": ["mm", "qq"],
+  "default_granularity": "monthly",
+  "favorite_analysis_types": ["trend"]
+}'::jsonb;
 
 -- Create presentation_sessions table if it doesn't exist (for compatibility)
 CREATE TABLE IF NOT EXISTS presentation_sessions (
