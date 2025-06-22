@@ -256,6 +256,110 @@ testResult(
   editorPage.includes('ResponsiveContainer') && editorPage.includes('Tooltip')
 );
 
+// Test script to verify the complete flow
+const testData = [
+  { month: 'Jan', sales: 100, profit: 20, region: 'North' },
+  { month: 'Feb', sales: 150, profit: 30, region: 'North' },
+  { month: 'Mar', sales: 200, profit: 40, region: 'North' },
+  { month: 'Apr', sales: 180, profit: 35, region: 'South' },
+  { month: 'May', sales: 220, profit: 45, region: 'South' },
+  { month: 'Jun', sales: 250, profit: 50, region: 'South' }
+]
+
+console.log('🧪 Testing complete flow...')
+
+// Test 1: OpenAI API
+async function testOpenAI() {
+  console.log('📡 Testing OpenAI API...')
+  try {
+    const response = await fetch('http://localhost:3000/api/openai/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: testData,
+        userContext: 'Sales analysis for Q1-Q2',
+        phase: 'data_analysis'
+      })
+    })
+    
+    const result = await response.json()
+    console.log('✅ OpenAI API test:', result.success ? 'PASSED' : 'FAILED')
+    console.log('📊 Tokens used:', result.tokensUsed)
+    return result.success
+  } catch (error) {
+    console.error('❌ OpenAI API test failed:', error)
+    return false
+  }
+}
+
+// Test 2: Environment variables
+async function testEnvironment() {
+  console.log('🔧 Testing environment...')
+  try {
+    const response = await fetch('http://localhost:3000/api/test-env')
+    const result = await response.json()
+    console.log('✅ Environment test:', result.openaiKeyExists ? 'PASSED' : 'FAILED')
+    return result.openaiKeyExists
+  } catch (error) {
+    console.error('❌ Environment test failed:', error)
+    return false
+  }
+}
+
+// Test 3: Database connection
+async function testDatabase() {
+  console.log('🗄️ Testing database...')
+  try {
+    const response = await fetch('http://localhost:3000/api/presentations')
+    const result = await response.json()
+    console.log('✅ Database test:', result.success ? 'PASSED' : 'FAILED')
+    return result.success
+  } catch (error) {
+    console.error('❌ Database test failed:', error)
+    return false
+  }
+}
+
+// Run all tests
+async function runTests() {
+  console.log('🚀 Starting comprehensive flow test...\n')
+  
+  const tests = [
+    { name: 'Environment', fn: testEnvironment },
+    { name: 'OpenAI API', fn: testOpenAI },
+    { name: 'Database', fn: testDatabase }
+  ]
+  
+  const results = []
+  
+  for (const test of tests) {
+    const result = await test.fn()
+    results.push({ name: test.name, passed: result })
+  }
+  
+  console.log('\n📋 Test Results:')
+  results.forEach(result => {
+    console.log(`${result.passed ? '✅' : '❌'} ${result.name}: ${result.passed ? 'PASSED' : 'FAILED'}`)
+  })
+  
+  const allPassed = results.every(r => r.passed)
+  console.log(`\n🎯 Overall: ${allPassed ? 'ALL TESTS PASSED' : 'SOME TESTS FAILED'}`)
+  
+  if (allPassed) {
+    console.log('\n🎉 The system is ready for deck building!')
+    console.log('💡 Next steps:')
+    console.log('   1. Go to http://localhost:3000/editor/new')
+    console.log('   2. Upload your data')
+    console.log('   3. Use the AI Generate feature')
+    console.log('   4. Complete the deck building process')
+  } else {
+    console.log('\n⚠️ Some issues need to be resolved before testing the complete flow.')
+  }
+}
+
+// Run the tests
+runTests().catch(console.error)
+
 // Final Results
 console.log('\n' + '='.repeat(50));
 console.log('📊 TEST RESULTS SUMMARY');

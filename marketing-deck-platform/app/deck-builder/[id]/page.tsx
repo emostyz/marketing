@@ -83,14 +83,19 @@ export default function DeckBuilderPage() {
     setIsLoading(true)
     
     try {
-      // Use enhanced presentation manager for robust loading
-      const presentation = await PresentationManager.loadPresentation(
-        params.id as string, 
-        user?.id
-      )
+      // First try to load from database
+      let presentation = null
+      
+      if (user?.id) {
+        console.log('🔍 Attempting to load from database...')
+        presentation = await PresentationManager.loadPresentation(
+          params.id as string, 
+          String(user.id)
+        )
+      }
       
       if (presentation) {
-        console.log(`✅ Presentation loaded: ${presentation.title} with ${presentation.slides.length} slides`)
+        console.log(`✅ Presentation loaded from database: ${presentation.title} with ${presentation.slides.length} slides`)
         setPresentation(presentation)
         
         if (presentation.slides.length > 0) {
@@ -101,62 +106,90 @@ export default function DeckBuilderPage() {
         // Show success message
         toast.success(`Loaded: ${presentation.title}`, { duration: 2000 })
       } else {
-        console.log('❌ Presentation not found, creating default')
+        console.log('❌ Presentation not found in database, checking localStorage...')
         
-        // Create a new presentation with sample content
-        const defaultPresentation: PresentationData = {
-          id: params.id as string,
-          title: 'New AI Presentation',
-          description: 'Start building your presentation',
-          slides: [
-            {
-              id: 'slide_1',
-              type: 'title',
-              title: 'Welcome to Your Presentation',
-              content: {
-                title: 'Welcome to Your Presentation',
-                subtitle: 'Upload data to get started with AI analysis'
-              }
+        // Check localStorage as fallback
+        const localData = localStorage.getItem(`presentation_${params.id}`)
+        if (localData) {
+          try {
+            const localPresentation = JSON.parse(localData)
+            console.log(`✅ Found presentation in localStorage: ${localPresentation.title}`)
+            setPresentation(localPresentation)
+            
+            if (localPresentation.slides.length > 0) {
+              setSelectedSlideId(localPresentation.slides[0].id)
             }
-          ],
-          metadata: {
-            generatedAt: new Date().toISOString()
+            
+            // Migrate to database if user is authenticated
+            if (user?.id) {
+              await migrateToDatabase(localPresentation)
+            }
+            
+            toast.success(`Loaded from local storage: ${localPresentation.title}`)
+          } catch (parseError) {
+            console.error('Error parsing localStorage data:', parseError)
+            createDefaultPresentation()
           }
+        } else {
+          console.log('❌ Presentation not found anywhere, creating default')
+          createDefaultPresentation()
         }
-        
-        setPresentation(defaultPresentation)
-        setSelectedSlideId('slide_1')
-        
-        // Save the default presentation
-        if (user) {
-          const enhancedPresentation = {
-            ...defaultPresentation,
-            status: 'draft' as const
-          }
-          await PresentationManager.savePresentation(enhancedPresentation, user.id)
-        }
-        
-        toast.success('Created new presentation - upload data to begin!')
       }
     } catch (error) {
       console.error('Error loading presentation:', error)
-      toast.error('Failed to load presentation. Please try again.')
-      
-      // Create minimal fallback to prevent crashes
-      const fallbackPresentation: PresentationData = {
-        id: params.id as string,
-        title: 'Error Recovery',
-        description: 'Please upload data to continue',
-        slides: [],
-        metadata: {
-          generatedAt: new Date().toISOString()
-        }
-      }
-      setPresentation(fallbackPresentation)
+      toast.error('Failed to load presentation. Creating new one.')
+      createDefaultPresentation()
     } finally {
       setIsLoading(false)
       console.log('🏁 Presentation loading completed')
     }
+  }
+
+  const createDefaultPresentation = async () => {
+    // Create a new presentation with sample content
+    const defaultPresentation: PresentationData = {
+      id: params.id as string,
+      title: 'New AI Presentation',
+      description: 'Start building your presentation',
+      slides: [
+        {
+          id: 'slide_1',
+          type: 'title',
+          title: 'Welcome to Your Presentation',
+          content: {
+            title: 'Welcome to Your Presentation',
+            subtitle: 'Upload data to get started with AI analysis'
+          }
+        }
+      ],
+      metadata: {
+        generatedAt: new Date().toISOString()
+      }
+    }
+    
+    setPresentation(defaultPresentation)
+    setSelectedSlideId('slide_1')
+    
+    // Save the default presentation
+    if (user?.id) {
+      try {
+        const enhancedPresentation = {
+          ...defaultPresentation,
+          status: 'draft' as const
+        }
+        await PresentationManager.savePresentation(enhancedPresentation, String(user.id))
+        console.log('✅ Default presentation saved to database')
+      } catch (saveError) {
+        console.error('Error saving default presentation:', saveError)
+        // Save to localStorage as fallback
+        localStorage.setItem(`presentation_${params.id}`, JSON.stringify(defaultPresentation))
+      }
+    } else {
+      // Save to localStorage if no user
+      localStorage.setItem(`presentation_${params.id}`, JSON.stringify(defaultPresentation))
+    }
+    
+    toast.success('Created new presentation - upload data to begin!')
   }
 
   const migrateToDatabase = async (localPresentation: PresentationData) => {
@@ -165,7 +198,7 @@ export default function DeckBuilderPage() {
     try {
       const dbPresentation: DBPresentationData = {
         id: localPresentation.id,
-        user_id: user.id,
+        user_id: String(user.id),
         title: localPresentation.title,
         description: localPresentation.description,
         slides: localPresentation.slides,
@@ -189,7 +222,7 @@ export default function DeckBuilderPage() {
     try {
       const dbPresentation: DBPresentationData = {
         id: presentation.id,
-        user_id: user.id,
+        user_id: String(user.id),
         title: presentation.title,
         description: presentation.description,
         slides: presentation.slides,

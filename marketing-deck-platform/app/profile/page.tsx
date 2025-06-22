@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 
 export default function ProfilePage() {
-  const { user, profile, loading } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const [presentations, setPresentations] = useState<any[]>([])
   const [datasets, setDatasets] = useState<any[]>([])
@@ -45,7 +45,7 @@ export default function ProfilePage() {
     try {
       // Load presentations from Supabase
       const { data: userPresentations } = await import('@/lib/supabase/database-helpers').then(m => 
-        m.dbHelpers.loadUserPresentations(user.id)
+        m.dbHelpers.loadUserPresentations(String(user.id))
       )
       
       if (userPresentations) {
@@ -68,7 +68,7 @@ export default function ProfilePage() {
 
       // Load datasets from Supabase
       const { data: userDatasets } = await import('@/lib/supabase/database-helpers').then(m => 
-        m.dbHelpers.loadUserDatasets(user.id)
+        m.dbHelpers.loadUserDatasets(String(user.id))
       )
       
       if (userDatasets) {
@@ -132,7 +132,7 @@ export default function ProfilePage() {
     )
   }
 
-  if (!user || !profile) {
+  if (!user) {
     return null
   }
 
@@ -171,57 +171,33 @@ export default function ProfilePage() {
             <Card className="p-6 bg-gray-800/50 border-gray-700">
               <div className="text-center">
                 <img
-                  src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.full_name || 'User')}`}
+                  src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'User')}`}
                   alt="Profile"
                   className="w-24 h-24 rounded-full border-4 border-gray-600 mx-auto mb-4"
                 />
                 
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  {profile.full_name || 'Your Name'}
+                  {user.name || 'Your Name'}
                 </h3>
                 
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <Mail className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-400 text-sm">{profile.email}</span>
+                  <span className="text-gray-400 text-sm">{user.email}</span>
                 </div>
                 
                 <div className="mb-4">
-                  {getSubscriptionBadge(profile.subscription_status)}
+                  {getSubscriptionBadge('free')}
                 </div>
                 
-                {profile.company && (
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Building2 className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-300 text-sm">{profile.company}</span>
-                  </div>
-                )}
-                
-                {profile.position && (
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    <User className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-300 text-sm">{profile.position}</span>
-                  </div>
-                )}
                 
                 <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
                   <Calendar className="w-3 h-3" />
-                  <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
+                  <span>Joined {new Date().toLocaleDateString()}</span>
                 </div>
               </div>
             </Card>
 
             {/* Business Goals */}
-            {profile.goals && (
-              <Card className="p-6 bg-gray-800/50 border-gray-700">
-                <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                  <Target className="w-4 h-4" />
-                  Business Goals
-                </h4>
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {profile.goals}
-                </p>
-              </Card>
-            )}
           </div>
 
           {/* Activity Overview */}

@@ -313,7 +313,7 @@ export function WorldClassEditor() {
       // Save presentation with enhanced manager
       const saveSuccess = await PresentationManager.savePresentation(
         presentation,
-        user?.id
+        user?.id ? String(user.id) : undefined
       )
       
       if (!saveSuccess) {

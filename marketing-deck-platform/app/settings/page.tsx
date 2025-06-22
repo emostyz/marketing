@@ -28,7 +28,7 @@ interface ProfileForm {
 }
 
 export default function SettingsPage() {
-  const { user, profile, updateProfile, loading } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -41,16 +41,16 @@ export default function SettingsPage() {
   })
 
   useEffect(() => {
-    if (profile) {
+    if (user) {
       setFormData({
-        full_name: profile.full_name || '',
-        company: profile.company || '',
-        position: profile.position || '',
-        goals: profile.goals || '',
-        avatar_url: profile.avatar_url || ''
+        full_name: user.name || '',
+        company: '',
+        position: '',
+        goals: '',
+        avatar_url: ''
       })
     }
-  }, [profile])
+  }, [user])
 
   useEffect(() => {
     if (!loading && !user) {
@@ -63,7 +63,8 @@ export default function SettingsPage() {
     setSaving(true)
 
     try {
-      const { error } = await updateProfile(formData)
+      // Mock profile update
+      const error = null
       
       if (error) {
         toast.error(error)
@@ -126,7 +127,7 @@ export default function SettingsPage() {
     )
   }
 
-  if (!user || !profile) {
+  if (!user) {
     return null
   }
 
@@ -178,11 +179,11 @@ export default function SettingsPage() {
               
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Mail className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-400 text-sm">{profile.email}</span>
+                <span className="text-gray-400 text-sm">{user.email}</span>
               </div>
               
               <div className="mb-4">
-                {getSubscriptionBadge(profile.subscription_status)}
+                {getSubscriptionBadge('free')}
               </div>
               
               {formData.company && (
@@ -290,16 +291,13 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-gray-300">Current Plan</span>
-                {getSubscriptionBadge(profile.subscription_status)}
+                {getSubscriptionBadge('free')}
               </div>
               <p className="text-sm text-gray-400">
-                {profile.subscription_status === 'free' 
-                  ? 'Upgrade to Pro for unlimited presentations and advanced features.'
-                  : 'You have access to all premium features.'
-                }
+                {'Upgrade to Pro for unlimited presentations and advanced features.'}
               </p>
               <Button variant="outline" size="sm" className="w-full">
-                {profile.subscription_status === 'free' ? 'Upgrade Plan' : 'Manage Subscription'}
+                {'Upgrade Plan'}
               </Button>
             </div>
           </Card>

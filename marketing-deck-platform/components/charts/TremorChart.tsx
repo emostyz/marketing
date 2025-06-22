@@ -6,10 +6,7 @@ import {
   BarChart,
   LineChart,
   DonutChart,
-  Card,
-  Title,
-  Text,
-  Flex
+  Card
 } from '@tremor/react'
 import { Button } from '@/components/ui/Button'
 import { Settings, Palette, Eye, EyeOff } from 'lucide-react'
@@ -109,10 +106,10 @@ export function TremorChart({
 
   return (
     <Card className="p-6 bg-gray-800/50 border-gray-700">
-      <Flex justifyContent="start" alignItems="center" className="mb-4">
+      <div className="flex items-center mb-4">
         <div>
-          <Title className="text-white">{title}</Title>
-          {subtitle && <Text className="text-gray-400">{subtitle}</Text>}
+          <h3>{title}</h3>
+          {subtitle && <span className="text-gray-400">{subtitle}</span>}
         </div>
         {showCustomization && (
           <Button
@@ -124,7 +121,7 @@ export function TremorChart({
             <Settings className="w-4 h-4" />
           </Button>
         )}
-      </Flex>
+      </div>
 
       {/* Customization Panel */}
       {showSettings && showCustomization && (
@@ -132,7 +129,7 @@ export function TremorChart({
           <div className="space-y-4">
             {/* Chart Type Selector */}
             <div>
-              <Text className="text-gray-300 mb-2">Chart Type</Text>
+              <span className="text-gray-300 mb-2">Chart Type</span>
               <select
                 value={currentChartType}
                 onChange={(e) => setCurrentChartType(e.target.value as any)}
@@ -147,7 +144,7 @@ export function TremorChart({
 
             {/* Height Adjustment */}
             <div>
-              <Text className="text-gray-300 mb-2">Chart Height</Text>
+              <span className="text-gray-300 mb-2">Chart Height</span>
               <select
                 value={chartHeight.toString()}
                 onChange={(e) => setChartHeight(Number(e.target.value))}
@@ -162,34 +159,34 @@ export function TremorChart({
 
             {/* Column Visibility */}
             <div>
-              <Text className="text-gray-300 mb-2">Visible Columns</Text>
+              <span className="text-gray-300 mb-2">Visible Columns</span>
               <div className="space-y-2">
                 {currentCategories.map((category) => (
-                  <Flex key={category} justifyContent="start" alignItems="center">
+                  <div key={category} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={visibleColumns[category]}
                       onChange={() => toggleColumnVisibility(category)}
                       className="mr-2"
                     />
-                    <Text className="text-gray-300 ml-2">{category}</Text>
+                    <span className="text-gray-300 ml-2">{category}</span>
                     {visibleColumns[category] ? (
                       <Eye className="w-4 h-4 text-green-400 ml-2" />
                     ) : (
                       <EyeOff className="w-4 h-4 text-gray-500 ml-2" />
                     )}
-                  </Flex>
+                  </div>
                 ))}
               </div>
             </div>
 
             {/* Color Customization */}
             <div>
-              <Text className="text-gray-300 mb-2">Colors</Text>
+              <span className="text-gray-300 mb-2">Colors</span>
               <div className="grid grid-cols-2 gap-2">
                 {filteredCategories.map((category, idx) => (
                   <div key={category} className="space-y-1">
-                    <Text className="text-xs text-gray-400">{category}</Text>
+                    <span className="text-xs text-gray-400">{category}</span>
                     <select
                       value={currentColors[currentCategories.indexOf(category)]}
                       onChange={(e) => handleColorChange(currentCategories.indexOf(category), e.target.value)}
@@ -215,20 +212,20 @@ export function TremorChart({
           renderChart()
         ) : (
           <div className="h-32 flex items-center justify-center text-gray-400">
-            <Text>No columns selected for visualization</Text>
+            <span>No columns selected for visualization</span>
           </div>
         )}
       </div>
 
       {/* Chart Info */}
-      <Flex justifyContent="between" alignItems="center" className="mt-4 pt-4 border-t border-gray-600">
-        <Text className="text-xs text-gray-400">
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-600">
+        <span className="text-xs text-gray-400">
           Data points: {data.length} • Columns: {filteredCategories.length}
-        </Text>
-        <Text className="text-xs text-gray-400">
+        </span>
+        <span className="text-xs text-gray-400">
           Type: {currentChartType} • Interactive
-        </Text>
-      </Flex>
+        </span>
+      </div>
     </Card>
   )
 }

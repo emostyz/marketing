@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, Title, AreaChart, BarChart, LineChart, DonutChart, ScatterChart } from '@tremor/react'
+import { Card, AreaChart, BarChart, LineChart, DonutChart, ScatterChart } from '@tremor/react'
 import { useState } from 'react'
 
 interface ChartData {
@@ -159,7 +159,7 @@ export function TremorAdvancedChart({
         </div>
       )}
 
-      <Title className="text-white mb-4">{title}</Title>
+      <h3 className="text-white mb-4">{title}</h3>
       
       {renderChart()}
 

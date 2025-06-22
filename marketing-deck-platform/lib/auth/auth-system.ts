@@ -8,6 +8,26 @@ export interface User {
   subscription: 'free' | 'pro' | 'enterprise'
   createdAt: Date
   lastLoginAt: Date
+  profile?: UserProfile
+}
+
+export interface UserProfile {
+  industry?: string
+  targetAudience?: string
+  businessContext?: string
+  companyName?: string
+  keyMetrics?: string[]
+  dataPreferences?: {
+    chartStyles: string[]
+    colorSchemes: string[]
+    narrativeStyle: string
+  }
+  presentationHistory?: Array<{
+    id: string
+    title: string
+    createdAt: Date
+    dataTypes: string[]
+  }>
 }
 
 export interface AuthSession {
@@ -230,5 +250,30 @@ export class AuthSystem {
     }
     
     return user
+  }
+
+  static async updateUserProfile(profileData: Partial<UserProfile>): Promise<User | null> {
+    const user = await this.getCurrentUser()
+    if (!user) return null
+
+    // Find the user in mockUsers and update their profile
+    const userIndex = mockUsers.findIndex(u => u.id === user.id)
+    if (userIndex !== -1) {
+      mockUsers[userIndex].profile = {
+        ...mockUsers[userIndex].profile,
+        ...profileData
+      }
+      return mockUsers[userIndex]
+    }
+    
+    return null
+  }
+
+  static async getUserProfile(): Promise<UserProfile | null> {
+    const user = await this.getCurrentUser()
+    if (!user) return null
+    
+    const foundUser = mockUsers.find(u => u.id === user.id)
+    return foundUser?.profile || null
   }
 }

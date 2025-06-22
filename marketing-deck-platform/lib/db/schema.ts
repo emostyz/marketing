@@ -131,11 +131,16 @@ export const subscriptionStatusEnum = pgEnum('subscription_status', ['active', '
 
 // Profiles table (for Supabase auth integration)
 export const profiles = pgTable('profiles', {
-  id: uuid('id').primaryKey(), // This will reference auth.users(id)
+  id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull(),
   companyName: text('company_name'),
   logoUrl: text('logo_url'),
   brandColors: jsonb('brand_colors'),
+  industry: text('industry'),
+  targetAudience: text('target_audience'),
+  businessContext: text('business_context'),
+  keyMetrics: jsonb('key_metrics'),
+  dataPreferences: jsonb('data_preferences'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 });
@@ -166,6 +171,22 @@ export const templates = pgTable('templates', {
   isPublic: boolean('is_public').default(true),
   createdBy: uuid('created_by').references(() => profiles.id),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+// Data imports table for file uploads
+export const dataImports = pgTable('data_imports', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  fileName: text('file_name').notNull(),
+  fileType: text('file_type').notNull(),
+  fileSize: integer('file_size'),
+  storagePath: text('storage_path').notNull(),
+  publicUrl: text('public_url'),
+  rawData: jsonb('raw_data'),
+  pptxStructure: jsonb('pptx_structure'),
+  status: text('status').default('pending'),
+  uploadedAt: timestamp('uploaded_at', { withTimezone: true }).defaultNow().notNull(),
+  processedAt: timestamp('processed_at', { withTimezone: true })
 });
 
 // Presentation Events table
@@ -279,6 +300,8 @@ export type Presentation = typeof presentations.$inferSelect;
 export type NewPresentation = typeof presentations.$inferInsert;
 export type Template = typeof templates.$inferSelect;
 export type NewTemplate = typeof templates.$inferInsert;
+export type DataImport = typeof dataImports.$inferSelect;
+export type NewDataImport = typeof dataImports.$inferInsert;
 export type PresentationEvent = typeof presentationEvents.$inferSelect;
 export type NewPresentationEvent = typeof presentationEvents.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;

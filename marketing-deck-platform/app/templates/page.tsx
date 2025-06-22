@@ -1,9 +1,8 @@
 // File: app/templates/page.tsx
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { AuthSystem } from '@/lib/auth/auth-system'
 
 const templates = [
   {
@@ -49,10 +48,10 @@ const templates = [
 ]
 
 export default async function TemplatesPage() {
-  const supabase = createServerComponentClient({ cookies })
-  const { data: { session } } = await supabase.auth.getSession()
+  // Use the current auth system
+  const user = await AuthSystem.getCurrentUser()
   
-  if (!session) {
+  if (!user) {
     redirect('/auth/login')
   }
 

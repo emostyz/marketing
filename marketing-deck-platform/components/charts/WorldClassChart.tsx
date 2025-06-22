@@ -8,10 +8,6 @@ import {
   DonutChart,
   ScatterChart,
   Card,
-  Title,
-  Text,
-  Flex,
-  Metric,
   Badge,
   Callout
 } from '@tremor/react'
@@ -193,22 +189,22 @@ export function WorldClassChart({
     }
   }
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: string): "red" | "orange" | "yellow" | "gray" => {
     const colors = {
-      critical: 'red',
-      high: 'orange',
-      medium: 'yellow',
-      low: 'gray'
+      critical: 'red' as const,
+      high: 'orange' as const,
+      medium: 'yellow' as const,
+      low: 'gray' as const
     }
     return colors[priority as keyof typeof colors] || 'gray'
   }
 
-  const getImpactColor = (impact: string) => {
+  const getImpactColor = (impact: string): "purple" | "blue" | "green" | "gray" => {
     const colors = {
-      transformational: 'purple',
-      significant: 'blue',
-      moderate: 'green',
-      informational: 'gray'
+      transformational: 'purple' as const,
+      significant: 'blue' as const,
+      moderate: 'green' as const,
+      informational: 'gray' as const
     }
     return colors[impact as keyof typeof colors] || 'gray'
   }
@@ -217,71 +213,34 @@ export function WorldClassChart({
     <Card className="p-6 bg-gray-800/50 border-gray-700" ref={chartRef}>
       {/* Chart Header with Metadata */}
       <div className="mb-6">
-        <Flex justifyContent="start" alignItems="start" className="mb-4">
-          <div className="flex-1">
-            <Title className="text-white text-xl mb-2">{title}</Title>
-            {subtitle && <Text className="text-gray-400 mb-3">{subtitle}</Text>}
-            
-            {/* Business Context Badges */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              <Badge 
-                color={getPriorityColor(priority)} 
-                size="sm"
-                className="capitalize"
-              >
-                {priority} Priority
-              </Badge>
-              <Badge 
-                color={getImpactColor(businessImpact)} 
-                size="sm"
-                className="capitalize"
-              >
-                {businessImpact} Impact
-              </Badge>
-              <Badge 
-                color="blue" 
-                size="sm"
-                className="capitalize"
-              >
-                {actionability} Action
-              </Badge>
-              <Badge 
-                color="emerald" 
-                size="sm"
-              >
-                {confidence}% Confidence
-              </Badge>
-            </div>
-          </div>
-          
-          {showCustomization && (
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={exportChart}
-              >
-                <Download className="w-4 h-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowSettings(!showSettings)}
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
-        </Flex>
-
-        {/* Summary Statistics */}
-        <div className="grid grid-cols-4 gap-4 mb-4">
-          {Object.entries(summaryStats).map(([key, value]) => (
-            <div key={key} className="text-center">
-              <Metric className="text-white text-lg">{value}</Metric>
-              <Text className="text-gray-400 text-xs capitalize">{key}</Text>
-            </div>
-          ))}
+        <div className="flex flex-wrap gap-2 mb-3">
+          <Badge 
+            color={getPriorityColor(priority)} 
+            size="sm"
+            className="capitalize"
+          >
+            {priority} Priority
+          </Badge>
+          <Badge 
+            color={getImpactColor(businessImpact)} 
+            size="sm"
+            className="capitalize"
+          >
+            {businessImpact} Impact
+          </Badge>
+          <Badge 
+            color="blue" 
+            size="sm"
+            className="capitalize"
+          >
+            {actionability} Action
+          </Badge>
+          <Badge 
+            color="emerald" 
+            size="sm"
+          >
+            {confidence}% Confidence
+          </Badge>
         </div>
       </div>
 
@@ -291,11 +250,11 @@ export function WorldClassChart({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Chart Configuration */}
             <div>
-              <Text className="text-gray-300 mb-3 font-semibold">Chart Configuration</Text>
+              <span className="text-gray-300 mb-3 font-semibold">Chart Configuration</span>
               
               {/* Chart Type Selector */}
               <div className="mb-4">
-                <Text className="text-gray-400 mb-2 text-sm">Chart Type</Text>
+                <span className="text-gray-400 mb-2 text-sm">Chart Type</span>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.entries(CHART_TYPE_CONFIGS).map(([type, config]) => {
                     const Icon = config.icon
@@ -319,7 +278,7 @@ export function WorldClassChart({
 
               {/* Height Adjustment */}
               <div className="mb-4">
-                <Text className="text-gray-400 mb-2 text-sm">Chart Height</Text>
+                <span className="text-gray-400 mb-2 text-sm">Chart Height</span>
                 <select
                   value={chartHeight.toString()}
                   onChange={(e) => setChartHeight(Number(e.target.value))}
@@ -335,14 +294,14 @@ export function WorldClassChart({
 
             {/* Data Configuration */}
             <div>
-              <Text className="text-gray-300 mb-3 font-semibold">Data Configuration</Text>
+              <span className="text-gray-300 mb-3 font-semibold">Data Configuration</span>
               
               {/* Column Visibility */}
               <div className="mb-4">
-                <Text className="text-gray-400 mb-2 text-sm">Visible Columns</Text>
+                <span className="text-gray-400 mb-2 text-sm">Visible Columns</span>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {currentCategories.map((category) => (
-                    <Flex key={category} justifyContent="start" alignItems="center">
+                    <div key={category} className="flex items-center">
                       <input
                         type="checkbox"
                         checked={visibleColumns[category]}
@@ -352,50 +311,50 @@ export function WorldClassChart({
                         }))}
                         className="mr-2"
                       />
-                      <Text className="text-gray-300 text-sm flex-1">{category}</Text>
+                      <span className="text-gray-300 text-sm flex-1">{category}</span>
                       {visibleColumns[category] ? (
                         <Eye className="w-3 h-3 text-green-400" />
                       ) : (
                         <EyeOff className="w-3 h-3 text-gray-500" />
                       )}
-                    </Flex>
+                    </div>
                   ))}
                 </div>
               </div>
 
               {/* Advanced Features */}
               <div>
-                <Text className="text-gray-400 mb-2 text-sm">Advanced Features</Text>
+                <span className="text-gray-400 mb-2 text-sm">Advanced Features</span>
                 <div className="space-y-2">
-                  <Flex justifyContent="start" alignItems="center">
+                  <div className="flex items-center">
                     <input
                       type="checkbox"
                       checked={showTrendlines}
                       onChange={(e) => setShowTrendlines(e.target.checked)}
                       className="mr-2"
                     />
-                    <Text className="text-gray-300 text-sm">Show Trendlines</Text>
-                  </Flex>
-                  <Flex justifyContent="start" alignItems="center">
+                    <span className="text-gray-300 text-sm">Show Trendlines</span>
+                  </div>
+                  <div className="flex items-center">
                     <input
                       type="checkbox"
                       checked={advanced.drillDown}
                       onChange={() => {}}
                       className="mr-2"
                     />
-                    <Text className="text-gray-300 text-sm">Enable Drill-down</Text>
-                  </Flex>
+                    <span className="text-gray-300 text-sm">Enable Drill-down</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Style Configuration */}
             <div>
-              <Text className="text-gray-300 mb-3 font-semibold">Style Configuration</Text>
+              <span className="text-gray-300 mb-3 font-semibold">Style Configuration</span>
               
               {/* Color Palette */}
               <div className="mb-4">
-                <Text className="text-gray-400 mb-2 text-sm">Color Palette</Text>
+                <span className="text-gray-400 mb-2 text-sm">Color Palette</span>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.keys(PROFESSIONAL_COLOR_PALETTES).map(palette => (
                     <button
@@ -430,7 +389,7 @@ export function WorldClassChart({
                   {advanced.annotations.map((annotation, idx) => (
                     <div key={idx} className="flex items-start gap-2 mb-2 last:mb-0">
                       <Info className="w-3 h-3 text-blue-400 mt-0.5 flex-shrink-0" />
-                      <Text className="text-xs text-gray-300">{annotation.text}</Text>
+                      <span className="text-xs text-gray-300">{annotation.text}</span>
                     </div>
                   ))}
                 </div>
@@ -441,7 +400,7 @@ export function WorldClassChart({
           <div className="h-32 flex items-center justify-center text-gray-400">
             <div className="text-center">
               <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <Text className="text-sm">No data columns selected for visualization</Text>
+              <span className="text-sm">No data columns selected for visualization</span>
             </div>
           </div>
         )}
@@ -449,22 +408,20 @@ export function WorldClassChart({
 
       {/* Chart Footer with Insights */}
       <div className="mt-6 pt-4 border-t border-gray-600">
-        <Flex justifyContent="between" alignItems="center">
-          <div className="flex items-center gap-4">
-            <Text className="text-xs text-gray-400">
-              Data points: {data.length}
-            </Text>
-            <Text className="text-xs text-gray-400">
-              Columns: {filteredCategories.length}
-            </Text>
-            <Text className="text-xs text-gray-400">
-              Type: {CHART_TYPE_CONFIGS[currentChartType as keyof typeof CHART_TYPE_CONFIGS]?.label || currentChartType}
-            </Text>
-          </div>
-          <Text className="text-xs text-gray-400">
-            Brain-generated • Interactive • Professional
-          </Text>
-        </Flex>
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-gray-400">
+            Data points: {data.length}
+          </span>
+          <span className="text-xs text-gray-400">
+            Columns: {filteredCategories.length}
+          </span>
+          <span className="text-xs text-gray-400">
+            Type: {CHART_TYPE_CONFIGS[currentChartType as keyof typeof CHART_TYPE_CONFIGS]?.label || currentChartType}
+          </span>
+        </div>
+        <span className="text-xs text-gray-400">
+          Brain-generated • Interactive • Professional
+        </span>
       </div>
     </Card>
   )

@@ -8,10 +8,6 @@ import {
   DonutChart,
   ScatterChart,
   Card,
-  Title,
-  Text,
-  Flex,
-  Metric,
   Badge
 } from '@tremor/react'
 import { Button } from '@/components/ui/Button'
@@ -540,14 +536,14 @@ export function ExcelLevelChart({
         {(title || subtitle) && (
           <div className="mb-4">
             {title && (
-              <Title className="text-lg font-semibold" style={{ color: config.xAxis.titleColor }}>
+              <h3 className="text-lg font-semibold" style={{ color: config.xAxis.titleColor }}>
                 {title}
-              </Title>
+              </h3>
             )}
             {subtitle && (
-              <Text className="text-sm" style={{ color: config.yAxis.titleColor }}>
+              <span className="text-sm" style={{ color: config.yAxis.titleColor }}>
                 {subtitle}
-              </Text>
+              </span>
             )}
           </div>
         )}

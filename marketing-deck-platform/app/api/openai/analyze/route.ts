@@ -9,71 +9,190 @@ export async function POST(request: NextRequest) {
   try {
     const { data, userContext, userGoals, phase } = await request.json()
 
+    // Debug environment variables
+    console.log('🔍 Environment check:')
+    console.log('- OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY)
+    console.log('- OPENAI_API_KEY length:', process.env.OPENAI_API_KEY?.length || 0)
+    console.log('- OPENAI_API_KEY starts with sk-:', process.env.OPENAI_API_KEY?.startsWith('sk-') || false)
+
     if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OpenAI API key not configured')
       return NextResponse.json({ 
         error: 'OpenAI API key not configured',
-        fallback: true 
+        fallback: true,
+        debug: {
+          envExists: !!process.env.OPENAI_API_KEY,
+          envLength: process.env.OPENAI_API_KEY?.length || 0
+        }
       }, { status: 200 })
     }
+
+    // Test the API key format
+    if (!process.env.OPENAI_API_KEY.startsWith('sk-')) {
+      console.error('❌ OpenAI API key format invalid')
+      return NextResponse.json({ 
+        error: 'OpenAI API key format invalid',
+        fallback: true,
+        debug: {
+          keyStartsWith: process.env.OPENAI_API_KEY.substring(0, 10) + '...'
+        }
+      }, { status: 200 })
+    }
+
+    console.log(`🧠 OpenAI Analysis - Phase: ${phase}, Data points: ${data?.length || 0}`)
 
     let prompt = ''
     
     switch (phase) {
       case 'data_analysis':
         prompt = `
-        You are a world-class data analyst with expertise in McKinsey-style analysis. Analyze this dataset deeply:
+        You are a world-class McKinsey consultant analyzing real business data. Analyze this dataset deeply and provide specific, actionable insights.
 
-        Dataset: ${JSON.stringify(data.slice(0, 5), null, 2)}
+        DATASET ANALYSIS:
+        Dataset: ${JSON.stringify(data.slice(0, 10), null, 2)}
         Total records: ${data.length}
-        Context: ${userContext}
+        Columns: ${Object.keys(data[0] || {}).join(', ')}
+        Business Context: ${userContext}
 
-        Perform a comprehensive analysis including:
-        1. Data quality assessment
-        2. Key patterns and trends identification
-        3. Statistical significance of findings
-        4. Outliers and anomalies
-        5. Correlation analysis between variables
+        REQUIREMENTS:
+        1. Identify key patterns, trends, and anomalies in the ACTUAL data
+        2. Calculate specific metrics and percentages from the real numbers
+        3. Find correlations between different data columns
+        4. Identify outliers or unusual data points
+        5. Provide statistical insights with exact numbers
 
-        Return a JSON object with detailed findings.
+        FORMAT YOUR RESPONSE AS JSON:
+        {
+          "keyMetrics": {
+            "totalRecords": number,
+            "dateRange": "string",
+            "topPerformers": ["specific values"],
+            "growthRate": "percentage",
+            "anomalies": ["specific findings"]
+          },
+          "trends": [
+            {
+              "trend": "description with specific numbers",
+              "significance": "high/medium/low",
+              "dataPoints": ["specific examples"]
+            }
+          ],
+          "correlations": [
+            {
+              "variables": ["col1", "col2"],
+              "strength": "strong/medium/weak",
+              "insight": "specific finding with numbers"
+            }
+          ],
+          "recommendations": [
+            "specific actionable recommendation with data backing"
+          ]
+        }
+
+        Use the ACTUAL numbers from the data. Be specific and quantitative.
         `
         break
 
       case 'contextual_insights':
         prompt = `
-        As a strategic consultant, generate actionable insights for this business context:
+        As a McKinsey consultant, generate strategic insights for this business context using the REAL data analysis.
 
-        Business Context: ${userContext}
-        Business Goals: ${userGoals}
-        Data Summary: ${data.length} records with ${Object.keys(data[0] || {}).length} columns
+        BUSINESS CONTEXT: ${userContext}
+        BUSINESS GOALS: ${userGoals}
+        DATA SUMMARY: ${data.length} records with columns: ${Object.keys(data[0] || {}).join(', ')}
 
-        Generate:
-        1. Executive summary (2-3 sentences)
+        REQUIREMENTS:
+        1. Executive summary (2-3 sentences with specific numbers)
         2. Top 5 key takeaways that directly address the business goals
-        3. Strategic implications
-        4. Opportunities for immediate action
+        3. Strategic implications with data backing
+        4. Opportunities for immediate action with specific metrics
+        5. Risk factors identified in the data
 
-        Focus on business impact, not just data observations. Make insights actionable.
+        FORMAT YOUR RESPONSE AS JSON:
+        {
+          "executiveSummary": "2-3 sentence summary with specific numbers and insights",
+          "keyTakeaways": [
+            "Specific insight with data backing",
+            "Another insight with numbers",
+            "Third insight with metrics"
+          ],
+          "strategicImplications": [
+            {
+              "implication": "specific strategic finding",
+              "dataBacking": "specific numbers from data",
+              "impact": "high/medium/low"
+            }
+          ],
+          "opportunities": [
+            {
+              "opportunity": "specific opportunity",
+              "potentialValue": "quantified value",
+              "actionRequired": "specific action"
+            }
+          ],
+          "risks": [
+            {
+              "risk": "specific risk identified",
+              "probability": "high/medium/low",
+              "mitigation": "specific mitigation strategy"
+            }
+          ]
+        }
 
-        Return as JSON with clear structure.
+        Focus on business impact, not just data observations. Use specific numbers from the data.
         `
         break
 
       case 'story_discovery':
         prompt = `
-        You are a master storyteller and data visualization expert. Create compelling narratives:
+        You are a master storyteller and data visualization expert. Create compelling narratives from this REAL business data.
 
-        Business Context: ${userContext}
-        Data: ${JSON.stringify(data.slice(0, 3), null, 2)}
+        BUSINESS CONTEXT: ${userContext}
+        DATA ANALYSIS: ${JSON.stringify(data.slice(0, 5), null, 2)}
+        TOTAL RECORDS: ${data.length}
 
-        Create:
-        1. An overarching story that connects all data points
-        2. Individual micro-stories for each key finding
-        3. Recommended presentation flow (slide sequence)
-        4. Call-to-action moments
+        REQUIREMENTS:
+        1. Create an overarching story that connects all data points with specific numbers
+        2. Identify individual micro-stories for each key finding
+        3. Recommend presentation flow (slide sequence)
+        4. Create call-to-action moments with data backing
+        5. Identify the "hero" metrics and "villain" problems in the data
 
-        Think like a McKinsey consultant presenting to C-suite executives.
+        FORMAT YOUR RESPONSE AS JSON:
+        {
+          "overallStory": {
+            "narrative": "compelling story with specific numbers",
+            "heroMetrics": ["specific positive metrics"],
+            "villainProblems": ["specific issues to address"],
+            "climax": "key turning point in the data"
+          },
+          "microStories": [
+            {
+              "title": "specific story title",
+              "narrative": "story with specific data points",
+              "dataBacking": ["specific numbers"],
+              "emotionalHook": "why this matters"
+            }
+          ],
+          "recommendedFlow": [
+            {
+              "slideNumber": 1,
+              "type": "title/executive/chart/insight",
+              "title": "specific slide title",
+              "keyMessage": "specific message with numbers"
+            }
+          ],
+          "callToActions": [
+            {
+              "moment": "specific moment in presentation",
+              "action": "specific action required",
+              "urgency": "why now",
+              "dataBacking": "specific numbers supporting urgency"
+            }
+          ]
+        }
 
-        Return as JSON with story structure and recommended flow.
+        Think like a McKinsey consultant presenting to C-suite executives. Use specific numbers and data points.
         `
         break
 
@@ -82,23 +201,61 @@ export async function POST(request: NextRequest) {
         const categoricalColumns = getCategoricalColumns(data)
         
         prompt = `
-        You are a visualization expert specializing in charts. Design the optimal chart strategy:
+        You are a visualization expert specializing in professional charts. Design the optimal chart strategy for this REAL business data.
 
-        Available Data Columns:
-        - Numeric: ${numericColumns.join(', ')}
-        - Categorical: ${categoricalColumns.join(', ')}
+        DATA STRUCTURE:
+        - Numeric columns: ${numericColumns.join(', ')}
+        - Categorical columns: ${categoricalColumns.join(', ')}
+        - Sample data: ${JSON.stringify(data.slice(0, 3), null, 2)}
+        - Total records: ${data.length}
         
-        Business Goals: ${userGoals}
-        Sample Data: ${JSON.stringify(data.slice(0, 3), null, 2)}
+        BUSINESS GOALS: ${userGoals}
+        BUSINESS CONTEXT: ${userContext}
 
+        REQUIREMENTS:
         For each key story point, recommend:
-        1. Chart type (line, bar, area, donut, scatter)
-        2. Specific columns to visualize
+        1. Chart type (line, bar, area, donut, scatter) with justification
+        2. Specific columns to visualize with reasoning
         3. Color strategy for maximum impact
-        4. Supporting narrative for each chart
-        5. Priority level (high, medium, low)
+        4. Supporting narrative with specific numbers
+        5. Priority level (high, medium, low) with reasoning
+        6. Expected insights from this visualization
 
-        Return as JSON with dataPoints array containing chart specifications.
+        FORMAT YOUR RESPONSE AS JSON:
+        {
+          "dataPoints": [
+            {
+              "title": "specific chart title",
+              "insight": "specific insight this chart will reveal",
+              "visualizationType": "bar/line/area/donut/scatter",
+              "justification": "why this chart type is best",
+              "story": "narrative this chart tells with specific numbers",
+              "priority": "high/medium/low",
+              "priorityReason": "why this priority level",
+              "chartConfig": {
+                "index": "column name for x-axis",
+                "categories": ["column names for y-axis"],
+                "colors": ["blue", "emerald", "violet"],
+                "dataMapping": {
+                  "xAxis": "specific column",
+                  "yAxis": ["specific columns"],
+                  "series": "if applicable"
+                }
+              },
+              "expectedInsights": [
+                "specific insight with numbers",
+                "another insight with data"
+              ]
+            }
+          ],
+          "overallStrategy": {
+            "theme": "consistent visual theme",
+            "colorPalette": ["primary colors"],
+            "narrativeFlow": "how charts tell the story"
+          }
+        }
+
+        Each chart must reference specific columns and expected insights. Use the actual data structure.
         `
         break
 
@@ -106,21 +263,64 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid phase' }, { status: 400 })
     }
 
+    console.log(`📤 Sending to OpenAI - Phase: ${phase}`)
+
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: phase === 'story_discovery' ? 0.6 : 0.3,
-      max_tokens: 2000,
+      max_tokens: 3000,
     })
 
     const content = response.choices[0].message.content
+    console.log(`📥 Received from OpenAI - Phase: ${phase}, Tokens: ${response.usage?.total_tokens}`)
+
     let result
 
     try {
-      result = JSON.parse(content || '{}')
+      // Clean the content to handle markdown code blocks
+      let cleanedContent = content || '{}'
+      
+      // Remove markdown code blocks if present
+      if (cleanedContent.includes('```json')) {
+        cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '')
+      } else if (cleanedContent.includes('```')) {
+        cleanedContent = cleanedContent.replace(/```\n?/g, '')
+      }
+      
+      // Trim whitespace
+      cleanedContent = cleanedContent.trim()
+      
+      console.log('🧹 Cleaned content:', cleanedContent.substring(0, 200) + '...')
+      
+      result = JSON.parse(cleanedContent)
+      console.log(`✅ Parsed JSON successfully for phase: ${phase}`)
     } catch (parseError) {
-      // If JSON parsing fails, return raw content
-      result = { content, rawResponse: true }
+      console.error(`❌ JSON parse error for phase ${phase}:`, parseError)
+      console.log('Raw content:', content)
+      
+      // Try to extract JSON from the content if it contains JSON-like structure
+      try {
+        const jsonMatch = content?.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          result = JSON.parse(jsonMatch[0])
+          console.log('✅ Extracted JSON from content')
+        } else {
+          // If JSON parsing fails, return structured fallback
+          result = { 
+            content, 
+            rawResponse: true,
+            error: 'Failed to parse JSON response'
+          }
+        }
+      } catch (extractError) {
+        console.error('Failed to extract JSON:', extractError)
+        result = { 
+          content, 
+          rawResponse: true,
+          error: 'Failed to parse or extract JSON'
+        }
+      }
     }
 
     return NextResponse.json({

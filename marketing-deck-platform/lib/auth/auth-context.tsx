@@ -1,195 +1,195 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
-interface UserProfile {
-  id: string
+interface User {
+  id: number
   email: string
-  full_name?: string
-  avatar_url?: string
-  company?: string
-  position?: string
-  goals?: string
-  subscription_status: string
-  created_at: string
+  name: string
+  avatar?: string
+  subscription: 'free' | 'pro' | 'enterprise'
+  createdAt: Date
+  lastLoginAt: Date
 }
 
 interface AuthContextType {
   user: User | null
-  profile: UserProfile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error?: string }>
-  signUp: (email: string, password: string, userData?: Partial<UserProfile>) => Promise<{ error?: string }>
+  signInDemo: () => Promise<{ error?: string }>
   signOut: () => Promise<void>
-  updateProfile: (updates: Partial<UserProfile>) => Promise<{ error?: string }>
-  refreshProfile: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
-  const supabase = createClientComponentClient()
 
   useEffect(() => {
-    const getSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
-        
-        if (session?.user) {
-          await fetchUserProfile(session.user.id)
-        }
-      } catch (error) {
-        console.error('Error getting session:', error)
-      } finally {
-        setLoading(false)
-      }
+    setMounted(true)
+    checkAuthStatus()
+  }, [])
+
+  // Helper function to parse cookies
+  const getCookie = (name: string): string | null => {
+    if (typeof document === 'undefined') return null
+    
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) {
+      return parts.pop()?.split(';').shift() || null
     }
+    return null
+  }
 
-    getSession()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null)
-        
-        if (session?.user) {
-          await fetchUserProfile(session.user.id)
-        } else {
-          setProfile(null)
-        }
-        
-        setLoading(false)
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [supabase.auth])
-
-  const fetchUserProfile = async (userId: string) => {
+  const checkAuthStatus = async () => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) {
-        console.error('Error fetching profile:', error)
+      setLoading(true)
+      
+      // Only check cookies on client side
+      if (typeof window === 'undefined') {
+        setLoading(false)
         return
       }
+      
+      // Check for demo user first
+      const demoUser = getCookie('demo-user')
+      if (demoUser === 'true') {
+        const userInfo = getCookie('user-info')
+        
+        if (userInfo) {
+          try {
+            const userData = JSON.parse(decodeURIComponent(userInfo))
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              subscription: userData.subscription,
+              createdAt: new Date(),
+              lastLoginAt: new Date()
+            })
+            setLoading(false)
+            return
+          } catch (error) {
+            console.error('Error parsing user info:', error)
+          }
+        }
+      }
 
-      setProfile(data)
+      // Check for regular auth token
+      const authToken = getCookie('auth-token')
+
+      if (authToken) {
+        try {
+          const response = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token: authToken })
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            if (data.user) {
+              setUser(data.user)
+            }
+          }
+        } catch (error) {
+          console.error('Error verifying token:', error)
+        }
+      }
     } catch (error) {
-      console.error('Error fetching user profile:', error)
+      console.error('Error checking auth status:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
       })
 
-      if (error) {
-        return { error: error.message }
-      }
+      const data = await response.json()
 
-      return {}
+      if (data.success) {
+        setUser(data.user)
+        return {}
+      } else {
+        return { error: data.error || 'Login failed' }
+      }
     } catch (error) {
-      return { error: 'An unexpected error occurred' }
+      console.error('Sign in error:', error)
+      return { error: 'Network error occurred' }
     }
   }
 
-  const signUp = async (email: string, password: string, userData?: Partial<UserProfile>) => {
+  const signInDemo = async () => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ demo: true })
       })
 
-      if (error) {
-        return { error: error.message }
+      const data = await response.json()
+
+      if (data.success) {
+        setUser(data.user)
+        return {}
+      } else {
+        return { error: data.error || 'Demo login failed' }
       }
-
-      // Create user profile in our users table
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: data.user.id,
-              email: data.user.email,
-              full_name: userData?.full_name || '',
-              company: userData?.company || '',
-              position: userData?.position || '',
-              goals: userData?.goals || '',
-              subscription_status: 'free',
-              created_at: new Date().toISOString()
-            }
-          ])
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError)
-        }
-      }
-
-      return {}
     } catch (error) {
-      return { error: 'An unexpected error occurred' }
+      console.error('Demo sign in error:', error)
+      return { error: 'Network error occurred' }
     }
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
-    router.push('/auth/login')
-  }
-
-  const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user) return { error: 'No user logged in' }
-
     try {
-      const { error } = await supabase
-        .from('users')
-        .update(updates)
-        .eq('id', user.id)
-
-      if (error) {
-        return { error: error.message }
-      }
-
-      // Update local profile state
-      setProfile(prev => prev ? { ...prev, ...updates } : null)
-      return {}
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
     } catch (error) {
-      return { error: 'An unexpected error occurred' }
+      console.error('Error during logout:', error)
+    } finally {
+      setUser(null)
+      router.push('/auth/login')
     }
   }
 
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchUserProfile(user.id)
-    }
+  const refreshUser = async () => {
+    await checkAuthStatus()
   }
 
   const value = {
     user,
-    profile,
     loading,
     signIn,
-    signUp,
+    signInDemo,
     signOut,
-    updateProfile,
-    refreshProfile
+    refreshUser
+  }
+
+  if (!mounted) {
+    return <div>Loading...</div>
   }
 
   return (

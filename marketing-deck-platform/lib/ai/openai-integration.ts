@@ -47,13 +47,32 @@ export class OpenAIAnalyzer {
     executiveSummary: string
     keyFindings: string[]
   }> {
-    // Always use intelligent fallback for now to ensure consistent results
-    // TODO: Add OpenAI integration when API key is provided
-    console.log('Using enhanced intelligent analysis for McKinsey-style insights')
-    return this.enhancedIntelligentAnalysis(data, qaResponses)
+    // ALWAYS try OpenAI first as demanded by user
+    if (!this.apiKey) {
+      console.log('❌ No OpenAI API key - using fallback (this should not happen in production)')
+      return this.enhancedIntelligentAnalysis(data, qaResponses)
+    }
 
+    console.log('🧠 CALLING OPENAI for world-class analysis...')
+    
     try {
-      const prompt = this.buildAnalysisPrompt(data, qaResponses)
+      // Try OpenAI FIRST as the primary method
+      const openaiResult = await this.callOpenAIForAnalysis(data, qaResponses)
+      console.log('✅ OpenAI analysis completed successfully')
+      return openaiResult
+    } catch (error) {
+      console.error('❌ OpenAI call failed, falling back to intelligent analysis:', error)
+      return this.enhancedIntelligentAnalysis(data, qaResponses)
+    }
+  }
+
+  private async callOpenAIForAnalysis(data: any[], qaResponses: QAResponses): Promise<{
+    insights: DataInsight[]
+    slideRecommendations: SlideRecommendation[]
+    executiveSummary: string
+    keyFindings: string[]
+  }> {
+    const prompt = this.buildAnalysisPrompt(data, qaResponses)
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -107,10 +126,6 @@ export class OpenAIAnalyzer {
       }
       
       return analysis
-    } catch (error) {
-      console.error('OpenAI analysis failed, using fallback:', error)
-      return this.enhancedIntelligentAnalysis(data, qaResponses)
-    }
   }
 
   private buildAnalysisPrompt(data: any[], qaResponses: QAResponses): string {

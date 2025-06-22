@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Brain } from 'lucide-react'
-import { OAuthManager } from '@/lib/auth/oauth-config'
+import { useAuth } from '@/lib/auth/auth-context'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { signIn, signInDemo } = useAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,21 +19,13 @@ export default function LoginPage() {
     setError('')
     
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        router.push('/dashboard')
-      } else {
-        setError(data.error || 'Login failed')
+      const result = await signIn(email, password)
+      
+      if (result.error) {
+        setError(result.error)
         setLoading(false)
+      } else {
+        router.push('/dashboard')
       }
     } catch (err) {
       setError('Network error occurred')
@@ -42,22 +35,16 @@ export default function LoginPage() {
 
   const handleDemoLogin = async () => {
     setLoading(true)
+    setError('')
+    
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ demo: true })
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        router.push('/dashboard')
-      } else {
-        setError('Failed to start demo')
+      const result = await signInDemo()
+      
+      if (result.error) {
+        setError(result.error)
         setLoading(false)
+      } else {
+        router.push('/dashboard')
       }
     } catch (error) {
       setError('Failed to start demo')
@@ -69,14 +56,9 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     
-    try {
-      await OAuthManager.signInWithProvider(provider)
-      // OAuth will redirect to callback page
-    } catch (error) {
-      console.error(`OAuth ${provider} error:`, error)
-      setError(`Failed to sign in with ${provider}`)
-      setLoading(false)
-    }
+    // For now, OAuth is disabled until Supabase is properly configured
+    setError(`${provider} login is not available yet. Please use the demo login.`)
+    setLoading(false)
   }
 
   return (
@@ -102,7 +84,7 @@ export default function LoginPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="demo@aedrin.com"
+              placeholder="your.email@company.com"
             />
           </div>
           <div>
@@ -112,7 +94,7 @@ export default function LoginPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               className="w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="password123"
+              placeholder="Enter your password"
             />
           </div>
           <button
@@ -120,7 +102,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Loading...' : 'Sign In (Demo)'}
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 

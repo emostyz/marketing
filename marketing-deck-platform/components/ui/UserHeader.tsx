@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 
 export function UserHeader() {
-  const { user, profile, signOut } = useAuth()
+  const { user, loading, signOut } = useAuth()
   const router = useRouter()
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -37,25 +37,38 @@ export function UserHeader() {
     setShowDropdown(false)
   }
 
-  const getSubscriptionIcon = (status: string) => {
+  const getSubscriptionIcon = (subscription: string) => {
     const icons = {
       free: User,
       pro: Crown,
       enterprise: Shield
     }
-    return icons[status as keyof typeof icons] || User
+    return icons[subscription as keyof typeof icons] || User
   }
 
-  const getSubscriptionColor = (status: string) => {
+  const getSubscriptionColor = (subscription: string) => {
     const colors = {
       free: 'text-gray-400',
       pro: 'text-blue-400',
       enterprise: 'text-purple-400'
     }
-    return colors[status as keyof typeof colors] || 'text-gray-400'
+    return colors[subscription as keyof typeof colors] || 'text-gray-400'
   }
 
-  if (!user || !profile) {
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-gray-700 rounded-full animate-pulse"></div>
+        <div className="hidden md:block">
+          <div className="w-20 h-4 bg-gray-700 rounded animate-pulse mb-1"></div>
+          <div className="w-24 h-3 bg-gray-700 rounded animate-pulse"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
     return (
       <div className="flex items-center gap-3">
         <Button 
@@ -76,7 +89,7 @@ export function UserHeader() {
     )
   }
 
-  const SubscriptionIcon = getSubscriptionIcon(profile.subscription_status)
+  const SubscriptionIcon = getSubscriptionIcon(user.subscription)
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -86,8 +99,8 @@ export function UserHeader() {
       >
         {/* Profile Picture */}
         <img
-          src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.full_name || 'User')}`}
-          alt={profile.full_name || 'Profile'}
+          src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}`}
+          alt={user.name}
           className="w-10 h-10 rounded-full border-2 border-gray-600"
         />
         
@@ -95,12 +108,12 @@ export function UserHeader() {
         <div className="text-left hidden md:block">
           <div className="flex items-center gap-2">
             <span className="text-white font-medium text-sm">
-              {profile.full_name || 'User'}
+              {user.name}
             </span>
-            <SubscriptionIcon className={`w-3 h-3 ${getSubscriptionColor(profile.subscription_status)}`} />
+            <SubscriptionIcon className={`w-3 h-3 ${getSubscriptionColor(user.subscription)}`} />
           </div>
           <div className="text-gray-400 text-xs">
-            {profile.company || profile.email}
+            {user.email}
           </div>
         </div>
         
@@ -116,17 +129,17 @@ export function UserHeader() {
           <div className="p-4 border-b border-gray-700 bg-gray-900/50">
             <div className="flex items-center gap-3">
               <img
-                src={profile.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.full_name || 'User')}`}
-                alt={profile.full_name || 'Profile'}
+                src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}`}
+                alt={user.name}
                 className="w-12 h-12 rounded-full border-2 border-gray-600"
               />
               <div className="flex-1">
-                <h4 className="text-white font-medium">{profile.full_name || 'User'}</h4>
-                <p className="text-gray-400 text-sm">{profile.email}</p>
+                <h4 className="text-white font-medium">{user.name}</h4>
+                <p className="text-gray-400 text-sm">{user.email}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <SubscriptionIcon className={`w-3 h-3 ${getSubscriptionColor(profile.subscription_status)}`} />
+                  <SubscriptionIcon className={`w-3 h-3 ${getSubscriptionColor(user.subscription)}`} />
                   <span className="text-xs text-gray-400 capitalize">
-                    {profile.subscription_status} Plan
+                    {user.subscription} Plan
                   </span>
                 </div>
               </div>

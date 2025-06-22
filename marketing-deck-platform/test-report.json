@@ -1,0 +1,138 @@
+{
+  "timestamp": "2025-06-22T00:45:02.501Z",
+  "duration": 55,
+  "summary": {
+    "passed": 15,
+    "failed": 3,
+    "warnings": 1,
+    "passRate": 83
+  },
+  "details": [
+    {
+      "testName": "Critical Dependencies",
+      "passed": true,
+      "details": "All critical dependencies present",
+      "category": "dependencies",
+      "timestamp": "2025-06-22T00:44:07.448Z"
+    },
+    {
+      "testName": "React Version",
+      "passed": true,
+      "details": "React 19 correctly configured",
+      "category": "dependencies",
+      "timestamp": "2025-06-22T00:44:07.448Z"
+    },
+    {
+      "testName": "Environment Variables",
+      "passed": false,
+      "details": "Missing: OPENAI_API_KEY, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "category": "config",
+      "timestamp": "2025-06-22T00:44:07.448Z"
+    },
+    {
+      "testName": "Critical Files",
+      "passed": true,
+      "details": "All critical files present",
+      "category": "structure",
+      "timestamp": "2025-06-22T00:44:07.449Z"
+    },
+    {
+      "testName": "components/charts Components",
+      "passed": true,
+      "details": "12 components found",
+      "category": "structure",
+      "timestamp": "2025-06-22T00:44:07.449Z"
+    },
+    {
+      "testName": "components/deck-builder Components",
+      "passed": true,
+      "details": "14 components found",
+      "category": "structure",
+      "timestamp": "2025-06-22T00:44:07.450Z"
+    },
+    {
+      "testName": "components/ui Components",
+      "passed": true,
+      "details": "14 components found",
+      "category": "structure",
+      "timestamp": "2025-06-22T00:44:07.450Z"
+    },
+    {
+      "testName": "Build System",
+      "passed": true,
+      "details": "Clean production build completed",
+      "category": "build",
+      "timestamp": "2025-06-22T00:44:29.804Z"
+    },
+    {
+      "testName": "TypeScript Compilation",
+      "passed": true,
+      "details": "No TypeScript errors",
+      "category": "quality",
+      "timestamp": "2025-06-22T00:44:39.143Z"
+    },
+    {
+      "testName": "Code Complexity",
+      "passed": true,
+      "details": "File sizes within reasonable limits",
+      "category": "quality",
+      "timestamp": "2025-06-22T00:44:39.177Z"
+    },
+    {
+      "testName": "Supabase Config",
+      "passed": false,
+      "details": "Missing Supabase credentials",
+      "category": "config",
+      "timestamp": "2025-06-22T00:44:39.177Z"
+    },
+    {
+      "testName": "OpenAI Integration",
+      "passed": false,
+      "details": "No API key configured",
+      "category": "functional",
+      "timestamp": "2025-06-22T00:44:39.177Z"
+    },
+    {
+      "testName": "Tremor Library",
+      "passed": true,
+      "details": "Core components available",
+      "category": "functional",
+      "timestamp": "2025-06-22T00:44:41.096Z"
+    },
+    {
+      "testName": "Recharts Library",
+      "passed": true,
+      "details": "Core components available",
+      "category": "functional",
+      "timestamp": "2025-06-22T00:44:41.096Z"
+    },
+    {
+      "testName": "ECharts Library",
+      "passed": true,
+      "details": "Core functions available",
+      "category": "functional",
+      "timestamp": "2025-06-22T00:44:41.150Z"
+    },
+    {
+      "testName": "Build Performance",
+      "passed": true,
+      "details": "Build completed in 21s (excellent)",
+      "category": "performance",
+      "timestamp": "2025-06-22T00:45:02.494Z"
+    },
+    {
+      "testName": "Bundle Size",
+      "passed": true,
+      "details": "Max bundle: 377kB (good)",
+      "category": "performance",
+      "timestamp": "2025-06-22T00:45:02.495Z"
+    },
+    {
+      "testName": "Next.js Config",
+      "passed": true,
+      "details": "Configuration file present",
+      "category": "security",
+      "timestamp": "2025-06-22T00:45:02.500Z"
+    }
+  ]
+}

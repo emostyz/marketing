@@ -9,12 +9,13 @@ import { AdvancedDataUploadModal } from '@/components/upload/AdvancedDataUploadM
 import { EnhancedDeckBuilder } from '@/components/deck-builder/EnhancedDeckBuilder'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Toaster } from 'react-hot-toast'
+import { Toaster, toast } from 'react-hot-toast'
 import { 
   Save, Download, ChevronLeft, ChevronRight, Plus, Brain, 
   FileDown, Palette, Settings, BarChart3, LineChart, PieChart,
   Type, Image, Trash2, Copy, Eye, ArrowLeft
 } from 'lucide-react'
+import { PresentationManager } from '@/lib/presentations/presentation-helpers'
 // import { exportToPowerPoint } from '@/lib/export/powerpoint'
 
 interface AdvancedPresentationEditorProps {
@@ -232,13 +233,99 @@ export function AdvancedPresentationEditor({
     }
   }
 
-  const handleEnhancedDeckComplete = (deckData: any) => {
-    setPresentation({
-      title: deckData.metadata?.title || enhancedBuilderData?.title || 'AI-Generated Presentation',
-      slides: deckData.slides || []
+  const handleEnhancedDeckComplete = async (deckData: any) => {
+    console.log('🎉 Enhanced deck complete! Received data:', deckData)
+    
+    // Process the slides to match the editor's expected format
+    const processedSlides = (deckData.slides || []).map((slide: any, index: number) => {
+      console.log(`Processing slide ${index + 1}:`, slide)
+      
+      // Convert the slide to the editor's format
+      const processedSlide = {
+        id: slide.id || `slide_${Date.now()}_${index}`,
+        type: slide.type || 'content',
+        title: slide.title || `Slide ${index + 1}`,
+        content: {
+          title: slide.content?.title || slide.title || `Slide ${index + 1}`,
+          subtitle: slide.content?.subtitle || '',
+          body: slide.content?.body || slide.content?.description || '',
+          bulletPoints: slide.content?.bulletPoints || slide.content?.insights || [],
+          description: slide.content?.description || slide.content?.body || '',
+          narrative: slide.content?.narrative || [],
+          insights: slide.content?.insights || slide.content?.bulletPoints || []
+        },
+        // Chart-specific properties
+        ...(slide.chartType && {
+          chartType: slide.chartType,
+          data: slide.data || slide.chartData || [],
+          categories: slide.categories || [],
+          index: slide.index || '',
+          tremorConfig: slide.tremorConfig || {
+            type: slide.chartType,
+            colors: ['blue', 'emerald', 'violet'],
+            showLegend: true,
+            showGradient: slide.chartType === 'area',
+            showGrid: true,
+            showTooltip: true,
+            animation: true,
+            height: 72
+          }
+        })
+      }
+      
+      console.log(`Processed slide ${index + 1}:`, processedSlide)
+      return processedSlide
     })
-    setCurrentSlideIndex(0)
-    setSaveStatus('unsaved')
+    
+    // Create a unique presentation ID
+    const presentationId = `pres_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    const newPresentation = {
+      id: presentationId,
+      title: deckData.metadata?.title || enhancedBuilderData?.title || 'AI-Generated Presentation',
+      description: `Generated from ${deckData.metadata?.dataPoints || 0} data points with ${processedSlides.length} slides`,
+      slides: processedSlides,
+      metadata: {
+        datasetName: deckData.metadata?.datasetName || 'Dataset',
+        analysisType: 'comprehensive',
+        confidence: deckData.metadata?.confidence || 85,
+        generatedAt: new Date().toISOString(),
+        dataPoints: deckData.metadata?.dataPoints || 0,
+        brainGenerated: true,
+        strategicInsights: deckData.insights?.keyTakeaways?.length || 0,
+        recommendations: deckData.insights?.strategicRecommendations?.length || 0,
+        version: '2.0',
+        worldClass: true
+      },
+      strategicInsights: deckData.insights,
+      status: 'completed' as const
+    }
+    
+    console.log('📋 Created new presentation:', newPresentation)
+    console.log('📊 Total slides processed:', processedSlides.length)
+    
+    try {
+      // Save the presentation using PresentationManager
+      const saveSuccess = await PresentationManager.savePresentation(newPresentation, userId?.toString())
+      
+      if (saveSuccess) {
+        console.log('✅ Presentation saved successfully')
+        toast.success(`Generated ${processedSlides.length} slides with AI!`)
+        
+        // Navigate to the deck builder with the new presentation
+        setTimeout(() => {
+          router.push(`/deck-builder/${presentationId}`)
+        }, 1500)
+      } else {
+        console.error('❌ Failed to save presentation')
+        toast.error('Failed to save presentation. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error saving presentation:', error)
+      toast.error('Error saving presentation. Please try again.')
+    }
+    
+    // Clean up the enhanced builder state
     setShowEnhancedBuilder(false)
     setEnhancedBuilderData(null)
   }

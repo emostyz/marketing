@@ -1,14 +1,15 @@
 import { Suspense } from 'react'
 import { DashboardClient } from '@/components/dashboard/DashboardClient'
 import Skeleton from '@/components/ui/Skeleton'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export default async function DashboardPage() {
-  // The DashboardClient will handle loading user-specific presentations
-  // using the AuthContext to get the current user
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardClient />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardClient />
+      </Suspense>
+    </ErrorBoundary>
   )
 }
 

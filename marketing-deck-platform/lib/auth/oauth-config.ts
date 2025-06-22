@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/enhanced-client'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/enhanced-client'
 
 export interface OAuthProvider {
   name: string
@@ -33,6 +33,10 @@ export const oauthProviders: Record<string, OAuthProvider> = {
 
 export class OAuthManager {
   static async signInWithProvider(provider: keyof typeof oauthProviders, redirectTo?: string) {
+    if (!isSupabaseConfigured()) {
+      throw new Error('OAuth is not configured. Please set up Supabase environment variables or use demo login.')
+    }
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider as any,
       options: {

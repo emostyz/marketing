@@ -553,17 +553,32 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
         return (
           <div className="w-full h-full p-4">
             <EnhancedWorldClassChart
-              type={slide.chartType as any}
-              data={visibleData}
-              index={slide.index || 'category'}
-              categories={Object.entries(chartColumns).filter(([_, v]) => v).map(([k]) => k)}
-              colors={slide.tremorConfig?.colors}
-              showLegend={true}
-              height={element.height - 32}
-              enableInteractivity={true}
-              onColumnToggle={toggleChartColumn}
-              title={slide.content?.title}
-              subtitle={slide.content?.subtitle}
+              insight={{
+                id: `chart_${element.id}`,
+                type: 'trend',
+                title: slide.content?.title || 'Chart',
+                description: slide.content?.subtitle || '',
+                confidence: 85,
+                novelty: 70,
+                impact: 'medium',
+                dataEvidence: visibleData,
+                drivers: [],
+                headwinds: [],
+                tailwinds: [],
+                why: 'Data visualization',
+                recommendations: [],
+                visualizationType: slide.chartType as any,
+                chartConfig: {
+                  data: visibleData,
+                  dimensions: [slide.index || 'category'],
+                  metrics: Object.entries(chartColumns).filter(([_, v]) => v).map(([k]) => k),
+                  filters: [],
+                  annotations: []
+                }
+              }}
+              onUpdate={() => {}}
+              showInsights={false}
+              interactive={true}
             />
           </div>
         )
@@ -805,18 +820,32 @@ export function ProfessionalSlideEditor({ slide, onUpdate, slideNumber }: Profes
                 <div className="w-full h-full p-8">
                   <h2 className="text-2xl font-bold mb-4 text-gray-800">{slide.content?.title}</h2>
                   <EnhancedWorldClassChart
-                    type={slide.chartType as any}
-                    data={slide.data}
-                    index={slide.index || 'category'}
-                    categories={slide.categories || []}
-                    colors={slide.tremorConfig?.colors}
-                    showLegend={true}
-                    height={400}
-                    enableInteractivity={true}
-                    onColumnToggle={toggleChartColumn}
-                    title={slide.content?.title}
-                    subtitle={slide.content?.subtitle}
-                    showDataTable={showDataTable}
+                    insight={{
+                      id: `slide_chart_${slide.id}`,
+                      type: 'trend',
+                      title: slide.content?.title || 'Chart',
+                      description: slide.content?.subtitle || '',
+                      confidence: 85,
+                      novelty: 70,
+                      impact: 'medium',
+                      dataEvidence: slide.data || [],
+                      drivers: [],
+                      headwinds: [],
+                      tailwinds: [],
+                      why: 'Slide data visualization',
+                      recommendations: [],
+                      visualizationType: slide.chartType as any,
+                      chartConfig: {
+                        data: slide.data || [],
+                        dimensions: [slide.index || 'category'],
+                        metrics: slide.categories || [],
+                        filters: [],
+                        annotations: []
+                      }
+                    }}
+                    onUpdate={() => {}}
+                    showInsights={false}
+                    interactive={true}
                   />
                 </div>
               )}
