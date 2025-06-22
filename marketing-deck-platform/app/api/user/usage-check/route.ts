@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         .eq('month_year', new Date().toISOString().slice(0, 7))
         .single();
       
-      currentUsage = usageData?.[action] || 0;
+      currentUsage = Number(usageData?.[action]) || 0;
     }
 
     return NextResponse.json({
