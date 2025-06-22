@@ -23,7 +23,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { 
   ResponsiveContainer, BarChart, Bar, LineChart as RechartsLineChart, Line, 
-  PieChart as RechartsPieChart, Cell, XAxis, YAxis, CartesianGrid, 
+  PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, 
   Tooltip, Legend, Area, AreaChart, ScatterChart, Scatter,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   Treemap, FunnelChart, Funnel, LabelList

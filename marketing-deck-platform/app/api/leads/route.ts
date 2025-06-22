@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createServerClient } from '@/lib/supabase/client'
+import { EventLogger } from '@/lib/services/event-logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = await createServerClient()
 
     // Get client IP and user agent
     const clientIP = request.headers.get('x-forwarded-for') || 
@@ -33,20 +33,21 @@ export async function POST(request: NextRequest) {
 
     if (existingLead) {
       // Log duplicate attempt
-      await supabase.from('user_events').insert({
-        event_type: 'lead_duplicate_attempt',
-        event_data: {
+      await EventLogger.logUserEvent(
+        'lead_duplicate_attempt',
+        {
           email,
           name,
           company,
           source,
           existing_lead_id: existingLead.id
         },
-        ip_address: clientIP,
-        user_agent: userAgent,
-        referer,
-        session_id: request.headers.get('x-session-id') || null
-      })
+        {
+          ip_address: clientIP,
+          user_agent: userAgent,
+          referer
+        }
+      )
 
       return NextResponse.json(
         { error: 'Email already registered' },
@@ -59,13 +60,15 @@ export async function POST(request: NextRequest) {
       .from('leads')
       .insert({
         email,
-        name: name || null,
-        company: company || null,
-        source,
-        status: 'new',
+        first_name: name ? name.split(' ')[0] : null,
+        last_name: name ? name.split(' ').slice(1).join(' ') : null,
+        company_name: company || null,
+        lead_source: source,
+        lead_status: 'new',
+        lead_stage: 'prospect',
         ip_address: clientIP,
         user_agent: userAgent,
-        referer,
+        referer_url: referer,
         created_at: new Date().toISOString()
       })
       .select()
@@ -75,19 +78,21 @@ export async function POST(request: NextRequest) {
       console.error('Error creating lead:', error)
       
       // Log error event
-      await supabase.from('system_events').insert({
-        event_type: 'lead_creation_error',
-        event_data: {
+      await EventLogger.logSystemEvent(
+        'lead_creation_error',
+        {
           error: error.message,
           email,
           name,
           company,
           source
         },
-        ip_address: clientIP,
-        user_agent: userAgent,
-        severity: 'error'
-      })
+        'error',
+        {
+          ip_address: clientIP,
+          user_agent: userAgent
+        }
+      )
 
       return NextResponse.json(
         { error: 'Failed to create lead' },
@@ -96,34 +101,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Log successful lead creation
-    await supabase.from('user_events').insert({
-      event_type: 'lead_created',
-      event_data: {
+    await EventLogger.logUserEvent(
+      'lead_created',
+      {
         lead_id: lead.id,
         email,
         name,
         company,
         source
       },
-      ip_address: clientIP,
-      user_agent: userAgent,
-      referer,
-      session_id: request.headers.get('x-session-id') || null
-    })
+      {
+        ip_address: clientIP,
+        user_agent: userAgent,
+        referer
+      }
+    )
 
     // Log lead capture event
-    await supabase.from('lead_events').insert({
-      lead_id: lead.id,
-      event_type: 'captured',
-      event_data: {
+    await EventLogger.logLeadEvent(
+      lead.id,
+      'captured',
+      {
         source,
         referer,
         user_agent: userAgent.substring(0, 500) // Truncate if too long
       },
-      ip_address: clientIP,
-      user_agent: userAgent,
-      created_at: new Date().toISOString()
-    })
+      {
+        ip_address: clientIP,
+        user_agent: userAgent
+      }
+    )
 
     return NextResponse.json({
       success: true,
@@ -133,18 +140,17 @@ export async function POST(request: NextRequest) {
     console.error('Lead API error:', error)
     
     // Log system error
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    await supabase.from('system_events').insert({
-      event_type: 'lead_api_error',
-      event_data: {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : null
+    await EventLogger.logSystemEvent(
+      'lead_api_error',
+      {
+        error: error instanceof Error ? error.message : 'Unknown error'
       },
-      ip_address: request.headers.get('x-forwarded-for') || 'unknown',
-      user_agent: request.headers.get('user-agent') || 'unknown',
-      severity: 'critical'
-    })
+      'critical',
+      {
+        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: request.headers.get('user-agent') || 'unknown'
+      }
+    )
 
     return NextResponse.json(
       { error: 'Internal server error' },

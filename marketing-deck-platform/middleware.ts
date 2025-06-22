@@ -28,7 +28,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for authentication
+  // Check for demo session first
+  const demoSession = request.cookies.get('demo-session')?.value;
+  if (demoSession) {
+    // Demo session exists, allow access
+    return NextResponse.next();
+  }
+
+  // Check for Supabase authentication
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,
@@ -37,8 +44,8 @@ export async function middleware(request: NextRequest) {
   });
 
   // Get the session from the request cookies
-  const authCookie = request.cookies.get('sb-access-token')?.value;
-  const refreshCookie = request.cookies.get('sb-refresh-token')?.value;
+  const authCookie = request.cookies.get('sb-waddrfstpqkvdfwbxvfw-auth-token')?.value;
+  const refreshCookie = request.cookies.get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')?.value;
 
   if (!authCookie && !refreshCookie) {
     // No auth cookies, redirect to login

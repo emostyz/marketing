@@ -1,140 +1,151 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthSystem } from '@/lib/auth/auth-system'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createServerClient } from '@/lib/supabase/client'
+import { EventLogger } from '@/lib/services/event-logger'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, demo = false } = await request.json()
+    const { email, password } = await request.json()
+    
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email and password are required' },
+        { status: 400 }
+      )
+    }
 
+    const supabase = await createServerClient()
+    
     // Get client info for logging
     const clientIP = request.headers.get('x-forwarded-for') || 
                     request.headers.get('x-real-ip') || 
                     'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
-    const referer = request.headers.get('referer') || 'unknown'
-
-    // Handle demo mode
-    if (demo) {
-      const supabase = createRouteHandlerClient({ cookies })
-      
-      // Log demo login
-      await supabase.from('user_events').insert({
-        event_type: 'demo_login',
-        event_data: {
-          email: 'demo@aedrin.com',
-          name: 'Demo User'
-        },
-        ip_address: clientIP,
-        user_agent: userAgent,
-        referer
-      })
-
-      await AuthSystem.setDemoMode()
-      return NextResponse.json({ 
-        success: true, 
-        user: {
-          id: 1,
-          name: 'Demo User',
-          email: 'demo@aedrin.com',
-          subscription: 'pro'
-        },
-        demo: true 
-      })
-    }
-
-    // Log login attempt
-    const supabase = createRouteHandlerClient({ cookies })
-    await supabase.from('user_events').insert({
-      event_type: 'login_attempted',
-      event_data: {
-        email,
-        has_password: !!password
-      },
-      ip_address: clientIP,
-      user_agent: userAgent,
-      referer
+    
+    // Sign in the user
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
     })
 
-    // Regular authentication
-    const result = await AuthSystem.authenticate(email, password)
-    
-    if (!result.success) {
-      // Log failed login
-      await supabase.from('user_events').insert({
-        event_type: 'login_failed',
-        event_data: {
+    if (error) {
+      console.error('Login error:', error)
+      
+      // Log failed login attempt
+      await EventLogger.logAuthEvent(
+        'anonymous',
+        'login_failed',
+        {
           email,
-          error: result.error
+          error_message: error.message,
+          error_code: error.status || 'unknown'
         },
-        ip_address: clientIP,
-        user_agent: userAgent,
-        referer
-      })
+        {
+          ip_address: clientIP,
+          user_agent: userAgent
+        }
+      )
 
       return NextResponse.json(
-        { error: result.error },
+        { error: 'Invalid email or password' },
         { status: 401 }
       )
     }
 
-    // Log successful login
-    await supabase.from('user_events').insert({
-      event_type: 'login_successful',
-      event_data: {
-        user_id: result.session!.user.id,
-        email,
-        name: result.session!.user.name,
-        subscription: result.session!.user.subscription
-      },
-      ip_address: clientIP,
-      user_agent: userAgent,
-      referer,
-      user_id: result.session!.user.id
-    })
+    if (!data.user) {
+      return NextResponse.json(
+        { error: 'Authentication failed' },
+        { status: 401 }
+      )
+    }
 
-    // Log auth event
-    await supabase.from('auth_events').insert({
-      user_id: result.session!.user.id,
-      event_type: 'logged_in',
-      event_data: {
-        method: 'email',
+    // Get or create user profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      console.error('Profile fetch error:', profileError)
+    }
+
+    // Create profile if it doesn't exist
+    if (!profile) {
+      const { error: createProfileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email,
+          full_name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+
+      if (createProfileError) {
+        console.error('Profile creation error:', createProfileError)
+      }
+    }
+
+    // Log successful login
+    await EventLogger.logAuthEvent(
+      data.user.id,
+      'login_successful',
+      {
         email,
-        name: result.session!.user.name
+        user_id: data.user.id,
+        login_method: 'email_password'
       },
-      ip_address: clientIP,
-      user_agent: userAgent,
-      session_id: result.session!.token,
-      created_at: new Date().toISOString()
-    })
+      {
+        ip_address: clientIP,
+        user_agent: userAgent,
+        session_id: data.session?.access_token || undefined
+      }
+    )
+
+    // Set cookies for the session
+    const response = NextResponse.json(
+      { 
+        success: true, 
+        user: data.user,
+        session: data.session 
+      },
+      { status: 200 }
+    )
 
     // Set auth cookies
-    await AuthSystem.setAuthCookie(result.session!)
+    if (data.session) {
+      response.cookies.set('sb-waddrfstpqkvdfwbxvfw-auth-token', data.session.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7 // 7 days
+      })
+      
+      response.cookies.set('sb-waddrfstpqkvdfwbxvfw-auth-token.0', data.session.refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30 // 30 days
+      })
+    }
 
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: result.session!.user.id,
-        name: result.session!.user.name,
-        email: result.session!.user.email,
-        subscription: result.session!.user.subscription
-      }
-    })
+    return response
+
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('Login route error:', error)
     
     // Log system error
-    const supabase = createRouteHandlerClient({ cookies })
-    await supabase.from('system_events').insert({
-      event_type: 'login_system_error',
-      event_data: {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : null
+    await EventLogger.logSystemEvent(
+      'login_system_error',
+      {
+        error_message: error instanceof Error ? error.message : 'Unknown error'
       },
-      ip_address: request.headers.get('x-forwarded-for') || 'unknown',
-      user_agent: request.headers.get('user-agent') || 'unknown',
-      severity: 'critical'
-    })
+      'error',
+      {
+        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: request.headers.get('user-agent') || 'unknown'
+      }
+    )
 
     return NextResponse.json(
       { error: 'Internal server error' },

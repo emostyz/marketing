@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@/lib/supabase/client';
 import { cookies } from 'next/headers';
 
 export interface EventLoggerOptions {
@@ -10,7 +10,9 @@ export interface EventLoggerOptions {
 }
 
 export class EventLogger {
-  private static supabase = createRouteHandlerClient({ cookies });
+  private static async getSupabase() {
+    return await createServerClient();
+  }
 
   /**
    * Log user events (user actions, interactions, etc.)
@@ -21,7 +23,8 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('user_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('user_events').insert({
         event_type: eventType,
         event_data: eventData,
         ip_address: options.ip_address || 'unknown',
@@ -46,7 +49,8 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('auth_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('auth_events').insert({
         user_id: userId,
         event_type: eventType,
         event_data: eventData,
@@ -70,7 +74,8 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('profile_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('profile_events').insert({
         user_id: userId,
         event_type: eventType,
         event_data: eventData,
@@ -93,7 +98,8 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('subscription_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('subscription_events').insert({
         user_id: userId,
         event_type: eventType,
         event_data: eventData,
@@ -115,7 +121,8 @@ export class EventLogger {
     stripeEventId?: string
   ) {
     try {
-      await this.supabase.from('payment_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('payment_events').insert({
         event_type: eventType,
         event_data: eventData,
         stripe_event_id: stripeEventId || null,
@@ -136,7 +143,8 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('lead_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('lead_events').insert({
         lead_id: leadId,
         event_type: eventType,
         event_data: eventData,
@@ -159,7 +167,8 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('system_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('system_events').insert({
         event_type: eventType,
         event_data: eventData,
         severity,
@@ -182,10 +191,11 @@ export class EventLogger {
     metadata: any = {}
   ) {
     try {
+      const supabase = await this.getSupabase();
       const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
       
       // Get current usage
-      const { data: currentUsage } = await this.supabase
+      const { data: currentUsage } = await supabase
         .from('usage_tracking')
         .select('*')
         .eq('user_id', userId)
@@ -197,20 +207,21 @@ export class EventLogger {
         const updateData: any = {};
         updateData[usageType] = (currentUsage[usageType] || 0) + amount;
         
-        await this.supabase
+        await supabase
           .from('usage_tracking')
           .update(updateData)
-          .eq('id', currentUsage.id);
+          .eq('user_id', userId)
+          .eq('month_year', currentMonth);
       } else {
         // Create new usage record
         const newUsage: any = {
           user_id: userId,
           month_year: currentMonth,
-          [usageType]: amount,
-          ...metadata
+          metadata
         };
+        newUsage[usageType] = amount;
         
-        await this.supabase
+        await supabase
           .from('usage_tracking')
           .insert(newUsage);
       }
@@ -231,7 +242,8 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('slide_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('slide_events').insert({
         user_id: userId,
         presentation_id: presentationId,
         slide_id: slideId,
@@ -257,7 +269,8 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('presentation_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('presentation_events').insert({
         user_id: userId,
         presentation_id: presentationId,
         event_type: eventType,
@@ -283,11 +296,12 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('data_upload_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('data_upload_events').insert({
         user_id: userId,
         file_id: fileId,
         file_name: fileName,
-        file_size_bytes: fileSize,
+        file_size: fileSize,
         data_type: dataType,
         ip_address: options.ip_address || 'unknown',
         user_agent: options.user_agent || 'unknown',
@@ -309,11 +323,12 @@ export class EventLogger {
     options: EventLoggerOptions = {}
   ) {
     try {
-      await this.supabase.from('export_events').insert({
+      const supabase = await this.getSupabase();
+      await supabase.from('export_events').insert({
         user_id: userId,
         presentation_id: presentationId,
         export_type: exportType,
-        event_data: exportData,
+        export_data: exportData,
         ip_address: options.ip_address || 'unknown',
         user_agent: options.user_agent || 'unknown',
         created_at: new Date().toISOString()
@@ -324,16 +339,16 @@ export class EventLogger {
   }
 
   /**
-   * Get client info from request headers
+   * Get client information from request
    */
   static getClientInfo(request: Request): EventLoggerOptions {
-    const headers = request.headers;
+    const url = new URL(request.url);
     return {
-      ip_address: headers.get('x-forwarded-for') || 
-                  headers.get('x-real-ip') || 
+      ip_address: request.headers.get('x-forwarded-for') || 
+                  request.headers.get('x-real-ip') || 
                   'unknown',
-      user_agent: headers.get('user-agent') || 'unknown',
-      referer: headers.get('referer') || 'unknown'
+      user_agent: request.headers.get('user-agent') || 'unknown',
+      referer: request.headers.get('referer') || url.origin
     };
   }
 } 

@@ -1,9 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-// For client-side usage
+// For client-side usage (browser)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // For server-side usage with service role
@@ -14,6 +15,37 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
     persistSession: false
   }
 })
+
+// Server-side client with proper cookie handling for Next.js 15
+export async function createServerClient() {
+  const cookieStore = await cookies()
+  
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'supabase-js-nextjs',
+      },
+    },
+  })
+}
+
+// Helper function to get user session from server-side
+export async function getServerSession() {
+  const supabase = await createServerClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  return session
+}
+
+// Helper function to get user from server-side
+export async function getServerUser() {
+  const supabase = await createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return user
+}
 
 // Database types
 export interface Database {

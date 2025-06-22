@@ -367,17 +367,117 @@ export class DeckPersistence {
     }
   }
 
-  // Set up auto-save interval for active drafts
+  // Set up auto-save interval for active drafts (10 seconds)
   static setupAutoSave(draftId: string, getDraftData: () => Partial<DeckDraft>): () => void {
+    let lastSavedContent = ''
+    
     const interval = setInterval(async () => {
       const draftData = getDraftData()
       if (draftData) {
-        await this.autoSaveDraft(draftData)
+        const currentContent = JSON.stringify(draftData)
+        
+        // Only save if content has changed
+        if (currentContent !== lastSavedContent) {
+          const success = await this.autoSaveDraft(draftData)
+          if (success) {
+            lastSavedContent = currentContent
+            console.log('Auto-saved deck:', draftId, new Date().toLocaleTimeString())
+          }
+        }
       }
-    }, 30000) // Auto-save every 30 seconds
+    }, 10000) // Auto-save every 10 seconds
 
     // Return cleanup function
     return () => clearInterval(interval)
+  }
+
+  // Enhanced auto-save that also saves to our new autosave table
+  static async enhancedAutoSave(draftId: string, content: any): Promise<boolean> {
+    try {
+      // Save to main presentations table
+      const mainSaveSuccess = await this.autoSaveDraft({
+        id: draftId,
+        slides: content.slides,
+        narrativeConfig: content.narrativeConfig,
+        lastEditedAt: new Date()
+      })
+
+      // Also save to autosaves table for versioning
+      const { error } = await supabase
+        .from('presentation_autosaves')
+        .insert({
+          presentation_id: draftId,
+          content,
+          saved_at: new Date().toISOString()
+        })
+
+      if (error) {
+        console.error('Error saving to autosaves table:', error)
+        // Still return true if main save succeeded
+        return mainSaveSuccess
+      }
+
+      return mainSaveSuccess
+    } catch (error) {
+      console.error('Error in enhanced auto-save:', error)
+      return false
+    }
+  }
+
+  // Get auto-save history for a presentation
+  static async getAutoSaveHistory(draftId: string, limit: number = 10): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('presentation_autosaves')
+        .select('content, saved_at')
+        .eq('presentation_id', draftId)
+        .order('saved_at', { ascending: false })
+        .limit(limit)
+
+      if (error) {
+        console.error('Error getting auto-save history:', error)
+        return []
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Error getting auto-save history:', error)
+      return []
+    }
+  }
+
+  // Restore from auto-save
+  static async restoreFromAutoSave(draftId: string, autoSaveId?: string): Promise<DeckDraft | null> {
+    try {
+      let query = supabase
+        .from('presentation_autosaves')
+        .select('content')
+        .eq('presentation_id', draftId)
+
+      if (autoSaveId) {
+        query = query.eq('id', autoSaveId)
+      } else {
+        query = query.order('saved_at', { ascending: false }).limit(1)
+      }
+
+      const { data, error } = await query.single()
+
+      if (error) {
+        console.error('Error restoring from auto-save:', error)
+        return null
+      }
+
+      // Update the main presentation with the auto-saved content
+      const restored = await this.saveDraft({
+        id: draftId,
+        ...data.content
+      })
+
+      return restored
+    } catch (error) {
+      console.error('Error restoring from auto-save:', error)
+      return null
+    }
   }
 
   // Track user activity for analytics

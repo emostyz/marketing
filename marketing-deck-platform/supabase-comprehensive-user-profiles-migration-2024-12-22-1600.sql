@@ -2,6 +2,16 @@
 -- Created: 2024-12-22 16:00:00
 -- Description: Adds comprehensive user intake form fields to profiles table
 
+-- Create migrations_log table first if it doesn't exist
+CREATE TABLE IF NOT EXISTS migrations_log (
+  id SERIAL PRIMARY KEY,
+  migration_name VARCHAR(255) UNIQUE NOT NULL,
+  executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  description TEXT
+);
+
+COMMENT ON TABLE migrations_log IS 'Tracks database migrations for audit and rollback purposes';
+
 -- Add new columns to profiles table for comprehensive user data
 ALTER TABLE profiles 
 ADD COLUMN IF NOT EXISTS business_goals JSONB DEFAULT '[]',
@@ -142,13 +152,3 @@ INSERT INTO migrations_log (
   CURRENT_TIMESTAMP,
   'Added comprehensive user intake form fields to profiles table with analytics views and helper functions'
 ) ON CONFLICT (migration_name) DO NOTHING;
-
--- Create migrations_log table if it doesn't exist
-CREATE TABLE IF NOT EXISTS migrations_log (
-  id SERIAL PRIMARY KEY,
-  migration_name VARCHAR(255) UNIQUE NOT NULL,
-  executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  description TEXT
-);
-
-COMMENT ON TABLE migrations_log IS 'Tracks database migrations for audit and rollback purposes';

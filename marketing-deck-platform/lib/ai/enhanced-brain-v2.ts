@@ -652,7 +652,7 @@ Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON) c
 
 EXECUTIVE BRIEFING:
 Industry: ${context.industry} | Business Context: ${context.businessContext}
-Data Quality: ${context.dataQuality} | Key Factors: ${context.factors.join(', ')}
+Data Quality: ${context.dataQuality || 'good'} | Key Factors: ${(context.factors || []).join(', ')}
 
 ANALYTICAL FOUNDATION:
 ${JSON.stringify(patternAnalysis, null, 2)}
