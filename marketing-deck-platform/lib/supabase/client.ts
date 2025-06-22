@@ -1,185 +1,116 @@
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://waddrfstpqkvdfwbxvfw.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZGRyZnN0cHFrdmRmd2J4dmZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNDU3NzUsImV4cCI6MjA2NTkyMTc3NX0.xzosM3NHbf_kpmw5hRFKKqDuvbNLp9MrqsWITk9tD5w'
 
 // For client-side usage (browser)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// For server-side usage with service role
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    autoRefreshToken: false,
-    persistSession: false
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined
   }
 })
-
-// Server-side client with proper cookie handling for Next.js 15
-export async function createServerClient() {
-  const cookieStore = await cookies()
-  
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-    global: {
-      headers: {
-        'X-Client-Info': 'supabase-js-nextjs',
-      },
-    },
-  })
-}
-
-// Helper function to get user session from server-side
-export async function getServerSession() {
-  const supabase = await createServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  return session
-}
-
-// Helper function to get user from server-side
-export async function getServerUser() {
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
-}
 
 // Database types
 export interface Database {
   public: {
     Tables: {
-      users: {
+      profiles: {
         Row: {
           id: string
+          user_id: string
           email: string
-          name: string
-          avatar_url?: string
-          subscription: 'free' | 'pro' | 'enterprise'
+          full_name: string | null
+          first_name: string | null
+          last_name: string | null
+          company_name: string | null
+          job_title: string | null
+          industry: string | null
+          avatar_url: string | null
+          subscription_tier: string | null
+          subscription_status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          onboarding_completed: boolean | null
+          brand_colors: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: any
+        Update: any
+      }
+      leads: {
+        Row: {
+          id: string
+          user_id: string | null
+          email: string
+          full_name: string | null
+          company_name: string | null
+          source: string
+          status: 'new' | 'contacted' | 'qualified' | 'converted'
+          ip_address: string | null
+          user_agent: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
-          id: string
+          id?: string
+          user_id?: string | null
           email: string
-          name: string
-          avatar_url?: string
-          subscription?: 'free' | 'pro' | 'enterprise'
+          full_name?: string | null
+          company_name?: string | null
+          source?: string
+          status?: 'new' | 'contacted' | 'qualified' | 'converted'
+          ip_address?: string | null
+          user_agent?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
+          user_id?: string | null
           email?: string
-          name?: string
-          avatar_url?: string
-          subscription?: 'free' | 'pro' | 'enterprise'
-          updated_at?: string
-        }
-      }
-      presentations: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          description?: string
-          slides: any[]
-          theme: string
-          tags: string[]
-          is_public: boolean
-          qa_responses?: any
-          original_data?: any[]
-          thumbnail_url?: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title: string
-          description?: string
-          slides: any[]
-          theme?: string
-          tags?: string[]
-          is_public?: boolean
-          qa_responses?: any
-          original_data?: any[]
-          thumbnail_url?: string
+          full_name?: string | null
+          company_name?: string | null
+          source?: string
+          status?: 'new' | 'contacted' | 'qualified' | 'converted'
+          ip_address?: string | null
+          user_agent?: string | null
           created_at?: string
           updated_at?: string
         }
-        Update: {
-          id?: string
-          user_id?: string
-          title?: string
-          description?: string
-          slides?: any[]
-          theme?: string
-          tags?: string[]
-          is_public?: boolean
-          qa_responses?: any
-          original_data?: any[]
-          thumbnail_url?: string
-          updated_at?: string
-        }
       }
-      datasets: {
+      user_events: {
         Row: {
           id: string
-          user_id: string
-          name: string
-          description?: string
-          data: any[]
-          file_type?: string
-          file_size?: number
-          qa_responses?: any
-          ai_analysis?: any
+          user_id: string | null
+          session_id: string | null
+          event_type: string
+          event_data: any | null
+          ip_address: string | null
+          user_agent: string | null
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
-          user_id: string
-          name: string
-          description?: string
-          data: any[]
-          file_type?: string
-          file_size?: number
-          qa_responses?: any
-          ai_analysis?: any
+          user_id?: string | null
+          session_id?: string | null
+          event_type: string
+          event_data?: any | null
+          ip_address?: string | null
+          user_agent?: string | null
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
-          user_id?: string
-          name?: string
-          description?: string
-          data?: any[]
-          file_type?: string
-          file_size?: number
-          qa_responses?: any
-          ai_analysis?: any
-          updated_at?: string
-        }
-      }
-      analytics: {
-        Row: {
-          id: string
-          user_id?: string
-          presentation_id?: string
-          action: string
-          metadata?: any
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id?: string
-          presentation_id?: string
-          action: string
-          metadata?: any
+          user_id?: string | null
+          session_id?: string | null
+          event_type?: string
+          event_data?: any | null
+          ip_address?: string | null
+          user_agent?: string | null
           created_at?: string
         }
       }
@@ -219,14 +150,12 @@ export async function signOut() {
   return { error }
 }
 
-// Presentation operations
 export async function savePresentation(presentation: Database['public']['Tables']['presentations']['Insert']) {
   const { data, error } = await supabase
     .from('presentations')
     .insert(presentation)
     .select()
     .single()
-  
   return { data, error }
 }
 
@@ -235,8 +164,7 @@ export async function getUserPresentations(userId: string) {
     .from('presentations')
     .select('*')
     .eq('user_id', userId)
-    .order('updated_at', { ascending: false })
-  
+    .order('created_at', { ascending: false })
   return { data, error }
 }
 
@@ -246,7 +174,6 @@ export async function getPresentation(id: string) {
     .select('*')
     .eq('id', id)
     .single()
-  
   return { data, error }
 }
 
@@ -257,27 +184,23 @@ export async function updatePresentation(id: string, updates: Database['public']
     .eq('id', id)
     .select()
     .single()
-  
   return { data, error }
 }
 
 export async function deletePresentation(id: string) {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('presentations')
     .delete()
     .eq('id', id)
-  
-  return { data, error }
+  return { error }
 }
 
-// Dataset operations
 export async function saveDataset(dataset: Database['public']['Tables']['datasets']['Insert']) {
   const { data, error } = await supabase
     .from('datasets')
     .insert(dataset)
     .select()
     .single()
-  
   return { data, error }
 }
 
@@ -287,15 +210,14 @@ export async function getUserDatasets(userId: string) {
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-  
   return { data, error }
 }
 
-// Analytics tracking
 export async function trackAnalytics(analytics: Database['public']['Tables']['analytics']['Insert']) {
   const { data, error } = await supabase
     .from('analytics')
     .insert(analytics)
-  
+    .select()
+    .single()
   return { data, error }
 }

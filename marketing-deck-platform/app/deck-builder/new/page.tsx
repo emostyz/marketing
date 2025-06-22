@@ -1,7 +1,13 @@
 import { Suspense } from 'react'
+import { Viewport } from 'next'
 import { UltimateDeckBuilder } from '@/components/deck-builder/UltimateDeckBuilder'
 import { AuthSystem } from '@/lib/auth/auth-system'
 import { redirect } from 'next/navigation'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
 
 export default async function NewDeckBuilderPage() {
   // Check authentication

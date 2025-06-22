@@ -1,241 +1,179 @@
--- =====================================================
--- AEDRIN MARKETING DECK PLATFORM - CLEAN SETUP
--- Updated version with all required fields for complete data flow
--- =====================================================
+-- Clean setup migration for AEDRIN platform
+-- Run this in your Supabase SQL editor
 
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =====================================================
--- CORE TABLES
+-- CREATE ENUMS (if they don't exist)
 -- =====================================================
 
--- Enhanced users table with OAuth support
-CREATE TABLE IF NOT EXISTS public.users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    full_name VARCHAR(255),
-    avatar_url TEXT,
-    company VARCHAR(255),
-    role VARCHAR(50) DEFAULT 'user',
-    subscription_status VARCHAR(50) DEFAULT 'free',
-    oauth_provider VARCHAR(50),
-    oauth_provider_id VARCHAR(255),
-    preferences JSONB DEFAULT '{}',
-    api_usage_count INTEGER DEFAULT 0,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+DO $$ BEGIN
+    CREATE TYPE subscription_tier AS ENUM ('free', 'pro', 'enterprise');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- Profiles table (for Supabase auth integration)
-CREATE TABLE IF NOT EXISTS public.profiles (
+DO $$ BEGIN
+    CREATE TYPE event_severity AS ENUM ('info', 'warning', 'error', 'critical');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE presentation_status AS ENUM ('draft', 'published', 'archived');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- =====================================================
+-- DROP EXISTING TABLES (if they exist)
+-- =====================================================
+
+DROP TABLE IF EXISTS system_events CASCADE;
+DROP TABLE IF EXISTS profile_events CASCADE;
+DROP TABLE IF EXISTS subscription_events CASCADE;
+DROP TABLE IF EXISTS payment_events CASCADE;
+DROP TABLE IF EXISTS lead_events CASCADE;
+DROP TABLE IF EXISTS usage_tracking CASCADE;
+DROP TABLE IF EXISTS slide_events CASCADE;
+DROP TABLE IF EXISTS presentation_events CASCADE;
+DROP TABLE IF EXISTS data_upload_events CASCADE;
+DROP TABLE IF EXISTS export_events CASCADE;
+DROP TABLE IF EXISTS auth_events CASCADE;
+DROP TABLE IF EXISTS user_events CASCADE;
+DROP TABLE IF EXISTS leads CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+DROP TABLE IF EXISTS presentations CASCADE;
+DROP TABLE IF EXISTS slides CASCADE;
+DROP TABLE IF EXISTS templates CASCADE;
+DROP TABLE IF EXISTS themes CASCADE;
+DROP TABLE IF EXISTS page_views CASCADE;
+DROP TABLE IF EXISTS user_interactions CASCADE;
+DROP TABLE IF EXISTS user_sessions CASCADE;
+DROP TABLE IF EXISTS data_files CASCADE;
+DROP TABLE IF EXISTS ai_analysis_history CASCADE;
+DROP TABLE IF EXISTS collaboration_sessions CASCADE;
+DROP TABLE IF EXISTS export_history CASCADE;
+DROP TABLE IF EXISTS error_logs CASCADE;
+
+-- =====================================================
+-- CREATE TABLES
+-- =====================================================
+
+-- User profiles table
+CREATE TABLE profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email TEXT NOT NULL UNIQUE,
+    user_id UUID UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    name TEXT,
+    full_name TEXT,
+    first_name TEXT,
+    last_name TEXT,
     company_name TEXT,
+    job_title TEXT,
+    industry TEXT,
+    avatar_url TEXT,
     logo_url TEXT,
-    brand_colors JSONB DEFAULT '{}',
+    subscription_tier subscription_tier DEFAULT 'free',
+    onboarding_completed BOOLEAN DEFAULT FALSE,
+    brand_colors JSONB,
+    preferences JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enhanced presentations table with ALL required fields
-CREATE TABLE IF NOT EXISTS public.presentations (
+-- Leads table
+CREATE TABLE leads (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    user_id UUID,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    company TEXT,
+    phone TEXT,
+    message TEXT,
+    source TEXT DEFAULT 'website',
+    status TEXT DEFAULT 'new',
+    ip_address TEXT,
+    user_agent TEXT,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Presentations table
+CREATE TABLE presentations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL,
     title TEXT NOT NULL,
     description TEXT,
-    status TEXT DEFAULT 'draft',
+    content JSONB,
+    status presentation_status DEFAULT 'draft',
     template_id TEXT,
-    slides JSONB DEFAULT '[]',
-    data_sources JSONB DEFAULT '[]',
-    narrative_config JSONB DEFAULT '{}',
-    theme VARCHAR(50) DEFAULT 'dark',
-    is_public BOOLEAN DEFAULT false,
-    is_template BOOLEAN DEFAULT false,
-    tags TEXT[] DEFAULT '{}',
-    view_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Templates table
-CREATE TABLE IF NOT EXISTS public.templates (
+-- User events table
+CREATE TABLE user_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name TEXT NOT NULL,
-    description TEXT,
-    preview_image_url TEXT,
-    structure JSONB DEFAULT '{}',
-    tags TEXT[] DEFAULT '{}',
-    is_public BOOLEAN DEFAULT true,
-    created_by UUID REFERENCES public.profiles(id),
+    user_id UUID,
+    event_type TEXT NOT NULL,
+    event_data JSONB,
+    session_id TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    metadata JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Presentation Events table for tracking user interactions
-CREATE TABLE IF NOT EXISTS public.presentation_events (
+-- System events table
+CREATE TABLE system_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.profiles(id),
-    presentation_id UUID REFERENCES public.presentations(id) ON DELETE CASCADE,
-    event_type TEXT,
-    metadata JSONB DEFAULT '{}',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Dataset storage for uploaded data
-CREATE TABLE IF NOT EXISTS public.datasets (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    file_name VARCHAR(255),
-    file_type VARCHAR(50),
-    data JSONB NOT NULL,
-    row_count INTEGER,
-    is_sample BOOLEAN DEFAULT false,
-    processing_status VARCHAR(50) DEFAULT 'completed',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- QA responses for deck building context
-CREATE TABLE IF NOT EXISTS public.qa_responses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    dataset_id UUID REFERENCES public.datasets(id) ON DELETE CASCADE,
-    presentation_id UUID REFERENCES public.presentations(id) ON DELETE CASCADE,
-    dataset_description TEXT NOT NULL,
-    business_goals TEXT NOT NULL,
-    data_type VARCHAR(50) NOT NULL,
-    analysis_type VARCHAR(50) NOT NULL,
-    target_audience VARCHAR(100),
-    presentation_style VARCHAR(50) NOT NULL,
-    additional_context TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- AI analysis results and insights
-CREATE TABLE IF NOT EXISTS public.ai_analysis_results (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    dataset_id UUID REFERENCES public.datasets(id) ON DELETE CASCADE,
-    qa_response_id UUID REFERENCES public.qa_responses(id) ON DELETE CASCADE,
-    presentation_id UUID REFERENCES public.presentations(id) ON DELETE CASCADE,
-    analysis_type VARCHAR(50) NOT NULL,
-    insights JSONB NOT NULL DEFAULT '{}',
-    slide_recommendations JSONB NOT NULL DEFAULT '[]',
-    executive_summary TEXT,
-    key_findings TEXT[] DEFAULT '{}',
-    confidence_score INTEGER DEFAULT 0,
-    processing_time_ms INTEGER,
-    tokens_used INTEGER,
-    model_version VARCHAR(50),
+    event_type TEXT NOT NULL,
+    event_data JSONB,
+    severity event_severity DEFAULT 'info',
+    ip_address TEXT,
+    user_agent TEXT,
+    metadata JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =====================================================
--- INDEXES
+-- CREATE INDEXES
 -- =====================================================
 
-CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
-CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
-CREATE INDEX IF NOT EXISTS idx_presentations_user_id ON public.presentations(user_id);
-CREATE INDEX IF NOT EXISTS idx_presentations_is_public ON public.presentations(is_public);
-CREATE INDEX IF NOT EXISTS idx_presentations_status ON public.presentations(status);
-CREATE INDEX IF NOT EXISTS idx_templates_created_by ON public.templates(created_by);
-CREATE INDEX IF NOT EXISTS idx_presentation_events_user_id ON public.presentation_events(user_id);
-CREATE INDEX IF NOT EXISTS idx_presentation_events_presentation_id ON public.presentation_events(presentation_id);
-CREATE INDEX IF NOT EXISTS idx_datasets_user_id ON public.datasets(user_id);
+-- Profiles indexes
+CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
+CREATE INDEX IF NOT EXISTS idx_profiles_subscription_tier ON profiles(subscription_tier);
+
+-- Leads indexes
+CREATE INDEX IF NOT EXISTS idx_leads_user_id ON leads(user_id);
+CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
+CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
+CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads(created_at);
+
+-- Presentations indexes
+CREATE INDEX IF NOT EXISTS idx_presentations_user_id ON presentations(user_id);
+CREATE INDEX IF NOT EXISTS idx_presentations_status ON presentations(status);
+CREATE INDEX IF NOT EXISTS idx_presentations_created_at ON presentations(created_at);
+
+-- User events indexes
+CREATE INDEX IF NOT EXISTS idx_user_events_user_id ON user_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_events_event_type ON user_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_user_events_created_at ON user_events(created_at);
+
+-- System events indexes
+CREATE INDEX IF NOT EXISTS idx_system_events_created_at ON system_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_system_events_severity ON system_events(severity);
 
 -- =====================================================
--- ROW LEVEL SECURITY
+-- CREATE TRIGGERS
 -- =====================================================
 
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.presentations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.presentation_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.datasets ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.qa_responses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ai_analysis_results ENABLE ROW LEVEL SECURITY;
-
--- User policies
-CREATE POLICY "Users can view own profile" ON public.users
-    FOR SELECT USING (auth.uid() = id);
-
-CREATE POLICY "Users can update own profile" ON public.users
-    FOR UPDATE USING (auth.uid() = id);
-
--- Profile policies
-CREATE POLICY "Profiles can view own profile" ON public.profiles
-    FOR SELECT USING (auth.uid()::text = id::text);
-
-CREATE POLICY "Profiles can update own profile" ON public.profiles
-    FOR UPDATE USING (auth.uid()::text = id::text);
-
-CREATE POLICY "Profiles can create own profile" ON public.profiles
-    FOR INSERT WITH CHECK (auth.uid()::text = id::text);
-
--- Presentation policies
-CREATE POLICY "Users can view own presentations" ON public.presentations
-    FOR SELECT USING (auth.uid()::text = user_id::text OR is_public = true);
-
-CREATE POLICY "Users can create presentations" ON public.presentations
-    FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
-
-CREATE POLICY "Users can update own presentations" ON public.presentations
-    FOR UPDATE USING (auth.uid()::text = user_id::text);
-
-CREATE POLICY "Users can delete own presentations" ON public.presentations
-    FOR DELETE USING (auth.uid()::text = user_id::text);
-
--- Template policies
-CREATE POLICY "Users can view public templates" ON public.templates
-    FOR SELECT USING (is_public = true OR auth.uid()::text = created_by::text);
-
-CREATE POLICY "Users can create templates" ON public.templates
-    FOR INSERT WITH CHECK (auth.uid()::text = created_by::text);
-
--- Presentation Events policies
-CREATE POLICY "Users can view own events" ON public.presentation_events
-    FOR SELECT USING (auth.uid()::text = user_id::text);
-
-CREATE POLICY "Users can create events" ON public.presentation_events
-    FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
-
--- Dataset policies
-CREATE POLICY "Users can view own datasets" ON public.datasets
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create datasets" ON public.datasets
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own datasets" ON public.datasets
-    FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own datasets" ON public.datasets
-    FOR DELETE USING (auth.uid() = user_id);
-
--- QA responses policies
-CREATE POLICY "Users can view own qa responses" ON public.qa_responses
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create qa responses" ON public.qa_responses
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- AI analysis results policies
-CREATE POLICY "Users can view own ai results" ON public.ai_analysis_results
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create ai results" ON public.ai_analysis_results
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- =====================================================
--- TRIGGERS FOR UPDATED_AT
--- =====================================================
-
+-- Function to update updated_at column
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -244,39 +182,95 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
+-- Create triggers for updated_at columns
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles
+DROP TRIGGER IF EXISTS update_leads_updated_at ON leads;
+CREATE TRIGGER update_leads_updated_at BEFORE UPDATE ON leads
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_presentations_updated_at BEFORE UPDATE ON public.presentations
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_templates_updated_at BEFORE UPDATE ON public.templates
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_datasets_updated_at BEFORE UPDATE ON public.datasets
+DROP TRIGGER IF EXISTS update_presentations_updated_at ON presentations;
+CREATE TRIGGER update_presentations_updated_at BEFORE UPDATE ON presentations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================================
--- PERMISSIONS
+-- ROW LEVEL SECURITY (RLS)
+-- =====================================================
+
+-- Enable RLS on all tables
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE presentations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE system_events ENABLE ROW LEVEL SECURITY;
+
+-- Profiles policies
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+CREATE POLICY "Users can view own profile" ON profiles
+    FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+CREATE POLICY "Users can update own profile" ON profiles
+    FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+CREATE POLICY "Users can insert own profile" ON profiles
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Leads policies (allow public insert, user view own)
+DROP POLICY IF EXISTS "Public can insert leads" ON leads;
+CREATE POLICY "Public can insert leads" ON leads
+    FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Users can view own leads" ON leads;
+CREATE POLICY "Users can view own leads" ON leads
+    FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+
+-- Presentations policies
+DROP POLICY IF EXISTS "Users can manage own presentations" ON presentations;
+CREATE POLICY "Users can manage own presentations" ON presentations
+    FOR ALL USING (auth.uid() = user_id);
+
+-- User events policies
+DROP POLICY IF EXISTS "Users can view own events" ON user_events;
+CREATE POLICY "Users can view own events" ON user_events
+    FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+
+DROP POLICY IF EXISTS "Public can insert events" ON user_events;
+CREATE POLICY "Public can insert events" ON user_events
+    FOR INSERT WITH CHECK (true);
+
+-- System events policies
+DROP POLICY IF EXISTS "System events are viewable by authenticated users" ON system_events;
+CREATE POLICY "System events are viewable by authenticated users" ON system_events
+    FOR SELECT USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "System events are insertable by authenticated users" ON system_events;
+CREATE POLICY "System events are insertable by authenticated users" ON system_events
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+-- =====================================================
+-- INSERT DEFAULT DATA
+-- =====================================================
+
+-- Insert system event to mark migration completion
+INSERT INTO system_events (event_type, event_data, severity) VALUES 
+('migration_completed', '{"migration": "clean-setup-migration", "version": "1.0.0"}', 'info')
+ON CONFLICT DO NOTHING;
+
+-- =====================================================
+-- GRANT PERMISSIONS
 -- =====================================================
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
-GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
 
 -- =====================================================
--- SUCCESS MESSAGE
+-- MIGRATION COMPLETE
 -- =====================================================
 
-DO $$
-BEGIN
-    RAISE NOTICE '=====================================================';
-    RAISE NOTICE 'AEDRIN PLATFORM DATABASE SETUP COMPLETE!';
-    RAISE NOTICE 'All tables created with complete field coverage';
-    RAISE NOTICE 'Ready for full deck building with real-time data!';
-    RAISE NOTICE '=====================================================';
-END $$;
+SELECT 'Migration completed successfully! Database schema is now ready.' as status; 

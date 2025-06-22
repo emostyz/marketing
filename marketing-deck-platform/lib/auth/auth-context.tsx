@@ -2,18 +2,15 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/enhanced-client'
-import OAuthManager from './oauth-config'
+import { supabase } from '@/lib/supabase/client'
 
 interface User {
-  id: number
+  id: string
   email: string
   name: string
   avatar?: string
   subscription: 'free' | 'pro' | 'enterprise'
-  createdAt: Date
-  lastLoginAt: Date
-  profile?: any
+  demo?: boolean
 }
 
 interface AuthContextType {
@@ -21,7 +18,7 @@ interface AuthContextType {
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error?: string }>
   signInDemo: () => Promise<{ error?: string }>
-  signInWithOAuth: (provider: 'google' | 'github' | 'microsoft') => Promise<{ error?: string }>
+  signInWithOAuth: (provider: 'google' | 'github') => Promise<{ error?: string }>
   signUp: (name: string, email: string, password: string, company?: string) => Promise<{ error?: string }>
   signOut: () => Promise<void>
   updateProfile: (profileData: any) => Promise<{ error?: string }>
@@ -34,13 +31,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // Initialize auth state
   useEffect(() => {
-    const initializeAuth = async () => {
+    // Check for demo session
+    const demoSession = localStorage.getItem('demo-session')
+    if (demoSession) {
       try {
-        setLoading(true)
-        
-        // Get current session from Supabase
+        const demoData = JSON.parse(demoSession)
+        if (demoData.expiresAt && new Date(demoData.expiresAt) > new Date()) {
+          setUser({
+            id: 'demo-user',
+            email: 'demo@aedrin.com',
+            name: 'Demo User',
+            subscription: 'pro',
+            demo: true
+          })
+          setLoading(false)
+          return
+        } else {
+          // Demo expired, clear it
+          localStorage.removeItem('demo-session')
+        }
+      } catch (error) {
+        localStorage.removeItem('demo-session')
+      }
+    }
+
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -50,68 +68,96 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (session?.user) {
-          // Get enhanced user profile
-          const enhancedUser = await OAuthManager.getCurrentUser()
-          if (enhancedUser) {
-            setUser(enhancedUser)
-          }
+          await fetchUserProfile(session.user)
+        } else {
+          setLoading(false)
         }
-
-        // Listen for auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            console.log('Auth state changed:', event, session?.user?.email)
-            
-            if (event === 'SIGNED_IN' && session?.user) {
-              const enhancedUser = await OAuthManager.getCurrentUser()
-              if (enhancedUser) {
-                setUser(enhancedUser)
-              }
-            } else if (event === 'SIGNED_OUT') {
-              setUser(null)
-              router.push('/auth/login')
-            } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-              const enhancedUser = await OAuthManager.getCurrentUser()
-              if (enhancedUser) {
-                setUser(enhancedUser)
-              }
-            }
-          }
-        )
-
-        setLoading(false)
-        
-        return () => subscription.unsubscribe()
       } catch (error) {
-        console.error('Error initializing auth:', error)
+        console.error('Error in getInitialSession:', error)
         setLoading(false)
       }
     }
 
-    initializeAuth()
-  }, [router])
+    getInitialSession()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email)
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          await fetchUserProfile(session.user)
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null)
+          setLoading(false)
+        }
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const fetchUserProfile = async (authUser: any) => {
+    try {
+      // Set user with basic info first to ensure login works
+      const basicUser = {
+        id: authUser.id,
+        email: authUser.email,
+        name: authUser.user_metadata?.full_name || authUser.email,
+        subscription: 'free' as const
+      }
+      
+      setUser(basicUser)
+      setLoading(false)
+      
+      // Try to fetch profile details (but don't block login if it fails)
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authUser.id)
+          .single()
+
+        if (!error && profile) {
+          setUser({
+            ...basicUser,
+            name: profile.name || profile.full_name || basicUser.name,
+            subscription: profile.subscription_tier || 'free'
+          })
+        }
+      } catch (profileError) {
+        console.error('Profile fetch failed (non-blocking):', profileError)
+      }
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error)
+      setLoading(false)
+    }
+  }
 
   const signIn = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       })
 
-      const data = await response.json()
-
-      if (data.success) {
-        setUser(data.user)
-        return {}
-      } else {
-        return { error: data.error || 'Login failed' }
+      if (error) {
+        return { error: error.message }
       }
+
+      if (data.user) {
+        // Fetch user profile and update state
+        await fetchUserProfile(data.user)
+        
+        // Force a router refresh and redirect
+        router.refresh()
+        router.push('/dashboard')
+      }
+
+      return {}
     } catch (error) {
       console.error('Sign in error:', error)
-      return { error: 'Network error occurred' }
+      return { error: 'An unexpected error occurred' }
     }
   }
 
@@ -127,57 +173,109 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json()
 
-      if (data.success) {
-        setUser(data.user)
-        return {}
-      } else {
-        return { error: data.error || 'Demo login failed' }
+      if (!data.success) {
+        return { error: data.error || 'Failed to start demo' }
       }
+
+      // Store demo session
+      const demoSession = {
+        active: true,
+        expiresAt: data.demo.expiresAt,
+        features: data.demo.features
+      }
+      localStorage.setItem('demo-session', JSON.stringify(demoSession))
+
+      // Set demo user
+      setUser({
+        id: 'demo-user',
+        email: 'demo@aedrin.com',
+        name: 'Demo User',
+        subscription: 'pro',
+        demo: true
+      })
+
+      // Force router refresh and redirect
+      router.refresh()
+      router.push('/dashboard')
+      return {}
     } catch (error) {
       console.error('Demo sign in error:', error)
-      return { error: 'Network error occurred' }
+      return { error: 'Failed to start demo mode' }
     }
   }
 
-  const signInWithOAuth = async (provider: 'google' | 'github' | 'microsoft') => {
+  const signInWithOAuth = async (provider: 'google' | 'github') => {
     try {
-      await OAuthManager.signInWithProvider(provider)
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+
+      if (error) {
+        return { error: error.message }
+      }
+
       return {}
-    } catch (error: any) {
+    } catch (error) {
       console.error('OAuth sign in error:', error)
-      return { error: error.message || 'OAuth login failed' }
+      return { error: 'An unexpected error occurred' }
     }
   }
 
   const signUp = async (name: string, email: string, password: string, company?: string) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password, company })
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+            company_name: company
+          }
+        }
       })
 
-      const data = await response.json()
-
-      if (data.success) {
-        setUser(data.user)
-        return {}
-      } else {
-        return { error: data.error || 'Registration failed' }
+      if (error) {
+        return { error: error.message }
       }
+
+      if (data.user) {
+        // Create profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: data.user.id,
+            email: data.user.email,
+            full_name: name,
+            company_name: company
+          })
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError)
+        }
+      }
+
+      return {}
     } catch (error) {
       console.error('Sign up error:', error)
-      return { error: 'Network error occurred' }
+      return { error: 'An unexpected error occurred' }
     }
   }
 
   const signOut = async () => {
     try {
-      await OAuthManager.signOut()
+      // Clear demo session if exists
+      localStorage.removeItem('demo-session')
+      
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Sign out error:', error)
+      }
+      
       setUser(null)
-      router.push('/auth/login')
+      router.push('/')
     } catch (error) {
       console.error('Sign out error:', error)
     }
@@ -185,16 +283,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (profileData: any) => {
     try {
-      const updatedUser = await OAuthManager.updateUserProfile(profileData)
-      if (updatedUser) {
-        setUser(updatedUser)
-        return {}
-      } else {
-        return { error: 'Failed to update profile' }
+      const response = await fetch('/api/user/profile/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData)
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        return { error: data.error || 'Failed to update profile' }
       }
-    } catch (error: any) {
+
+      // Update local user state
+      if (data.user && user) {
+        setUser({
+          ...user,
+          name: data.user.name,
+          avatar: data.user.avatar
+        })
+      }
+
+      return {}
+    } catch (error) {
       console.error('Update profile error:', error)
-      return { error: error.message || 'Failed to update profile' }
+      return { error: 'Failed to update profile' }
     }
   }
 

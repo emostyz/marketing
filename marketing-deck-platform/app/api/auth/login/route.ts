@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server-client'
 import { EventLogger } from '@/lib/services/event-logger'
 
 export async function POST(request: NextRequest) {
@@ -45,8 +45,19 @@ export async function POST(request: NextRequest) {
         }
       )
 
+      // Provide specific error messages
+      let errorMessage = 'Invalid email or password'
+      
+      if (error.message.includes('Email not confirmed')) {
+        errorMessage = 'Please check your email and confirm your account before signing in. If you haven\'t received the confirmation email, please check your spam folder or contact support.'
+      } else if (error.message.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.'
+      } else if (error.message.includes('Too many requests')) {
+        errorMessage = 'Too many login attempts. Please wait a few minutes before trying again.'
+      }
+
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: errorMessage },
         { status: 401 }
       )
     }
@@ -62,7 +73,7 @@ export async function POST(request: NextRequest) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', data.user.id)
+      .eq('user_id', data.user.id)
       .single()
 
     if (profileError && profileError.code !== 'PGRST116') {
@@ -74,9 +85,12 @@ export async function POST(request: NextRequest) {
       const { error: createProfileError } = await supabase
         .from('profiles')
         .insert({
-          id: data.user.id,
+          user_id: data.user.id,
           email: data.user.email,
           full_name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+          first_name: data.user.user_metadata?.name?.split(' ')[0] || data.user.email?.split('@')[0] || 'User',
+          last_name: data.user.user_metadata?.name?.split(' ').slice(1).join(' ') || '',
+          onboarding_completed: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -118,14 +132,16 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7 // 7 days
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/'
       })
       
       response.cookies.set('sb-waddrfstpqkvdfwbxvfw-auth-token.0', data.session.refresh_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 30 // 30 days
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/'
       })
     }
 

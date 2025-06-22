@@ -622,7 +622,7 @@ export default function FunctionalDeckBuilder({
     <TooltipProvider>
       <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
         {/* Top Toolbar */}
-        <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between shadow-sm">
+        <div className="bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-lg">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <h1 className="text-lg font-semibold text-gray-900 min-w-0">

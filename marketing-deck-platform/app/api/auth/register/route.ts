@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server-client'
 import { EventLogger } from '@/lib/services/event-logger'
 
 export async function POST(request: NextRequest) {
@@ -9,6 +9,23 @@ export async function POST(request: NextRequest) {
     if (!email || !password || !name) {
       return NextResponse.json(
         { error: 'Email, password, and name are required' },
+        { status: 400 }
+      )
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address' },
+        { status: 400 }
+      )
+    }
+
+    // Basic password validation
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password must be at least 6 characters long' },
         { status: 400 }
       )
     }
@@ -27,7 +44,7 @@ export async function POST(request: NextRequest) {
       password,
       options: {
         data: {
-          name
+          full_name: name
         }
       }
     })
@@ -51,8 +68,21 @@ export async function POST(request: NextRequest) {
         }
       )
 
+      // Provide specific error messages
+      let errorMessage = error.message
+      
+      if (error.message.includes('Email address is invalid')) {
+        errorMessage = 'Please enter a valid email address'
+      } else if (error.message.includes('User already registered')) {
+        errorMessage = 'An account with this email already exists. Please try signing in instead.'
+      } else if (error.message.includes('Password should be at least')) {
+        errorMessage = 'Password must be at least 6 characters long'
+      } else if (error.message.includes('Too many requests')) {
+        errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.'
+      }
+
       return NextResponse.json(
-        { error: error.message },
+        { error: errorMessage },
         { status: 400 }
       )
     }
@@ -64,13 +94,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create user profile
+    // Create user profile with correct column names and user_id
     const { error: profileError } = await supabase
       .from('profiles')
       .insert({
-        id: data.user.id,
+        user_id: data.user.id,
         email: data.user.email,
         full_name: name,
+        first_name: name.split(' ')[0] || name,
+        last_name: name.split(' ').slice(1).join(' ') || '',
+        onboarding_completed: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -116,7 +149,9 @@ export async function POST(request: NextRequest) {
         success: true, 
         user: data.user,
         session: data.session,
-        message: 'Account created successfully'
+        message: data.user.email_confirmed_at 
+          ? 'Account created successfully' 
+          : 'Account created successfully! Please check your email to confirm your account before signing in.'
       },
       { status: 201 }
     )

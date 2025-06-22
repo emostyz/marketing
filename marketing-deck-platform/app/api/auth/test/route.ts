@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server-client'
 import { EventLogger } from '@/lib/services/event-logger'
 
 export async function GET(request: NextRequest) {
@@ -28,7 +29,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { demo = false } = await request.json()
+    // Handle empty request body
+    let body = {}
+    try {
+      const text = await request.text()
+      if (text) {
+        body = JSON.parse(text)
+      }
+    } catch (parseError) {
+      // If JSON parsing fails, use empty object
+      body = {}
+    }
+    
+    const { demo = false } = body as { demo?: boolean }
     
     if (!demo) {
       return NextResponse.json(
@@ -37,71 +50,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get client info for logging
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                    request.headers.get('x-real-ip') || 
-                    'unknown'
-    const userAgent = request.headers.get('user-agent') || 'unknown'
+    const supabase = createServerSupabaseClient()
     
-    // Log demo access
-    await EventLogger.logUserEvent(
-      'demo_access',
-      {
-        demo_type: 'full_demo',
-        access_method: 'api_call'
-      },
-      {
-        ip_address: clientIP,
-        user_agent: userAgent
-      }
+    // Get client info
+    const clientInfo = EventLogger.getClientInfo(request)
+    
+    // Log the demo request
+    await EventLogger.logSystemEvent(
+      'demo_requested',
+      { demo: true },
+      'info',
+      clientInfo
     )
-
-    // Create demo user data
-    const demoUser = {
-      id: 'demo-user-123',
-      email: 'demo@aedrin.com',
-      name: 'Demo User',
-      subscription: 'pro',
-      demo: true
-    }
-
-    // Set demo cookies
-    const response = NextResponse.json(
-      { 
-        success: true, 
-        user: demoUser,
-        demo: true,
-        message: 'Demo mode activated'
-      },
-      { status: 200 }
-    )
-
-    // Set demo session cookies
-    response.cookies.set('demo-session', 'demo-token-123', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 2 // 2 hours for demo
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Demo mode activated',
+      demo: true 
     })
-
-    return response
-
   } catch (error) {
     console.error('Demo route error:', error)
     
-    // Log system error
-    await EventLogger.logSystemEvent(
-      'demo_system_error',
-      {
-        error_message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      'error',
-      {
-        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
-        user_agent: request.headers.get('user-agent') || 'unknown'
-      }
-    )
-
+    // Log the error
+    try {
+      const clientInfo = EventLogger.getClientInfo(request)
+      await EventLogger.logSystemEvent(
+        'demo_error',
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        'error',
+        clientInfo
+      )
+    } catch (logError) {
+      console.error('Error logging system event:', logError)
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

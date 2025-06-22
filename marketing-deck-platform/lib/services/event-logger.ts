@@ -1,17 +1,24 @@
-import { createServerClient } from '@/lib/supabase/client';
+import { createServerSupabaseClient } from '@/lib/supabase/server-client';
 import { cookies } from 'next/headers';
 
 export interface EventLoggerOptions {
   ip_address?: string;
   user_agent?: string;
   referer?: string;
-  user_id?: string | number;
+  user_id?: string;
   session_id?: string;
+  metadata?: any;
+}
+
+export interface SystemEventOptions {
+  ip_address?: string;
+  user_agent?: string;
+  metadata?: any;
 }
 
 export class EventLogger {
   private static async getSupabase() {
-    return await createServerClient();
+    return createServerSupabaseClient();
   }
 
   /**
@@ -24,18 +31,23 @@ export class EventLogger {
   ) {
     try {
       const supabase = await this.getSupabase();
-      await supabase.from('user_events').insert({
-        event_type: eventType,
-        event_data: eventData,
-        ip_address: options.ip_address || 'unknown',
-        user_agent: options.user_agent || 'unknown',
-        referer: options.referer || 'unknown',
-        user_id: options.user_id || null,
-        session_id: options.session_id || null,
-        created_at: new Date().toISOString()
-      });
+      const { data, error } = await supabase
+        .from('user_events')
+        .insert({
+          event_type: eventType,
+          event_data: eventData,
+          user_id: options.user_id || null,
+          session_id: options.session_id || null,
+          ip_address: options.ip_address,
+          user_agent: options.user_agent,
+          metadata: options.metadata || null,
+          created_at: new Date().toISOString()
+        });
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Failed to log user event:', error);
+      console.error('Error logging user event:', error);
+      return null;
     }
   }
 
@@ -43,24 +55,30 @@ export class EventLogger {
    * Log authentication events
    */
   static async logAuthEvent(
-    userId: string | number,
+    userId: string,
     eventType: string,
     eventData: any,
     options: EventLoggerOptions = {}
   ) {
     try {
       const supabase = await this.getSupabase();
-      await supabase.from('auth_events').insert({
-        user_id: userId,
-        event_type: eventType,
-        event_data: eventData,
-        ip_address: options.ip_address || 'unknown',
-        user_agent: options.user_agent || 'unknown',
-        session_id: options.session_id || null,
-        created_at: new Date().toISOString()
-      });
+      const { data, error } = await supabase
+        .from('user_events')
+        .insert({
+          event_type: eventType,
+          event_data: eventData,
+          user_id: userId,
+          session_id: options.session_id || null,
+          ip_address: options.ip_address,
+          user_agent: options.user_agent,
+          metadata: options.metadata || null,
+          created_at: new Date().toISOString()
+        });
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Failed to log auth event:', error);
+      console.error('Error logging auth event:', error);
+      return null;
     }
   }
 
@@ -163,26 +181,32 @@ export class EventLogger {
   static async logSystemEvent(
     eventType: string,
     eventData: any,
-    severity: 'info' | 'warning' | 'error' | 'critical' = 'info',
-    options: EventLoggerOptions = {}
+    severity: string = 'info',
+    options: SystemEventOptions = {}
   ) {
     try {
       const supabase = await this.getSupabase();
-      await supabase.from('system_events').insert({
-        event_type: eventType,
-        event_data: eventData,
-        severity,
-        ip_address: options.ip_address || 'unknown',
-        user_agent: options.user_agent || 'unknown',
-        created_at: new Date().toISOString()
-      });
+      const { data, error } = await supabase
+        .from('system_events')
+        .insert({
+          event_type: eventType,
+          event_data: eventData,
+          severity,
+          ip_address: options.ip_address,
+          user_agent: options.user_agent,
+          metadata: options.metadata || null,
+          created_at: new Date().toISOString()
+        });
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Failed to log system event:', error);
+      console.error('Error logging system event:', error);
+      return null;
     }
   }
 
   /**
-   * Log usage tracking
+   * Log usage metrics
    */
   static async logUsage(
     userId: string | number,
@@ -192,39 +216,13 @@ export class EventLogger {
   ) {
     try {
       const supabase = await this.getSupabase();
-      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-      
-      // Get current usage
-      const { data: currentUsage } = await supabase
-        .from('usage_tracking')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('month_year', currentMonth)
-        .single();
-
-      if (currentUsage) {
-        // Update existing usage
-        const updateData: any = {};
-        updateData[usageType] = (currentUsage[usageType] || 0) + amount;
-        
-        await supabase
-          .from('usage_tracking')
-          .update(updateData)
-          .eq('user_id', userId)
-          .eq('month_year', currentMonth);
-      } else {
-        // Create new usage record
-        const newUsage: any = {
-          user_id: userId,
-          month_year: currentMonth,
-          metadata
-        };
-        newUsage[usageType] = amount;
-        
-        await supabase
-          .from('usage_tracking')
-          .insert(newUsage);
-      }
+      await supabase.from('usage_metrics').insert({
+        user_id: userId,
+        usage_type: usageType,
+        amount,
+        metadata,
+        created_at: new Date().toISOString()
+      });
     } catch (error) {
       console.error('Failed to log usage:', error);
     }
@@ -243,12 +241,12 @@ export class EventLogger {
   ) {
     try {
       const supabase = await this.getSupabase();
-      await supabase.from('slide_events').insert({
+      await supabase.from('slide_edits').insert({
         user_id: userId,
         presentation_id: presentationId,
         slide_id: slideId,
-        event_type: editType,
-        event_data: editData,
+        edit_type: editType,
+        edit_data: editData,
         ip_address: options.ip_address || 'unknown',
         user_agent: options.user_agent || 'unknown',
         created_at: new Date().toISOString()
@@ -297,7 +295,7 @@ export class EventLogger {
   ) {
     try {
       const supabase = await this.getSupabase();
-      await supabase.from('data_upload_events').insert({
+      await supabase.from('data_uploads').insert({
         user_id: userId,
         file_id: fileId,
         file_name: fileName,
@@ -339,16 +337,86 @@ export class EventLogger {
   }
 
   /**
-   * Get client information from request
+   * Extract client information from request
    */
   static getClientInfo(request: Request): EventLoggerOptions {
-    const url = new URL(request.url);
     return {
       ip_address: request.headers.get('x-forwarded-for') || 
                   request.headers.get('x-real-ip') || 
                   'unknown',
       user_agent: request.headers.get('user-agent') || 'unknown',
-      referer: request.headers.get('referer') || url.origin
+      referer: request.headers.get('referer') || undefined
     };
+  }
+
+  /**
+   * Log page view events
+   */
+  static async logPageView(
+    pageUrl: string,
+    pageTitle?: string,
+    options: EventLoggerOptions = {}
+  ) {
+    try {
+      const supabase = await this.getSupabase();
+      await supabase.from('page_views').insert({
+        page_url: pageUrl,
+        page_title: pageTitle,
+        user_id: options.user_id || null,
+        session_id: options.session_id || null,
+        ip_address: options.ip_address,
+        user_agent: options.user_agent,
+        created_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Failed to log page view:', error);
+    }
+  }
+
+  /**
+   * Log user interaction events
+   */
+  static async logUserInteraction(
+    interactionType: string,
+    interactionData: any,
+    options: EventLoggerOptions = {}
+  ) {
+    try {
+      const supabase = await this.getSupabase();
+      await supabase.from('user_interactions').insert({
+        interaction_type: interactionType,
+        interaction_data: interactionData,
+        user_id: options.user_id || null,
+        session_id: options.session_id || null,
+        ip_address: options.ip_address,
+        user_agent: options.user_agent,
+        created_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Failed to log user interaction:', error);
+    }
+  }
+
+  /**
+   * Log error events
+   */
+  static async logError(
+    error: Error | string,
+    context?: any,
+    options: SystemEventOptions = {}
+  ) {
+    try {
+      const supabase = await this.getSupabase();
+      await supabase.from('error_logs').insert({
+        error_message: typeof error === 'string' ? error : error.message,
+        error_stack: typeof error === 'string' ? null : error.stack,
+        context,
+        ip_address: options.ip_address,
+        user_agent: options.user_agent,
+        created_at: new Date().toISOString()
+      });
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
   }
 } 

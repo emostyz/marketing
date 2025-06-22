@@ -1,77 +1,22 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Brain, Plus, Upload, BarChart3, Settings, LogOut } from 'lucide-react'
 import Link from 'next/link'
-
-interface User {
-  id: string
-  email: string
-  name: string
-  subscription?: string
-  demo?: boolean
-}
+import { useAuth } from '@/lib/auth/auth-context'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading, signOut } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Check for demo session
-        const demoSession = document.cookie.includes('demo-session')
-        
-        if (demoSession) {
-          setUser({
-            id: 'demo-user-123',
-            email: 'demo@aedrin.com',
-            name: 'Demo User',
-            subscription: 'pro',
-            demo: true
-          })
-          setLoading(false)
-          return
-        }
-
-        // Check for regular session
-        const response = await fetch('/api/user/dashboard')
-        if (response.ok) {
-          const data = await response.json()
-          setUser(data.user)
-        } else {
-          // No valid session, redirect to login
-          router.push('/auth/login')
-          return
-        }
-      } catch (error) {
-        console.error('Auth check error:', error)
-        router.push('/auth/login')
-        return
-      }
-      
-      setLoading(false)
+    if (!loading && !user) {
+      router.push('/auth/login')
     }
-
-    checkAuth()
-  }, [router])
+  }, [user, loading, router])
 
   const handleSignOut = async () => {
-    try {
-      if (user?.demo) {
-        // Clear demo session
-        document.cookie = 'demo-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-      } else {
-        // Regular sign out
-        await fetch('/api/auth/logout', { method: 'POST' })
-      }
-      
-      setUser(null)
-      router.push('/auth/login')
-    } catch (error) {
-      console.error('Sign out error:', error)
-    }
+    await signOut()
   }
 
   if (loading) {

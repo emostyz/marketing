@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/lib/supabase/server-client';
+import { EventLogger } from '@/lib/services/event-logger';
 
 // Input validation helper
 function validateProfileInput(data: any) {
@@ -48,31 +48,39 @@ function validateProfileInput(data: any) {
   return errors;
 }
 
+export async function POST(request: NextRequest) {
+  return handleProfileUpdate(request);
+}
+
 export async function PUT(request: NextRequest) {
+  return handleProfileUpdate(request);
+}
+
+async function handleProfileUpdate(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createServerClient();
     
     // Get client info for logging
     const clientIP = request.headers.get('x-forwarded-for') || 
                     request.headers.get('x-real-ip') || 
                     'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
-    const referer = request.headers.get('referer') || 'unknown'
     
     // Get the current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       // Log unauthorized access attempt
-      await supabase.from('user_events').insert({
-        event_type: 'profile_update_unauthorized',
-        event_data: {
+      await EventLogger.logUserEvent(
+        'profile_update_unauthorized',
+        {
           error: userError?.message || 'No user found'
         },
-        ip_address: clientIP,
-        user_agent: userAgent,
-        referer
-      })
+        {
+          ip_address: clientIP,
+          user_agent: userAgent
+        }
+      );
 
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -85,16 +93,17 @@ export async function PUT(request: NextRequest) {
       body = await request.json();
     } catch (error) {
       // Log JSON parsing error
-      await supabase.from('user_events').insert({
-        event_type: 'profile_update_json_error',
-        event_data: {
+      await EventLogger.logUserEvent(
+        'profile_update_json_error',
+        {
           error: 'Invalid JSON in request body'
         },
-        ip_address: clientIP,
-        user_agent: userAgent,
-        referer,
-        user_id: user.id
-      })
+        {
+          ip_address: clientIP,
+          user_agent: userAgent,
+          user_id: user.id
+        }
+      );
 
       return NextResponse.json(
         { error: 'Invalid JSON in request body' },
@@ -106,17 +115,18 @@ export async function PUT(request: NextRequest) {
     const validationErrors = validateProfileInput(body);
     if (validationErrors.length > 0) {
       // Log validation failure
-      await supabase.from('user_events').insert({
-        event_type: 'profile_update_validation_failed',
-        event_data: {
+      await EventLogger.logUserEvent(
+        'profile_update_validation_failed',
+        {
           errors: validationErrors,
           attempted_data: body
         },
-        ip_address: clientIP,
-        user_agent: userAgent,
-        referer,
-        user_id: user.id
-      })
+        {
+          ip_address: clientIP,
+          user_agent: userAgent,
+          user_id: user.id
+        }
+      );
 
       return NextResponse.json(
         { error: 'Validation failed', details: validationErrors },
@@ -128,7 +138,7 @@ export async function PUT(request: NextRequest) {
     const { data: currentProfile } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single()
 
     const {
@@ -157,8 +167,8 @@ export async function PUT(request: NextRequest) {
 
     // Only include fields that are actually being updated
     if (name !== undefined) {
-      updateData.name = name;
-      if (currentProfile?.name !== name) changedFields.push('name');
+      updateData.full_name = name;
+      if (currentProfile?.full_name !== name) changedFields.push('full_name');
     }
     if (bio !== undefined) {
       updateData.bio = bio;
@@ -193,8 +203,8 @@ export async function PUT(request: NextRequest) {
       if (currentProfile?.master_system_prompt !== masterSystemPrompt) changedFields.push('master_system_prompt');
     }
     if (profilePictureUrl !== undefined) {
-      updateData.profile_picture_url = profilePictureUrl;
-      if (currentProfile?.profile_picture_url !== profilePictureUrl) changedFields.push('profile_picture_url');
+      updateData.avatar_url = profilePictureUrl;
+      if (currentProfile?.avatar_url !== profilePictureUrl) changedFields.push('avatar_url');
     }
     if (logoUrl !== undefined) {
       updateData.logo_url = logoUrl;
@@ -206,45 +216,42 @@ export async function PUT(request: NextRequest) {
     }
     if (brandColors !== undefined) {
       updateData.brand_colors = brandColors;
-      if (JSON.stringify(currentProfile?.brand_colors) !== JSON.stringify(brandColors)) changedFields.push('brand_colors');
+      if (currentProfile?.brand_colors !== brandColors) changedFields.push('brand_colors');
     }
 
-    // Log profile update attempt
-    await supabase.from('user_events').insert({
-      event_type: 'profile_update_attempted',
-      event_data: {
-        changed_fields: changedFields,
-        update_data: updateData
-      },
-      ip_address: clientIP,
-      user_agent: userAgent,
-      referer,
-      user_id: user.id
-    })
+    // If no fields are being changed, return early
+    if (changedFields.length === 0) {
+      return NextResponse.json(
+        { success: true, message: 'No changes detected' },
+        { status: 200 }
+      );
+    }
 
-    // Update user profile
-    const { data: profileData, error: profileError } = await supabase
+    // Update the profile
+    const { data: updatedProfile, error: updateError } = await supabase
       .from('profiles')
       .update(updateData)
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .select()
       .single();
 
-    if (profileError) {
-      console.error('Profile update error:', profileError);
+    if (updateError) {
+      console.error('Profile update error:', updateError);
       
-      // Log profile update error
-      await supabase.from('user_events').insert({
-        event_type: 'profile_update_failed',
-        event_data: {
-          error: profileError.message,
-          changed_fields: changedFields
+      // Log update failure
+      await EventLogger.logUserEvent(
+        'profile_update_failed',
+        {
+          error: updateError.message,
+          error_code: updateError.code,
+          attempted_fields: changedFields
         },
-        ip_address: clientIP,
-        user_agent: userAgent,
-        referer,
-        user_id: user.id
-      })
+        {
+          ip_address: clientIP,
+          user_agent: userAgent,
+          user_id: user.id
+        }
+      );
 
       return NextResponse.json(
         { error: 'Failed to update profile' },
@@ -252,53 +259,52 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Log successful profile update
-    await supabase.from('user_events').insert({
-      event_type: 'profile_updated',
-      event_data: {
-        changed_fields: changedFields,
-        profile_id: profileData.id
+    // Log successful update
+    await EventLogger.logUserEvent(
+      'profile_update_successful',
+      {
+        updated_fields: changedFields,
+        profile_id: updatedProfile.id
       },
-      ip_address: clientIP,
-      user_agent: userAgent,
-      referer,
-      user_id: user.id
-    })
+      {
+        ip_address: clientIP,
+        user_agent: userAgent,
+        user_id: user.id
+      }
+    );
 
-    // Log profile change event
-    await supabase.from('profile_events').insert({
-      user_id: user.id,
-      event_type: 'updated',
-      event_data: {
-        changed_fields: changedFields,
-        previous_values: currentProfile,
-        new_values: profileData
+    return NextResponse.json(
+      { 
+        success: true, 
+        message: 'Profile updated successfully',
+        user: {
+          id: user.id,
+          name: updatedProfile.full_name,
+          email: user.email,
+          companyName: updatedProfile.company_name,
+          jobTitle: updatedProfile.job_title,
+          industry: updatedProfile.industry,
+          avatar: updatedProfile.avatar_url
+        }
       },
-      ip_address: clientIP,
-      user_agent: userAgent,
-      created_at: new Date().toISOString()
-    })
-
-    return NextResponse.json({
-      message: 'Profile updated successfully',
-      profile: profileData
-    });
+      { status: 200 }
+    );
 
   } catch (error) {
-    console.error('Profile update error:', error);
+    console.error('Profile update route error:', error);
     
     // Log system error
-    const supabase = createRouteHandlerClient({ cookies });
-    await supabase.from('system_events').insert({
-      event_type: 'profile_update_system_error',
-      event_data: {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : null
+    await EventLogger.logSystemEvent(
+      'profile_update_system_error',
+      {
+        error_message: error instanceof Error ? error.message : 'Unknown error'
       },
-      ip_address: request.headers.get('x-forwarded-for') || 'unknown',
-      user_agent: request.headers.get('user-agent') || 'unknown',
-      severity: 'error'
-    })
+      'error',
+      {
+        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: request.headers.get('user-agent') || 'unknown'
+      }
+    );
 
     return NextResponse.json(
       { error: 'Internal server error' },

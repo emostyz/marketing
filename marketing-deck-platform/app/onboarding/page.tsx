@@ -146,6 +146,7 @@ export default function OnboardingPage() {
     setError('')
     
     try {
+      // First, update the profile with onboarding data
       const result = await updateProfile({
         name: formData.fullName,
         jobTitle: formData.jobTitle,
@@ -154,24 +155,30 @@ export default function OnboardingPage() {
         industry: formData.industry,
         targetAudience: formData.targetAudience,
         businessContext: formData.businessContext,
-        businessGoals: formData.businessGoals,
-        keyQuestions: formData.keyQuestions,
+        masterSystemPrompt: `Business Goals: ${formData.businessGoals.join(', ')}. Key Questions: ${formData.keyQuestions.join(', ')}. Custom Requirements: ${formData.customRequirements}`,
         keyMetrics: formData.keyMetrics,
-        datasetTypes: formData.datasetTypes,
-        usagePlan: formData.usagePlan,
-        presentationStyle: formData.presentationStyle,
-        brandColors: formData.brandColors,
-        customRequirements: formData.customRequirements,
-        onboardingCompleted: true
+        brandColors: JSON.stringify(formData.brandColors)
       })
       
       if (result.error) {
         setError(result.error)
         setLoading(false)
-      } else {
-        router.push('/dashboard')
+        return
       }
+
+      // Then mark onboarding as completed
+      const onboardingResult = await updateProfile({
+        onboardingCompleted: true
+      })
+      
+      if (onboardingResult.error) {
+        console.error('Failed to mark onboarding as completed:', onboardingResult.error)
+        // Don't fail the whole process if this fails
+      }
+
+      router.push('/dashboard')
     } catch (error) {
+      console.error('Onboarding completion error:', error)
       setError('Failed to save profile. Please try again.')
       setLoading(false)
     }

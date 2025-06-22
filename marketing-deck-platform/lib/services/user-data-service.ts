@@ -42,7 +42,7 @@ export class UserDataService {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single()
 
       if (error) throw error
@@ -630,7 +630,7 @@ export class UserDataService {
       const { data, error } = await supabase
         .from('user_dashboard')
         .select('*')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single()
 
       if (error) throw error

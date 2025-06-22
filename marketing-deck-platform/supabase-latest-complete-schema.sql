@@ -1,6 +1,6 @@
 -- =====================================================
--- AEDRIN Marketing Deck Platform - Final Fixes Migration
--- Fixes all column mismatches and missing tables
+-- AEDRIN Marketing Deck Platform - Complete Database Schema
+-- Latest Version - Fixes all column mismatches and missing tables
 -- =====================================================
 
 -- Enable necessary extensions
@@ -8,76 +8,23 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =====================================================
--- DROP EXISTING TABLES (if they exist)
+-- ENUMS
 -- =====================================================
 
-DROP TABLE IF EXISTS error_logs CASCADE;
-DROP TABLE IF EXISTS export_history CASCADE;
-DROP TABLE IF EXISTS collaboration_sessions CASCADE;
-DROP TABLE IF EXISTS ai_analysis_history CASCADE;
-DROP TABLE IF EXISTS data_files CASCADE;
-DROP TABLE IF EXISTS payment_events CASCADE;
-DROP TABLE IF EXISTS subscription_events CASCADE;
-DROP TABLE IF EXISTS auth_events CASCADE;
-DROP TABLE IF EXISTS user_sessions CASCADE;
-DROP TABLE IF EXISTS user_interactions CASCADE;
-DROP TABLE IF EXISTS page_views CASCADE;
-DROP TABLE IF EXISTS user_events CASCADE;
-DROP TABLE IF EXISTS themes CASCADE;
-DROP TABLE IF EXISTS templates CASCADE;
-DROP TABLE IF EXISTS slides CASCADE;
-DROP TABLE IF EXISTS presentations CASCADE;
-DROP TABLE IF EXISTS leads CASCADE;
-DROP TABLE IF EXISTS profiles CASCADE;
-DROP TABLE IF EXISTS system_events CASCADE;
-DROP TABLE IF EXISTS profile_events CASCADE;
-DROP TABLE IF EXISTS lead_events CASCADE;
-DROP TABLE IF EXISTS usage_tracking CASCADE;
-DROP TABLE IF EXISTS slide_events CASCADE;
-DROP TABLE IF EXISTS presentation_events CASCADE;
-DROP TABLE IF EXISTS data_upload_events CASCADE;
-DROP TABLE IF EXISTS export_events CASCADE;
-DROP TABLE IF EXISTS datasets CASCADE;
-DROP TABLE IF EXISTS analytics CASCADE;
-
--- =====================================================
--- DROP EXISTING TYPES (if they exist)
--- =====================================================
-
-DROP TYPE IF EXISTS subscription_tier CASCADE;
-DROP TYPE IF EXISTS subscription_status CASCADE;
-DROP TYPE IF EXISTS lead_status CASCADE;
-DROP TYPE IF EXISTS event_severity CASCADE;
-DROP TYPE IF EXISTS presentation_status CASCADE;
-DROP TYPE IF EXISTS export_format CASCADE;
-DROP TYPE IF EXISTS user_event_type CASCADE;
-
--- =====================================================
--- CREATE ENUMS
--- =====================================================
-
+-- Subscription tiers
 CREATE TYPE subscription_tier AS ENUM ('free', 'pro', 'enterprise');
 CREATE TYPE subscription_status AS ENUM ('active', 'canceled', 'past_due', 'unpaid');
 CREATE TYPE lead_status AS ENUM ('new', 'contacted', 'qualified', 'converted');
 CREATE TYPE event_severity AS ENUM ('info', 'warning', 'error', 'critical');
 CREATE TYPE presentation_status AS ENUM ('draft', 'completed', 'published', 'archived');
 CREATE TYPE export_format AS ENUM ('pdf', 'pptx', 'keynote', 'html');
-CREATE TYPE user_event_type AS ENUM (
-    'page_view', 'user_interaction', 'auth_event', 'profile_event',
-    'subscription_event', 'payment_event', 'lead_event', 'system_event',
-    'usage_event', 'slide_event', 'presentation_event', 'data_upload_event',
-    'export_event', 'demo_access', 'login_successful', 'login_failed',
-    'registration_successful', 'registration_failed', 'profile_update_successful',
-    'profile_update_failed', 'profile_update_unauthorized', 'profile_update_json_error',
-    'profile_update_validation_failed'
-);
 
 -- =====================================================
--- CREATE CORE TABLES
+-- CORE TABLES
 -- =====================================================
 
 -- User profiles table (comprehensive)
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
@@ -101,7 +48,7 @@ CREATE TABLE profiles (
 );
 
 -- Leads table (with user_id for tracking)
-CREATE TABLE leads (
+CREATE TABLE IF NOT EXISTS leads (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
     email TEXT NOT NULL,
@@ -117,7 +64,7 @@ CREATE TABLE leads (
 );
 
 -- Presentations table
-CREATE TABLE presentations (
+CREATE TABLE IF NOT EXISTS presentations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
     title TEXT NOT NULL,
@@ -132,7 +79,7 @@ CREATE TABLE presentations (
 );
 
 -- Slides table
-CREATE TABLE slides (
+CREATE TABLE IF NOT EXISTS slides (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     presentation_id UUID NOT NULL REFERENCES presentations(id) ON DELETE CASCADE,
     slide_number INTEGER NOT NULL,
@@ -144,7 +91,7 @@ CREATE TABLE slides (
 );
 
 -- Templates table
-CREATE TABLE templates (
+CREATE TABLE IF NOT EXISTS templates (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT,
@@ -158,7 +105,7 @@ CREATE TABLE templates (
 );
 
 -- Themes table
-CREATE TABLE themes (
+CREATE TABLE IF NOT EXISTS themes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT,
@@ -175,7 +122,7 @@ CREATE TABLE themes (
 -- =====================================================
 
 -- User events table
-CREATE TABLE user_events (
+CREATE TABLE IF NOT EXISTS user_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
     session_id TEXT,
@@ -188,7 +135,7 @@ CREATE TABLE user_events (
 );
 
 -- Page views table
-CREATE TABLE page_views (
+CREATE TABLE IF NOT EXISTS page_views (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
     session_id TEXT,
@@ -204,7 +151,7 @@ CREATE TABLE page_views (
 );
 
 -- User interactions table
-CREATE TABLE user_interactions (
+CREATE TABLE IF NOT EXISTS user_interactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
     session_id TEXT,
@@ -221,7 +168,7 @@ CREATE TABLE user_interactions (
 -- =====================================================
 
 -- User sessions table
-CREATE TABLE user_sessions (
+CREATE TABLE IF NOT EXISTS user_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
     session_token TEXT UNIQUE NOT NULL,
@@ -235,7 +182,7 @@ CREATE TABLE user_sessions (
 );
 
 -- Auth events table
-CREATE TABLE auth_events (
+CREATE TABLE IF NOT EXISTS auth_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
     event_type TEXT NOT NULL,
@@ -251,7 +198,7 @@ CREATE TABLE auth_events (
 -- =====================================================
 
 -- Subscription events table
-CREATE TABLE subscription_events (
+CREATE TABLE IF NOT EXISTS subscription_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
     event_type TEXT NOT NULL,
@@ -263,7 +210,7 @@ CREATE TABLE subscription_events (
 );
 
 -- Payment events table
-CREATE TABLE payment_events (
+CREATE TABLE IF NOT EXISTS payment_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID,
     event_type TEXT NOT NULL,
@@ -276,70 +223,70 @@ CREATE TABLE payment_events (
 );
 
 -- =====================================================
--- DATA & ANALYSIS TABLES
+-- CONTENT & DATA TABLES
 -- =====================================================
 
 -- Data files table
-CREATE TABLE data_files (
+CREATE TABLE IF NOT EXISTS data_files (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
     file_name TEXT NOT NULL,
+    file_type TEXT NOT NULL,
     file_size INTEGER,
-    file_type TEXT,
-    processing_status TEXT DEFAULT 'uploaded',
+    file_url TEXT,
     data_content JSONB,
-    analysis_results JSONB,
     metadata JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- AI analysis history table
-CREATE TABLE ai_analysis_history (
+CREATE TABLE IF NOT EXISTS ai_analysis_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
-    file_id UUID REFERENCES data_files(id),
+    data_file_id UUID REFERENCES data_files(id),
     analysis_type TEXT NOT NULL,
     input_data JSONB,
     output_data JSONB,
+    model_used TEXT,
     processing_time INTEGER,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =====================================================
--- COLLABORATION & EXPORT TABLES
+-- COLLABORATION & SHARING TABLES
 -- =====================================================
 
 -- Collaboration sessions table
-CREATE TABLE collaboration_sessions (
+CREATE TABLE IF NOT EXISTS collaboration_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    presentation_id UUID REFERENCES presentations(id),
-    session_token TEXT UNIQUE NOT NULL,
-    participants JSONB DEFAULT '[]',
+    presentation_id UUID NOT NULL REFERENCES presentations(id) ON DELETE CASCADE,
+    session_name TEXT,
     is_active BOOLEAN DEFAULT TRUE,
+    created_by UUID NOT NULL,
+    participants JSONB DEFAULT '[]',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Export history table
-CREATE TABLE export_history (
+CREATE TABLE IF NOT EXISTS export_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
-    presentation_id UUID REFERENCES presentations(id),
+    presentation_id UUID REFERENCES presentations(id) ON DELETE SET NULL,
     export_format export_format NOT NULL,
-    export_status TEXT DEFAULT 'processing',
     file_url TEXT,
     file_size INTEGER,
-    metadata JSONB DEFAULT '{}',
+    export_data JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =====================================================
--- SYSTEM TABLES
+-- SYSTEM & ERROR TABLES
 -- =====================================================
 
 -- System events table
-CREATE TABLE system_events (
+CREATE TABLE IF NOT EXISTS system_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     event_type TEXT NOT NULL,
     event_data JSONB,
@@ -351,19 +298,21 @@ CREATE TABLE system_events (
 );
 
 -- Error logs table
-CREATE TABLE error_logs (
+CREATE TABLE IF NOT EXISTS error_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    error_type TEXT NOT NULL,
     error_message TEXT NOT NULL,
-    error_stack TEXT,
-    context JSONB,
+    stack_trace TEXT,
+    user_id UUID,
+    session_id TEXT,
     ip_address INET,
     user_agent TEXT,
-    severity event_severity DEFAULT 'error',
+    context JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =====================================================
--- CREATE INDEXES
+-- INDEXES FOR PERFORMANCE
 -- =====================================================
 
 -- Profiles indexes
@@ -402,10 +351,160 @@ CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON user_sessions(sess
 CREATE INDEX IF NOT EXISTS idx_user_sessions_is_active ON user_sessions(is_active);
 
 -- =====================================================
--- CREATE TRIGGERS
+-- ROW LEVEL SECURITY (RLS) POLICIES
 -- =====================================================
 
--- Function to update updated_at column
+-- Enable RLS on all tables
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE presentations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE slides ENABLE ROW LEVEL SECURITY;
+ALTER TABLE templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE themes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_interactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE auth_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscription_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE data_files ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_analysis_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE collaboration_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE export_history ENABLE ROW LEVEL SECURITY;
+
+-- Profiles policies
+CREATE POLICY "Users can view own profile" ON profiles
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own profile" ON profiles
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own profile" ON profiles
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Leads policies (allow public insert, user view own)
+CREATE POLICY "Public can insert leads" ON leads
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can view own leads" ON leads
+    FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+
+-- Presentations policies
+CREATE POLICY "Users can view own presentations" ON presentations
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own presentations" ON presentations
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own presentations" ON presentations
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own presentations" ON presentations
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Slides policies
+CREATE POLICY "Users can manage slides for own presentations" ON slides
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM presentations 
+            WHERE presentations.id = slides.presentation_id 
+            AND presentations.user_id = auth.uid()
+        )
+    );
+
+-- Templates policies (public read, user write)
+CREATE POLICY "Public can view templates" ON templates
+    FOR SELECT USING (is_public = true OR auth.uid() = created_by);
+
+CREATE POLICY "Users can insert templates" ON templates
+    FOR INSERT WITH CHECK (auth.uid() = created_by);
+
+-- Themes policies (public read, user write)
+CREATE POLICY "Public can view themes" ON themes
+    FOR SELECT USING (is_public = true OR auth.uid() = created_by);
+
+CREATE POLICY "Users can insert themes" ON themes
+    FOR INSERT WITH CHECK (auth.uid() = created_by);
+
+-- User events policies
+CREATE POLICY "Users can view own events" ON user_events
+    FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Public can insert events" ON user_events
+    FOR INSERT WITH CHECK (true);
+
+-- Page views policies
+CREATE POLICY "Users can view own page views" ON page_views
+    FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Public can insert page views" ON page_views
+    FOR INSERT WITH CHECK (true);
+
+-- User interactions policies
+CREATE POLICY "Users can view own interactions" ON user_interactions
+    FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Public can insert interactions" ON user_interactions
+    FOR INSERT WITH CHECK (true);
+
+-- User sessions policies
+CREATE POLICY "Users can manage own sessions" ON user_sessions
+    FOR ALL USING (auth.uid() = user_id);
+
+-- Auth events policies
+CREATE POLICY "Users can view own auth events" ON auth_events
+    FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Public can insert auth events" ON auth_events
+    FOR INSERT WITH CHECK (true);
+
+-- Subscription events policies
+CREATE POLICY "Users can view own subscription events" ON subscription_events
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own subscription events" ON subscription_events
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Payment events policies
+CREATE POLICY "Users can view own payment events" ON payment_events
+    FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Public can insert payment events" ON payment_events
+    FOR INSERT WITH CHECK (true);
+
+-- Data files policies
+CREATE POLICY "Users can manage own data files" ON data_files
+    FOR ALL USING (auth.uid() = user_id);
+
+-- AI analysis history policies
+CREATE POLICY "Users can view own analysis history" ON ai_analysis_history
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own analysis history" ON ai_analysis_history
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Collaboration sessions policies
+CREATE POLICY "Users can manage collaboration sessions" ON collaboration_sessions
+    FOR ALL USING (
+        auth.uid() = created_by OR 
+        auth.uid()::text = ANY(
+            SELECT jsonb_array_elements_text(participants)
+        )
+    );
+
+-- Export history policies
+CREATE POLICY "Users can view own export history" ON export_history
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own export history" ON export_history
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- =====================================================
+-- TRIGGERS FOR AUTOMATIC UPDATES
+-- =====================================================
+
+-- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -414,7 +513,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Create triggers for updated_at columns
+-- Apply updated_at triggers
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -437,82 +536,99 @@ CREATE TRIGGER update_user_sessions_updated_at BEFORE UPDATE ON user_sessions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================================
--- INSERT DEFAULT DATA
+-- DEFAULT DATA
 -- =====================================================
 
 -- Insert default templates
-INSERT INTO templates (name, description, category, is_public, template_data) VALUES
-('Executive Summary', 'Professional executive summary template', 'business', true, '{"slides": [{"type": "title", "content": {"title": "Executive Summary", "subtitle": "Key Insights and Recommendations"}}]}'),
-('Sales Report', 'Comprehensive sales performance template', 'sales', true, '{"slides": [{"type": "title", "content": {"title": "Sales Report", "subtitle": "Performance Overview"}}]}'),
-('Marketing Analysis', 'Marketing campaign analysis template', 'marketing', true, '{"slides": [{"type": "title", "content": {"title": "Marketing Analysis", "subtitle": "Campaign Performance"}}]}')
+INSERT INTO templates (id, name, description, category, is_public, template_data) VALUES
+(
+    uuid_generate_v4(),
+    'Executive Summary',
+    'Professional executive summary template',
+    'executive',
+    true,
+    '{"slides": [{"type": "title", "content": {"title": "Executive Summary", "subtitle": "Key Insights and Recommendations"}}]}'
+),
+(
+    uuid_generate_v4(),
+    'Sales Performance',
+    'Sales performance analysis template',
+    'sales',
+    true,
+    '{"slides": [{"type": "title", "content": {"title": "Sales Performance", "subtitle": "Analysis and Insights"}}]}'
+),
+(
+    uuid_generate_v4(),
+    'Marketing Campaign',
+    'Marketing campaign results template',
+    'marketing',
+    true,
+    '{"slides": [{"type": "title", "content": {"title": "Marketing Campaign", "subtitle": "Results and ROI Analysis"}}]}'
+)
 ON CONFLICT DO NOTHING;
 
 -- Insert default themes
-INSERT INTO themes (name, description, is_public, colors, fonts) VALUES
-('Professional Blue', 'Clean professional theme with blue accent', true, '{"primary": "#2563eb", "secondary": "#64748b", "background": "#ffffff", "text": "#1e293b"}', '{"heading": "Inter", "body": "Inter"}'),
-('Modern Dark', 'Modern dark theme for presentations', true, '{"primary": "#3b82f6", "secondary": "#94a3b8", "background": "#0f172a", "text": "#f8fafc"}', '{"heading": "Inter", "body": "Inter"}'),
-('Corporate Green', 'Corporate theme with green accent', true, '{"primary": "#059669", "secondary": "#6b7280", "background": "#ffffff", "text": "#111827"}', '{"heading": "Inter", "body": "Inter"}')
+INSERT INTO themes (id, name, description, is_public, colors) VALUES
+(
+    uuid_generate_v4(),
+    'Professional Blue',
+    'Clean professional blue theme',
+    true,
+    '{"primary": "#2563eb", "secondary": "#64748b", "accent": "#3b82f6", "background": "#ffffff", "text": "#1e293b"}'
+),
+(
+    uuid_generate_v4(),
+    'Modern Dark',
+    'Modern dark theme',
+    true,
+    '{"primary": "#6366f1", "secondary": "#94a3b8", "accent": "#8b5cf6", "background": "#0f172a", "text": "#f1f5f9"}'
+),
+(
+    uuid_generate_v4(),
+    'Corporate Green',
+    'Professional corporate green theme',
+    true,
+    '{"primary": "#059669", "secondary": "#6b7280", "accent": "#10b981", "background": "#ffffff", "text": "#111827"}'
+)
 ON CONFLICT DO NOTHING;
-
--- =====================================================
--- SET UP ROW LEVEL SECURITY (RLS)
--- =====================================================
-
--- Enable RLS on all tables
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE presentations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE slides ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_interactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE auth_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subscription_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payment_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE data_files ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ai_analysis_history ENABLE ROW LEVEL SECURITY;
-ALTER TABLE collaboration_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE export_history ENABLE ROW LEVEL SECURITY;
-ALTER TABLE system_events ENABLE ROW LEVEL SECURITY;
-
--- Create RLS policies
--- Profiles: Users can only access their own profile
-CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Presentations: Users can only access their own presentations
-CREATE POLICY "Users can view own presentations" ON presentations FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can update own presentations" ON presentations FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own presentations" ON presentations FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can delete own presentations" ON presentations FOR DELETE USING (auth.uid() = user_id);
-
--- Leads: Allow public insert, but restrict view to admins (you can modify this)
-CREATE POLICY "Anyone can insert leads" ON leads FOR INSERT WITH CHECK (true);
-CREATE POLICY "Only admins can view leads" ON leads FOR SELECT USING (auth.uid() IN (SELECT user_id FROM profiles WHERE subscription_tier = 'enterprise'));
 
 -- =====================================================
 -- MIGRATION LOG
 -- =====================================================
 
--- Create migration log table if it doesn't exist
+-- Create migration log table
 CREATE TABLE IF NOT EXISTS migrations_log (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     migration_name TEXT NOT NULL,
     applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    status TEXT DEFAULT 'completed',
-    details JSONB
+    version TEXT,
+    description TEXT
 );
 
 -- Log this migration
-INSERT INTO migrations_log (migration_name, details) VALUES (
-    'final-fixes-migration-2024-12-22',
-    '{"description": "Complete database schema reset with all tables and columns", "tables_created": 18, "indexes_created": 15, "triggers_created": 7}'
+INSERT INTO migrations_log (migration_name, version, description) VALUES
+(
+    'complete_schema_v2',
+    '2.0.0',
+    'Complete database schema with all tables, columns, indexes, RLS policies, and triggers for AEDRIN marketing deck platform'
 );
 
 -- =====================================================
--- SUCCESS MESSAGE
+-- COMPLETION MESSAGE
 -- =====================================================
 
-SELECT 'Database schema successfully reset and recreated with all fixes!' as status;
+-- This schema includes:
+-- ✅ All core tables (profiles, presentations, slides, etc.)
+-- ✅ Analytics tables (user_events, page_views, user_interactions)
+-- ✅ Auth & session tables (user_sessions, auth_events)
+-- ✅ Subscription & payment tables (subscription_events, payment_events)
+-- ✅ Content & data tables (data_files, ai_analysis_history)
+-- ✅ Collaboration & sharing tables (collaboration_sessions, export_history)
+-- ✅ System & error tables (system_events, error_logs)
+-- ✅ All necessary indexes for performance
+-- ✅ Row Level Security (RLS) policies for data protection
+-- ✅ Triggers for automatic timestamp updates
+-- ✅ Default templates and themes
+-- ✅ Migration logging
+
+-- Run this script in your Supabase SQL editor to set up the complete database schema.

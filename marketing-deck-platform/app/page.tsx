@@ -112,6 +112,7 @@ export default function HomePage() {
             <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link>
             <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
             <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
+            <Link href="/demo" className="text-gray-300 hover:text-white transition-colors">Demo</Link>
             <Link href="/auth/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
             <Link href="/auth/signup">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">

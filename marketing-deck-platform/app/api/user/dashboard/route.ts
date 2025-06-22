@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server-client'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerClient()
+    const supabase = createServerSupabaseClient()
     
-    // Get current user
-    const { data: { user }, error } = await supabase.auth.getUser()
+    // Get the current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
     
-    if (error || !user) {
+    if (userError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -19,30 +19,39 @@ export async function GET(request: NextRequest) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single()
 
-    if (profileError && profileError.code !== 'PGRST116') {
+    if (profileError) {
       console.error('Profile fetch error:', profileError)
     }
 
-    const userData = {
-      id: user.id,
-      email: user.email,
-      name: profile?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-      subscription: profile?.subscription_tier || 'free',
-      created_at: user.created_at,
-      last_sign_in: user.last_sign_in_at
+    // Get user presentations
+    const { data: presentations, error: presentationsError } = await supabase
+      .from('presentations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (presentationsError) {
+      console.error('Presentations fetch error:', presentationsError)
     }
 
     return NextResponse.json({
-      success: true,
-      user: userData
+      user: {
+        id: user.id,
+        email: user.email,
+        profile: profile || null,
+      },
+      presentations: presentations || [],
+      stats: {
+        totalPresentations: presentations?.length || 0,
+        recentPresentations: presentations?.slice(0, 5) || [],
+      }
     })
-
   } catch (error) {
-    console.error('Dashboard API error:', error)
-    
+    console.error('Dashboard error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

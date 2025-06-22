@@ -1,5 +1,7 @@
+"use client"
+
 // File: app/templates/page.tsx
-import { redirect } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { AuthSystem } from '@/lib/auth/auth-system'
@@ -47,12 +49,18 @@ const templates = [
   },
 ]
 
-export default async function TemplatesPage() {
-  // Use the current auth system
-  const user = await AuthSystem.getCurrentUser()
-  
-  if (!user) {
-    redirect('/auth/login')
+export default function TemplatesPage() {
+  const searchParams = useSearchParams()
+  const isDemo = searchParams.get('demo') === 'true'
+
+  const handleTemplateClick = (templateId: string) => {
+    if (isDemo) {
+      // In demo mode, redirect to demo page with template
+      window.location.href = `/demo?template=${templateId}`
+    } else {
+      // In normal mode, redirect to deck builder
+      window.location.href = `/deck-builder/new?template=${templateId}`
+    }
   }
 
   return (
@@ -62,6 +70,11 @@ export default async function TemplatesPage() {
           <h1 className="text-4xl font-grotesk font-bold mb-2 text-white">AEDRIN Templates</h1>
           <p className="text-blue-200 text-lg mb-2">Choose a template by <span className="font-semibold">story/purpose</span> or <span className="font-semibold">visual style</span> to start your executive-ready deck.</p>
           <p className="text-blue-400 text-sm">All templates are designed for AEDRIN (aedrin.ai) and optimized for AI-powered narratives and beautiful charts.</p>
+          {isDemo && (
+            <div className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+              <p className="text-blue-300 text-sm">🎉 Demo Mode: You can explore templates without signing in!</p>
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           {templates.map((tpl) => (
@@ -85,7 +98,13 @@ export default async function TemplatesPage() {
                   <div className="text-xs text-blue-300 mb-1">{tpl.purpose}</div>
                   <div className="text-xs text-blue-300">{tpl.visual}</div>
                 </div>
-                <Button variant="default" className="w-full mt-2">Use This Template</Button>
+                <Button 
+                  variant="default" 
+                  className="w-full mt-2"
+                  onClick={() => handleTemplateClick(tpl.id)}
+                >
+                  {isDemo ? 'Try This Template' : 'Use This Template'}
+                </Button>
               </Card>
             </div>
           ))}

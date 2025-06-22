@@ -25,9 +25,8 @@ export default function LoginPage() {
       if (result.error) {
         setError(result.error)
         setLoading(false)
-      } else {
-        router.push('/dashboard')
       }
+      // The auth context will handle the redirect
     } catch (err) {
       setError('Network error occurred')
       setLoading(false)
@@ -44,9 +43,8 @@ export default function LoginPage() {
       if (result.error) {
         setError(result.error)
         setLoading(false)
-      } else {
-        router.push('/dashboard')
       }
+      // The auth context will handle the redirect
     } catch (error) {
       setError('Failed to start demo')
       setLoading(false)
