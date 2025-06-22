@@ -90,7 +90,8 @@
     "@types/papaparse": "^5.3.16",
     "@types/pdfkit": "^0.14.0",
     "@types/react-color": "^3.0.13",
-    "eslint": "^9.29.0"
+    "eslint": "^9.29.0",
+    "eslint-config-next": "^15.3.4"
   },
   "name": "marketing-deck-platform",
   "version": "1.0.0",

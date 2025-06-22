@@ -24,7 +24,7 @@ try {
     throw new Error('STRIPE_SECRET_KEY is not configured');
   }
   stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2024-04-10',
+    apiVersion: '2025-05-28.basil',
   });
 } catch (error) {
   console.error('Failed to initialize Stripe:', error);

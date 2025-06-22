@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
-import { Check, Star, Zap, Crown, Users, BarChart3, Shield, Globe, ArrowRight, TrendingUp, Brain, Award, Clock, Sparkles, Rocket, Target, Infinity, Lock, Headphones, Palette, Code, Database, Cloud, Smartphone, Monitor } from 'lucide-react'
+import { Check, Star, Zap, Crown, Users, BarChart3, Shield, Globe, ArrowRight, TrendingUp, Brain, Award, Clock, Sparkles, Rocket, Target, Infinity, Lock, Headphones, Palette, Code, Database, Cloud, Smartphone, Monitor, Users2 } from 'lucide-react'
 
 const pricingTiers = [
   {
@@ -354,70 +354,152 @@ export default function PricingPage() {
 
       {/* Features Comparison */}
       <section className="px-6 py-20 bg-gray-900/50">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Compare Features</h2>
             <p className="text-xl text-gray-300">See what's included in each plan</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-6">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-white mb-2">Features</h3>
+          <div className="bg-gray-800/30 rounded-2xl border border-gray-700 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-4 divide-x divide-gray-700">
+              {/* Features Column */}
+              <div className="p-8 bg-gray-800/50">
+                <div className="text-center mb-8">
+                  <h3 className="text-xl font-bold text-white mb-2">Features</h3>
+                  <p className="text-gray-400 text-sm">Everything you need to know</p>
+                </div>
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3">
+                    <BarChart3 className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">Presentations per month</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Brain className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">AI Insights & Analysis</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Palette className="w-5 h-5 text-green-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">Professional Templates</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Users className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">Team Members</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Code className="w-5 h-5 text-red-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">Export Formats</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Database className="w-5 h-5 text-indigo-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">API Access</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Shield className="w-5 h-5 text-pink-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">Custom Branding</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Headphones className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">Priority Support</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <TrendingUp className="w-5 h-5 text-teal-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">Advanced Analytics</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Users2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                    <span className="text-gray-300 font-medium">Real-time Collaboration</span>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-4 text-sm text-gray-300">
-                <div className="h-6">Presentations per month</div>
-                <div className="h-6">AI Insights</div>
-                <div className="h-6">Templates</div>
-                <div className="h-6">Team Members</div>
-                <div className="h-6">Export Formats</div>
-                <div className="h-6">API Access</div>
-                <div className="h-6">Custom Branding</div>
-                <div className="h-6">Priority Support</div>
-                <div className="h-6">Advanced Analytics</div>
-                <div className="h-6">Collaboration</div>
-              </div>
+              
+              {/* Pricing Tiers */}
+              {pricingTiers.map((tier) => (
+                <div key={tier.name} className="p-8 relative">
+                  {tier.popular && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-semibold">
+                        Most Popular
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="text-center mb-8">
+                    <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
+                    <div className="text-3xl font-bold text-white mb-1">${getPrice(tier)}</div>
+                    <div className="text-gray-400 text-sm">per {billingPeriod}</div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-center">
+                      <span className="text-2xl font-bold text-white">
+                        {tier.name === 'Enterprise' ? '∞' : tier.features[0].split(' ')[0]}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        tier.name === 'Starter' ? 'bg-gray-600 text-gray-300' : 
+                        tier.name === 'Professional' ? 'bg-blue-600 text-white' : 
+                        'bg-purple-600 text-white'
+                      }`}>
+                        {tier.name === 'Starter' ? 'Basic' : tier.name === 'Professional' ? 'Advanced' : 'Custom'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className="text-white font-semibold">
+                        {tier.name === 'Starter' ? '20+' : tier.name === 'Professional' ? '50+' : 'Custom'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className="text-white font-semibold">
+                        {tier.name === 'Starter' ? '1' : tier.name === 'Professional' ? '5' : '∞'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className="text-white font-semibold">
+                        {tier.name === 'Starter' ? 'PDF' : tier.name === 'Professional' ? 'PPT, PDF' : 'All'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      {tier.name === 'Starter' ? (
+                        <span className="text-gray-500 text-xl">×</span>
+                      ) : (
+                        <Check className="w-6 h-6 text-green-400" />
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center">
+                      {tier.name === 'Starter' ? (
+                        <span className="text-gray-500 text-xl">×</span>
+                      ) : (
+                        <Check className="w-6 h-6 text-green-400" />
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center">
+                      {tier.name === 'Starter' ? (
+                        <span className="text-gray-500 text-xl">×</span>
+                      ) : tier.name === 'Professional' ? (
+                        <span className="text-blue-400 text-sm font-semibold">Email/Chat</span>
+                      ) : (
+                        <span className="text-purple-400 text-sm font-semibold">24/7 Phone</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        tier.name === 'Starter' ? 'bg-gray-600 text-gray-300' : 'bg-green-600 text-white'
+                      }`}>
+                        {tier.name === 'Starter' ? 'Basic' : 'Advanced'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      {tier.name === 'Starter' ? (
+                        <span className="text-gray-500 text-xl">×</span>
+                      ) : (
+                        <Check className="w-6 h-6 text-green-400" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            
-            {pricingTiers.map((tier) => (
-              <div key={tier.name} className="space-y-6">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-white mb-2">{tier.name}</h3>
-                </div>
-                <div className="space-y-4 text-sm">
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Enterprise' ? 'Unlimited' : tier.features[0].split(' ')[0]}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? 'Basic' : tier.name === 'Professional' ? 'Advanced' : 'Custom'}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? '20+' : tier.name === 'Professional' ? '50+' : 'Custom'}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? '1' : tier.name === 'Professional' ? '5' : 'Unlimited'}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? 'PDF' : tier.name === 'Professional' ? 'PowerPoint, PDF' : 'All'}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? '×' : '✓'}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? '×' : '✓'}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? '×' : tier.name === 'Professional' ? 'Email/Chat' : '24/7 Phone'}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? 'Basic' : 'Advanced'}
-                  </div>
-                  <div className="h-6 text-gray-300">
-                    {tier.name === 'Starter' ? '×' : '✓'}
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

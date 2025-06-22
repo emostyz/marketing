@@ -70,13 +70,8 @@ export async function POST(request: NextRequest) {
         industry: userProfile.industry,
         targetAudience: userProfile.targetAudience,
         businessContext: userProfile.businessContext,
-        businessGoals: userProfile.businessGoals,
-        keyQuestions: userProfile.keyQuestions,
         keyMetrics: userProfile.keyMetrics,
-        datasetTypes: userProfile.datasetTypes,
-        usagePlan: userProfile.usagePlan,
-        presentationStyle: userProfile.presentationStyle,
-        customRequirements: userProfile.customRequirements
+        dataPreferences: userProfile.dataPreferences
       } : null
     }
 

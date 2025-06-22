@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import UltimateDeckBuilder from '@/components/deck-builder/UltimateDeckBuilder'
+import { UltimateDeckBuilder } from '@/components/deck-builder/UltimateDeckBuilder'
 import { AuthSystem } from '@/lib/auth/auth-system'
 import { redirect } from 'next/navigation'
 

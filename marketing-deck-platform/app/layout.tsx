@@ -2,6 +2,7 @@ import './globals.css';
 import { Metadata, Viewport } from 'next';
 import { AuthProvider } from '@/lib/auth/auth-context';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { EventTracker } from '@/components/analytics/EventTracker';
 
 export const metadata: Metadata = {
   title: 'AEDRIN - AI-Powered Presentation Platform',
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ErrorBoundary>
           <AuthProvider>
-            {children}
+            <EventTracker>
+              {children}
+            </EventTracker>
           </AuthProvider>
         </ErrorBoundary>
       </body>

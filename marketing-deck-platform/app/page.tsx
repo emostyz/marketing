@@ -108,9 +108,10 @@ export default function HomePage() {
             <span className="text-2xl font-bold text-white">AEDRIN</span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
-            <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
-            <a href="#about" className="text-gray-300 hover:text-white transition-colors">About</a>
+            <Link href="/#features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
+            <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link>
+            <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
+            <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
             <Link href="/auth/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
             <Link href="/auth/signup">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">

@@ -52,10 +52,28 @@ export async function PUT(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
     
+    // Get client info for logging
+    const clientIP = request.headers.get('x-forwarded-for') || 
+                    request.headers.get('x-real-ip') || 
+                    'unknown'
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+    const referer = request.headers.get('referer') || 'unknown'
+    
     // Get the current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
+      // Log unauthorized access attempt
+      await supabase.from('user_events').insert({
+        event_type: 'profile_update_unauthorized',
+        event_data: {
+          error: userError?.message || 'No user found'
+        },
+        ip_address: clientIP,
+        user_agent: userAgent,
+        referer
+      })
+
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -66,6 +84,18 @@ export async function PUT(request: NextRequest) {
     try {
       body = await request.json();
     } catch (error) {
+      // Log JSON parsing error
+      await supabase.from('user_events').insert({
+        event_type: 'profile_update_json_error',
+        event_data: {
+          error: 'Invalid JSON in request body'
+        },
+        ip_address: clientIP,
+        user_agent: userAgent,
+        referer,
+        user_id: user.id
+      })
+
       return NextResponse.json(
         { error: 'Invalid JSON in request body' },
         { status: 400 }
@@ -75,11 +105,31 @@ export async function PUT(request: NextRequest) {
     // Validate input
     const validationErrors = validateProfileInput(body);
     if (validationErrors.length > 0) {
+      // Log validation failure
+      await supabase.from('user_events').insert({
+        event_type: 'profile_update_validation_failed',
+        event_data: {
+          errors: validationErrors,
+          attempted_data: body
+        },
+        ip_address: clientIP,
+        user_agent: userAgent,
+        referer,
+        user_id: user.id
+      })
+
       return NextResponse.json(
         { error: 'Validation failed', details: validationErrors },
         { status: 400 }
       );
     }
+
+    // Get current profile for comparison
+    const { data: currentProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
 
     const {
       name,
@@ -102,20 +152,75 @@ export async function PUT(request: NextRequest) {
       updated_at: new Date().toISOString()
     };
 
+    // Track what fields are being changed
+    const changedFields: string[] = [];
+
     // Only include fields that are actually being updated
-    if (name !== undefined) updateData.name = name;
-    if (bio !== undefined) updateData.bio = bio;
-    if (companyName !== undefined) updateData.company_name = companyName;
-    if (jobTitle !== undefined) updateData.job_title = jobTitle;
-    if (phone !== undefined) updateData.phone = phone;
-    if (industry !== undefined) updateData.industry = industry;
-    if (targetAudience !== undefined) updateData.target_audience = targetAudience;
-    if (businessContext !== undefined) updateData.business_context = businessContext;
-    if (masterSystemPrompt !== undefined) updateData.master_system_prompt = masterSystemPrompt;
-    if (profilePictureUrl !== undefined) updateData.profile_picture_url = profilePictureUrl;
-    if (logoUrl !== undefined) updateData.logo_url = logoUrl;
-    if (keyMetrics !== undefined) updateData.key_metrics = keyMetrics;
-    if (brandColors !== undefined) updateData.brand_colors = brandColors;
+    if (name !== undefined) {
+      updateData.name = name;
+      if (currentProfile?.name !== name) changedFields.push('name');
+    }
+    if (bio !== undefined) {
+      updateData.bio = bio;
+      if (currentProfile?.bio !== bio) changedFields.push('bio');
+    }
+    if (companyName !== undefined) {
+      updateData.company_name = companyName;
+      if (currentProfile?.company_name !== companyName) changedFields.push('company_name');
+    }
+    if (jobTitle !== undefined) {
+      updateData.job_title = jobTitle;
+      if (currentProfile?.job_title !== jobTitle) changedFields.push('job_title');
+    }
+    if (phone !== undefined) {
+      updateData.phone = phone;
+      if (currentProfile?.phone !== phone) changedFields.push('phone');
+    }
+    if (industry !== undefined) {
+      updateData.industry = industry;
+      if (currentProfile?.industry !== industry) changedFields.push('industry');
+    }
+    if (targetAudience !== undefined) {
+      updateData.target_audience = targetAudience;
+      if (currentProfile?.target_audience !== targetAudience) changedFields.push('target_audience');
+    }
+    if (businessContext !== undefined) {
+      updateData.business_context = businessContext;
+      if (currentProfile?.business_context !== businessContext) changedFields.push('business_context');
+    }
+    if (masterSystemPrompt !== undefined) {
+      updateData.master_system_prompt = masterSystemPrompt;
+      if (currentProfile?.master_system_prompt !== masterSystemPrompt) changedFields.push('master_system_prompt');
+    }
+    if (profilePictureUrl !== undefined) {
+      updateData.profile_picture_url = profilePictureUrl;
+      if (currentProfile?.profile_picture_url !== profilePictureUrl) changedFields.push('profile_picture_url');
+    }
+    if (logoUrl !== undefined) {
+      updateData.logo_url = logoUrl;
+      if (currentProfile?.logo_url !== logoUrl) changedFields.push('logo_url');
+    }
+    if (keyMetrics !== undefined) {
+      updateData.key_metrics = keyMetrics;
+      if (JSON.stringify(currentProfile?.key_metrics) !== JSON.stringify(keyMetrics)) changedFields.push('key_metrics');
+    }
+    if (brandColors !== undefined) {
+      updateData.brand_colors = brandColors;
+      if (JSON.stringify(currentProfile?.brand_colors) !== JSON.stringify(brandColors)) changedFields.push('brand_colors');
+    }
+
+    // Log profile update attempt
+    await supabase.from('user_events').insert({
+      event_type: 'profile_update_attempted',
+      event_data: {
+        changed_fields: changedFields,
+        update_data: updateData
+      },
+      ip_address: clientIP,
+      user_agent: userAgent,
+      referer,
+      user_id: user.id
+    })
 
     // Update user profile
     const { data: profileData, error: profileError } = await supabase
@@ -127,11 +232,52 @@ export async function PUT(request: NextRequest) {
 
     if (profileError) {
       console.error('Profile update error:', profileError);
+      
+      // Log profile update error
+      await supabase.from('user_events').insert({
+        event_type: 'profile_update_failed',
+        event_data: {
+          error: profileError.message,
+          changed_fields: changedFields
+        },
+        ip_address: clientIP,
+        user_agent: userAgent,
+        referer,
+        user_id: user.id
+      })
+
       return NextResponse.json(
         { error: 'Failed to update profile' },
         { status: 500 }
       );
     }
+
+    // Log successful profile update
+    await supabase.from('user_events').insert({
+      event_type: 'profile_updated',
+      event_data: {
+        changed_fields: changedFields,
+        profile_id: profileData.id
+      },
+      ip_address: clientIP,
+      user_agent: userAgent,
+      referer,
+      user_id: user.id
+    })
+
+    // Log profile change event
+    await supabase.from('profile_events').insert({
+      user_id: user.id,
+      event_type: 'updated',
+      event_data: {
+        changed_fields: changedFields,
+        previous_values: currentProfile,
+        new_values: profileData
+      },
+      ip_address: clientIP,
+      user_agent: userAgent,
+      created_at: new Date().toISOString()
+    })
 
     return NextResponse.json({
       message: 'Profile updated successfully',
@@ -140,6 +286,20 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     console.error('Profile update error:', error);
+    
+    // Log system error
+    const supabase = createRouteHandlerClient({ cookies });
+    await supabase.from('system_events').insert({
+      event_type: 'profile_update_system_error',
+      event_data: {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : null
+      },
+      ip_address: request.headers.get('x-forwarded-for') || 'unknown',
+      user_agent: request.headers.get('user-agent') || 'unknown',
+      severity: 'error'
+    })
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

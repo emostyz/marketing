@@ -1,16 +1,22 @@
--- AEDRIN User Profile System Migration
+-- AEDRIN User Profile System Migration (Overhauled)
 -- Created: 2024-12-22
--- Description: Comprehensive user profile system with pricing tiers and usage tracking
+-- Updated: 2024-06-22 (Full audit, analytics, and compliance overhaul)
 
--- Add subscription plan enum if it doesn't exist
+-- ENUMS
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'subscription_plan') THEN
         CREATE TYPE subscription_plan AS ENUM ('starter', 'professional', 'enterprise');
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'auth_event_type') THEN
+        CREATE TYPE auth_event_type AS ENUM ('register', 'login', 'logout', 'password_reset', 'email_change', 'profile_update', 'delete_account');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_action_type') THEN
+        CREATE TYPE user_action_type AS ENUM ('form_submit', 'lead_capture', 'feedback', 'data_upload', 'export', 'slide_edit', 'settings_change', 'tier_change', 'profile_edit', 'login', 'logout', 'register', 'payment', 'other');
+    END IF;
 END $$;
 
--- Update profiles table with new user profile fields
+-- PROFILES TABLE (User Master Record)
 ALTER TABLE profiles 
 ADD COLUMN IF NOT EXISTS name TEXT,
 ADD COLUMN IF NOT EXISTS profile_picture_url TEXT,
@@ -36,9 +42,54 @@ ADD COLUMN IF NOT EXISTS master_system_prompt TEXT DEFAULT 'You are an expert bu
 ADD COLUMN IF NOT EXISTS subscription_plan subscription_plan DEFAULT 'starter',
 ADD COLUMN IF NOT EXISTS presentations_used_this_month INTEGER DEFAULT 0,
 ADD COLUMN IF NOT EXISTS monthly_reset_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
+ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
+ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
+ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITH TIME ZONE,
+ADD COLUMN IF NOT EXISTS last_ip TEXT,
+ADD COLUMN IF NOT EXISTS last_user_agent TEXT,
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
--- Create user_settings table for detailed preferences
+-- AUTH EVENTS (Every login, logout, register, etc.)
+CREATE TABLE IF NOT EXISTS auth_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    event_type auth_event_type NOT NULL,
+    event_metadata JSONB,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- PROFILE CHANGE HISTORY (Full audit trail)
+CREATE TABLE IF NOT EXISTS profile_change_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    changed_fields JSONB NOT NULL,
+    old_values JSONB,
+    new_values JSONB,
+    changed_by UUID,
+    change_reason TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- TIER/PLAN CHANGE HISTORY (with transaction IDs, days left, etc.)
+CREATE TABLE IF NOT EXISTS tier_change_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    old_plan subscription_plan,
+    new_plan subscription_plan NOT NULL,
+    change_reason TEXT,
+    stripe_subscription_id TEXT,
+    stripe_transaction_id TEXT,
+    effective_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    days_left INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- USER SETTINGS (Current)
 CREATE TABLE IF NOT EXISTS user_settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -52,7 +103,21 @@ CREATE TABLE IF NOT EXISTS user_settings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create usage_tracking table for monitoring tier limits
+-- USER SETTINGS CHANGE HISTORY
+CREATE TABLE IF NOT EXISTS user_settings_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    changed_fields JSONB NOT NULL,
+    old_values JSONB,
+    new_values JSONB,
+    changed_by UUID,
+    change_reason TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- USAGE TRACKING (Monthly, for analytics)
 CREATE TABLE IF NOT EXISTS usage_tracking (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -67,211 +132,95 @@ CREATE TABLE IF NOT EXISTS usage_tracking (
     UNIQUE(user_id, month_year)
 );
 
--- Create subscription_history table for tracking changes
-CREATE TABLE IF NOT EXISTS subscription_history (
+-- SLIDE/DOCUMENT EDIT HISTORY (Every change to slides/docs)
+CREATE TABLE IF NOT EXISTS slide_edit_history (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    old_plan subscription_plan,
-    new_plan subscription_plan NOT NULL,
-    change_reason TEXT,
-    stripe_subscription_id TEXT,
-    effective_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    slide_id UUID,
+    presentation_id UUID,
+    edit_type TEXT,
+    old_content JSONB,
+    new_content JSONB,
+    changed_fields JSONB,
+    changed_by UUID,
+    ip_address TEXT,
+    user_agent TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Function to reset monthly usage counters
-CREATE OR REPLACE FUNCTION reset_monthly_usage()
-RETURNS void AS $$
-BEGIN
-    UPDATE profiles 
-    SET presentations_used_this_month = 0,
-        monthly_reset_date = NOW() + INTERVAL '1 month'
-    WHERE monthly_reset_date <= NOW();
-END;
-$$ LANGUAGE plpgsql;
+-- USER ACTIONS (Every possible user action, for analytics)
+CREATE TABLE IF NOT EXISTS user_actions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    action_type user_action_type NOT NULL,
+    action_metadata JSONB,
+    page_url TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
--- Function to check tier limits
-CREATE OR REPLACE FUNCTION check_tier_limit(
-    user_uuid UUID,
-    limit_type TEXT
-) RETURNS BOOLEAN AS $$
-DECLARE
-    user_plan subscription_plan;
-    current_usage INTEGER;
-    tier_limit INTEGER;
-BEGIN
-    -- Get user's current plan
-    SELECT subscription_plan INTO user_plan 
-    FROM profiles WHERE id = user_uuid;
-    
-    -- Get current usage based on limit type
-    IF limit_type = 'presentations' THEN
-        SELECT presentations_used_this_month INTO current_usage
-        FROM profiles WHERE id = user_uuid;
-        
-        -- Set tier limits for presentations
-        CASE user_plan
-            WHEN 'starter' THEN tier_limit := 5;
-            WHEN 'professional' THEN tier_limit := 25;
-            WHEN 'enterprise' THEN tier_limit := -1; -- Unlimited
-        END CASE;
-    ELSE
-        -- Default to allowing action
-        RETURN TRUE;
-    END IF;
-    
-    -- Check if unlimited (enterprise) or under limit
-    RETURN (tier_limit = -1 OR current_usage < tier_limit);
-END;
-$$ LANGUAGE plpgsql;
+-- PAYMENT/TRANSACTION EVENTS
+CREATE TABLE IF NOT EXISTS payment_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    stripe_transaction_id TEXT,
+    stripe_subscription_id TEXT,
+    amount_cents INTEGER,
+    currency TEXT,
+    event_type TEXT,
+    event_metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
--- Function to increment usage counter
-CREATE OR REPLACE FUNCTION increment_usage_counter(
-    user_uuid UUID,
-    counter_type TEXT
-) RETURNS void AS $$
-BEGIN
-    IF counter_type = 'presentations' THEN
-        UPDATE profiles 
-        SET presentations_used_this_month = presentations_used_this_month + 1
-        WHERE id = user_uuid;
-    END IF;
-    
-    -- Update usage tracking table
-    INSERT INTO usage_tracking (user_id, month_year, presentations_created)
-    VALUES (user_uuid, TO_CHAR(NOW(), 'YYYY-MM'), 1)
-    ON CONFLICT (user_id, month_year)
-    DO UPDATE SET 
-        presentations_created = usage_tracking.presentations_created + 1,
-        updated_at = NOW();
-END;
-$$ LANGUAGE plpgsql;
+-- DEVICE/SESSION METADATA
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    session_id TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    device_info JSONB,
+    browser_info JSONB,
+    os_info JSONB,
+    location_info JSONB,
+    login_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    logout_time TIMESTAMP WITH TIME ZONE
+);
 
--- Function to upgrade user subscription
-CREATE OR REPLACE FUNCTION upgrade_user_subscription(
-    user_uuid UUID,
-    new_plan subscription_plan,
-    stripe_sub_id TEXT DEFAULT NULL,
-    reason TEXT DEFAULT 'Manual upgrade'
-) RETURNS void AS $$
-DECLARE
-    old_plan subscription_plan;
-BEGIN
-    -- Get current plan
-    SELECT subscription_plan INTO old_plan 
-    FROM profiles WHERE id = user_uuid;
-    
-    -- Update user's plan
-    UPDATE profiles 
-    SET subscription_plan = new_plan,
-        updated_at = NOW()
-    WHERE id = user_uuid;
-    
-    -- Record the change in history
-    INSERT INTO subscription_history (user_id, old_plan, new_plan, change_reason, stripe_subscription_id)
-    VALUES (user_uuid, old_plan, new_plan, reason, stripe_sub_id);
-END;
-$$ LANGUAGE plpgsql;
-
--- Function to rollback usage counter (for failed operations)
-CREATE OR REPLACE FUNCTION rollback_usage_counter(
-    user_uuid UUID,
-    counter_type TEXT,
-    rollback_reason TEXT DEFAULT 'Operation failed'
-) RETURNS void AS $$
-BEGIN
-    -- Only allow rollback for presentations counter
-    IF counter_type = 'presentations' THEN
-        UPDATE profiles 
-        SET presentations_used_this_month = GREATEST(presentations_used_this_month - 1, 0)
-        WHERE id = user_uuid;
-        
-        -- Also update usage tracking table
-        UPDATE usage_tracking 
-        SET presentations_created = GREATEST(presentations_created - 1, 0),
-            updated_at = NOW()
-        WHERE user_id = user_uuid 
-          AND month_year = TO_CHAR(NOW(), 'YYYY-MM');
-    END IF;
-    
-    -- Log the rollback for audit purposes
-    INSERT INTO usage_tracking (user_id, month_year, presentations_created)
-    VALUES (user_uuid, 'ROLLBACK-' || TO_CHAR(NOW(), 'YYYY-MM-DD-HH24:MI:SS'), -1)
-    ON CONFLICT DO NOTHING;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create indexes for performance
+-- TRIGGERS & INDEXES (for audit and analytics)
 CREATE INDEX IF NOT EXISTS idx_profiles_subscription_plan ON profiles(subscription_plan);
 CREATE INDEX IF NOT EXISTS idx_profiles_monthly_reset ON profiles(monthly_reset_date);
 CREATE INDEX IF NOT EXISTS idx_usage_tracking_user_month ON usage_tracking(user_id, month_year);
-CREATE INDEX IF NOT EXISTS idx_subscription_history_user ON subscription_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_tier_change_history_user ON tier_change_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_profile_change_history_user ON profile_change_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_settings_history_user ON user_settings_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_slide_edit_history_user ON slide_edit_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_actions_user ON user_actions(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_events_user ON payment_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id);
 
--- Create RLS policies for user_settings
-ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
+-- RLS POLICIES (for all new tables)
+ALTER TABLE auth_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profile_change_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tier_change_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_settings_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE slide_edit_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_actions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own settings" ON user_settings
-    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own auth events" ON auth_events FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own profile change history" ON profile_change_history FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own tier change history" ON tier_change_history FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own settings history" ON user_settings_history FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own slide edit history" ON slide_edit_history FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own actions" ON user_actions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own payment events" ON payment_events FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own sessions" ON user_sessions FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own settings" ON user_settings
-    FOR UPDATE USING (auth.uid() = user_id);
+-- TRIGGERS FOR AUDIT LOGS
+-- (Example: On profile update, insert into profile_change_history)
+-- You may need to implement these as Supabase Functions or in your backend code for full flexibility.
 
-CREATE POLICY "Users can insert own settings" ON user_settings
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Create RLS policies for usage_tracking
-ALTER TABLE usage_tracking ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own usage" ON usage_tracking
-    FOR SELECT USING (auth.uid() = user_id);
-
--- Create RLS policies for subscription_history
-ALTER TABLE subscription_history ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own subscription history" ON subscription_history
-    FOR SELECT USING (auth.uid() = user_id);
-
--- Trigger to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_profiles_updated_at
-    BEFORE UPDATE ON profiles
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_user_settings_updated_at
-    BEFORE UPDATE ON user_settings
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_usage_tracking_updated_at
-    BEFORE UPDATE ON usage_tracking
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- Initialize user_settings for existing users
-INSERT INTO user_settings (user_id)
-SELECT id FROM profiles
-WHERE id NOT IN (SELECT user_id FROM user_settings);
-
--- Initialize usage_tracking for current month for existing users
-INSERT INTO usage_tracking (user_id, month_year)
-SELECT id, TO_CHAR(NOW(), 'YYYY-MM') FROM profiles
-WHERE id NOT IN (
-    SELECT user_id FROM usage_tracking 
-    WHERE month_year = TO_CHAR(NOW(), 'YYYY-MM')
-);
-
--- Comments for documentation
-COMMENT ON TABLE user_settings IS 'User preferences and settings for the AEDRIN platform';
-COMMENT ON TABLE usage_tracking IS 'Monthly usage tracking for tier limit enforcement';
-COMMENT ON TABLE subscription_history IS 'Audit trail of subscription plan changes';
-COMMENT ON FUNCTION check_tier_limit IS 'Validates if user can perform action based on their tier limits';
-COMMENT ON FUNCTION increment_usage_counter IS 'Increments usage counters when user performs tracked actions';
-COMMENT ON FUNCTION upgrade_user_subscription IS 'Handles subscription plan upgrades with history tracking';
+-- END OF OVERHAUL
