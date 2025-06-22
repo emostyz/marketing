@@ -375,8 +375,8 @@ TIME FRAME:
 - Include Seasonality: ${timeFrame.includeSeasonality}
 - Include Outliers: ${timeFrame.includeOutliers}
 
-DATA:
-${this.prepareDataForAnalysis(data)}
+DATA SAMPLE (first 10 rows):
+${JSON.stringify(Array.isArray(data) ? data.slice(0, 10) : data, null, 2)}
 
 TASK: Perform an initial comprehensive scan of this data and identify:
 1. Data structure and key variables
@@ -468,8 +468,8 @@ TIME FRAME ANALYSIS:
 ${statisticalAnalysis ? `ADVANCED STATISTICAL ANALYSIS:
 ${JSON.stringify(statisticalAnalysis, null, 2)}` : ''}
 
-DATA:
-${this.prepareDataForAnalysis(data)}
+DATA SAMPLE (first 10 rows):
+${JSON.stringify(Array.isArray(data) ? data.slice(0, 10) : data, null, 2)}
 
 TASK: Perform deep pattern analysis focusing on:
 1. Temporal patterns (seasonality, trends, cycles)
