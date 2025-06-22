@@ -51,13 +51,23 @@ export async function POST(request: NextRequest) {
     console.log('🧠 Enhanced Analysis - All validations passed, initializing brain')
 
     // Transform timeFrame to match EnhancedBrainV2 expectations
+    const mapAnalysisType = (comparisons: string[] = []) => {
+      const typeMap: Record<string, 'q/q' | 'y/y' | 'm/m' | 'w/w'> = {
+        'qq': 'q/q',
+        'yy': 'y/y', 
+        'mm': 'm/m',
+        'ww': 'w/w'
+      }
+      return comparisons.length > 0 && typeMap[comparisons[0]] ? typeMap[comparisons[0]] : 'custom' as const
+    }
+
     const transformedTimeFrame = {
       primaryPeriod: {
-        start: timeFrame.start,
-        end: timeFrame.end,
-        label: `${timeFrame.start} to ${timeFrame.end}`
+        start: timeFrame.start || 'Not specified',
+        end: timeFrame.end || 'Not specified',
+        label: `${timeFrame.start || 'Start'} to ${timeFrame.end || 'End'}`
       },
-      analysisType: 'custom' as const,
+      analysisType: mapAnalysisType(timeFrame.comparisons),
       includeTrends: true,
       includeSeasonality: timeFrame.dataFrequency === 'monthly' || timeFrame.dataFrequency === 'quarterly',
       includeOutliers: true

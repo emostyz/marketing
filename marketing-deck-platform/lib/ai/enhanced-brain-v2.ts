@@ -127,6 +127,49 @@ export class EnhancedBrainV2 {
     this.openai = new OpenAI({ apiKey })
   }
 
+  // Helper method to safely sample data for OpenAI analysis
+  private getDataSample(data: any, maxRows: number = 20): string {
+    try {
+      if (!data) return 'No data provided'
+      
+      // If it's a ParsedDataset, sample from rows
+      if (this.isParsedDataset(data)) {
+        const sampleRows = data.rows.slice(0, maxRows)
+        return JSON.stringify({
+          totalRows: data.rows.length,
+          columns: data.columns.map(col => ({
+            name: col.name,
+            type: col.type,
+            samples: col.samples.slice(0, 3)
+          })),
+          sampleData: sampleRows,
+          summary: data.summary,
+          insights: data.insights
+        }, null, 2)
+      }
+      
+      // If it's an array, sample it
+      if (Array.isArray(data)) {
+        const sample = data.slice(0, maxRows)
+        return JSON.stringify({
+          totalRecords: data.length,
+          sampleData: sample,
+          columns: data.length > 0 ? Object.keys(data[0]) : []
+        }, null, 2)
+      }
+      
+      // For other data types, try to limit size
+      const stringified = JSON.stringify(data, null, 2)
+      if (stringified.length > 10000) {
+        return JSON.stringify(data, null, 2).substring(0, 10000) + '\n... (truncated for size)'
+      }
+      
+      return stringified
+    } catch (error) {
+      return `Error processing data: ${error instanceof Error ? error.message : 'Unknown error'}`
+    }
+  }
+
   // Helper method to parse JSON responses with markdown fallback
   private parseJsonResponse(content: string, fallback: any = {}): any {
     try {

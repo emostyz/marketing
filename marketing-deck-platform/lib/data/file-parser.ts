@@ -55,81 +55,66 @@ export class FileParser {
   }
 
   private static async parseCSV(file: File): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      // Ensure we're in browser environment
-      if (typeof window === 'undefined') {
-        reject(new Error('File parsing is only available in browser environment'))
-        return
-      }
-      
-      Papa.parse(file, {
-        header: true,
-        dynamicTyping: true,
-        skipEmptyLines: true,
-        transformHeader: (header) => header.trim(),
-        complete: (results) => {
-          if (results.errors.length > 0) {
-            console.warn('CSV parsing warnings:', results.errors)
+    return new Promise(async (resolve, reject) => {
+      try {
+        const text = await file.text()
+        
+        Papa.parse(text, {
+          header: true,
+          dynamicTyping: true,
+          skipEmptyLines: true,
+          transformHeader: (header) => header.trim(),
+          complete: (results) => {
+            if (results.errors.length > 0) {
+              console.warn('CSV parsing warnings:', results.errors)
+            }
+            resolve(results.data)
+          },
+          error: (error) => {
+            reject(new Error(`CSV parsing failed: ${error.message}`))
           }
-          resolve(results.data)
-        },
-        error: (error) => {
-          reject(new Error(`CSV parsing failed: ${error.message}`))
-        }
-      })
+        })
+      } catch (error) {
+        reject(new Error(`Failed to read CSV file: ${error instanceof Error ? error.message : 'Unknown error'}`))
+      }
     })
   }
 
   private static async parseExcel(file: File): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      // Ensure we're in browser environment
-      if (typeof window === 'undefined') {
-        reject(new Error('File parsing is only available in browser environment'))
-        return
-      }
-      
-      const reader = new FileReader()
-      
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target?.result as ArrayBuffer)
-          const workbook = XLSX.read(data, { type: 'array' })
-          
-          // Get the first worksheet
-          const sheetName = workbook.SheetNames[0]
-          const worksheet = workbook.Sheets[sheetName]
-          
-          // Convert to JSON with header row
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-            header: 1,
-            blankrows: false
-          })
-          
-          if (jsonData.length === 0) {
-            throw new Error('Excel file appears to be empty')
-          }
-          
-          // Convert to objects with first row as headers
-          const headers = jsonData[0] as string[]
-          const rows = jsonData.slice(1).map(row => {
-            const obj: any = {}
-            headers.forEach((header, index) => {
-              obj[header] = (row as any[])[index]
-            })
-            return obj
-          })
-          
-          resolve(rows)
-        } catch (error) {
-          reject(new Error(`Excel parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`))
+    return new Promise(async (resolve, reject) => {
+      try {
+        const arrayBuffer = await file.arrayBuffer()
+        const data = new Uint8Array(arrayBuffer)
+        const workbook = XLSX.read(data, { type: 'array' })
+        
+        // Get the first worksheet
+        const sheetName = workbook.SheetNames[0]
+        const worksheet = workbook.Sheets[sheetName]
+        
+        // Convert to JSON with header row
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+          header: 1,
+          blankrows: false
+        })
+        
+        if (jsonData.length === 0) {
+          throw new Error('Excel file appears to be empty')
         }
+        
+        // Convert to objects with first row as headers
+        const headers = jsonData[0] as string[]
+        const rows = jsonData.slice(1).map(row => {
+          const obj: any = {}
+          headers.forEach((header, index) => {
+            obj[header] = (row as any[])[index]
+          })
+          return obj
+        })
+        
+        resolve(rows)
+      } catch (error) {
+        reject(new Error(`Excel parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`))
       }
-      
-      reader.onerror = () => {
-        reject(new Error('Failed to read Excel file'))
-      }
-      
-      reader.readAsArrayBuffer(file)
     })
   }
 
@@ -157,7 +142,7 @@ export class FileParser {
     ).map(col => col.name)
 
     // Detect key columns (likely dimensions)
-    const keyColumns = this.identifyKeyColumns(columns, rawData)
+    const keyColumns = this.identifyKeyColumns(columns, rawData.length)
 
     // Data quality assessment
     const totalCells = rawData.length * columns.length
@@ -181,7 +166,7 @@ export class FileParser {
     const potentialDimensions = [...categoryColumns, ...dateColumns]
 
     return {
-      id: `dataset_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `dataset_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       fileName,
       fileType,
       columns,
@@ -268,14 +253,14 @@ export class FileParser {
     return datePatterns.some(pattern => pattern.test(str))
   }
 
-  private static identifyKeyColumns(columns: ParsedDataColumn[], data: any[]): string[] {
+  private static identifyKeyColumns(columns: ParsedDataColumn[], dataLength: number): string[] {
     return columns
       .filter(col => {
         // Likely to be a key/dimension if:
         // 1. Has reasonable unique count (not too few, not too many)
         // 2. Not purely numeric (unless it's an ID)
         // 3. Not date columns
-        const uniqueRatio = col.uniqueCount / data.length
+        const uniqueRatio = col.uniqueCount / dataLength
         
         return (
           col.type === 'string' && 
