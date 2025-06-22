@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750625000150_executive",
+      "fileName": "executive_performance_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Business_Unit":"Digital_Products","Revenue_Actual":15500000,"Revenue_Target":14000000,"Revenue_Growth_YoY":28.5,"Profit_Margin":22.3,"Customer_Acquisition":2850,"Customer_Retention":94.2,"Market_Share":18.7,"Operational_Efficiency":87.5,"Employee_Satisfaction":8.4,"Innovation_Index":72,"Risk_Score":2.1,"Strategic_Priority":"Critical","Investment_ROI":156,"Competitive_Position":"Leading"},
+        {"Date":"2024-10-01","Business_Unit":"Enterprise_Solutions","Revenue_Actual":22800000,"Revenue_Target":21500000,"Revenue_Growth_YoY":15.8,"Profit_Margin":31.7,"Customer_Acquisition":1650,"Customer_Retention":96.8,"Market_Share":24.1,"Operational_Efficiency":91.2,"Employee_Satisfaction":8.7,"Innovation_Index":68,"Risk_Score":1.8,"Strategic_Priority":"Critical","Investment_ROI":189,"Competitive_Position":"Leading"}
+      ],
+      "columns": ["Date","Business_Unit","Revenue_Actual","Revenue_Target","Revenue_Growth_YoY","Profit_Margin","Customer_Acquisition","Customer_Retention","Market_Share","Operational_Efficiency","Employee_Satisfaction","Innovation_Index","Risk_Score","Strategic_Priority","Investment_ROI","Competitive_Position"],
+      "rowCount": 30,
+      "dataType": "executive_performance"
+    }
+  ],
+  "context": {
+    "industry": "Technology & Software",
+    "targetAudience": "Board of Directors and C-Suite Executive Team",
+    "businessContext": "Q4 2024 Executive Performance Review - Strategic Business Unit Analysis and Portfolio Optimization",
+    "description": "Comprehensive executive-level performance analysis across business units including revenue performance, profitability metrics, market positioning, operational excellence, innovation capabilities, and strategic risk assessment for board-level decision making and resource allocation",
+    "factors": ["Market consolidation pressures", "AI/automation transformation", "Customer experience evolution", "Competitive landscape shifts", "Regulatory environment changes", "Economic uncertainty impacts", "Talent acquisition challenges", "Technology infrastructure scalability"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-08",
+    "dataFrequency": "daily",
+    "analysisType": "executive_performance",
+    "comparisons": ["business_unit", "target_vs_actual", "competitive_position"],
+    "granularity": "business_unit_level",
+    "focusPeriods": ["portfolio_optimization", "strategic_reallocation"]
+  },
+  "requirements": {
+    "slidesCount": 22,
+    "presentationDuration": 50,
+    "focusAreas": ["Executive Summary & Key Insights", "Portfolio Performance Matrix", "Revenue & Profitability Deep Dive", "Market Position Analysis", "Operational Excellence Assessment", "Innovation & Future Readiness", "Risk & Mitigation Strategies", "Strategic Recommendations & Next Steps"],
+    "style": "board_level",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["business_unit", "performance_tier", "strategic_priority", "competitive_benchmark"]
+  }
+}

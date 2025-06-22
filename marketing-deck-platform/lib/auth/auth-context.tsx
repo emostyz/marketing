@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/enhanced-client'
+import OAuthManager from './oauth-config'
 
 interface User {
   id: number
@@ -11,6 +13,7 @@ interface User {
   subscription: 'free' | 'pro' | 'enterprise'
   createdAt: Date
   lastLoginAt: Date
+  profile?: any
 }
 
 interface AuthContextType {
@@ -18,8 +21,10 @@ interface AuthContextType {
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error?: string }>
   signInDemo: () => Promise<{ error?: string }>
+  signInWithOAuth: (provider: 'google' | 'github' | 'microsoft') => Promise<{ error?: string }>
+  signUp: (name: string, email: string, password: string, company?: string) => Promise<{ error?: string }>
   signOut: () => Promise<void>
-  refreshUser: () => Promise<void>
+  updateProfile: (profileData: any) => Promise<{ error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,89 +32,64 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
+  // Initialize auth state
   useEffect(() => {
-    setMounted(true)
-    checkAuthStatus()
-  }, [])
-
-  // Helper function to parse cookies
-  const getCookie = (name: string): string | null => {
-    if (typeof document === 'undefined') return null
-    
-    const value = `; ${document.cookie}`
-    const parts = value.split(`; ${name}=`)
-    if (parts.length === 2) {
-      return parts.pop()?.split(';').shift() || null
-    }
-    return null
-  }
-
-  const checkAuthStatus = async () => {
-    try {
-      setLoading(true)
-      
-      // Only check cookies on client side
-      if (typeof window === 'undefined') {
-        setLoading(false)
-        return
-      }
-      
-      // Check for demo user first
-      const demoUser = getCookie('demo-user')
-      if (demoUser === 'true') {
-        const userInfo = getCookie('user-info')
+    const initializeAuth = async () => {
+      try {
+        setLoading(true)
         
-        if (userInfo) {
-          try {
-            const userData = JSON.parse(decodeURIComponent(userInfo))
-            setUser({
-              id: userData.id,
-              email: userData.email,
-              name: userData.name,
-              subscription: userData.subscription,
-              createdAt: new Date(),
-              lastLoginAt: new Date()
-            })
-            setLoading(false)
-            return
-          } catch (error) {
-            console.error('Error parsing user info:', error)
+        // Get current session from Supabase
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Error getting session:', error)
+          setLoading(false)
+          return
+        }
+
+        if (session?.user) {
+          // Get enhanced user profile
+          const enhancedUser = await OAuthManager.getCurrentUser()
+          if (enhancedUser) {
+            setUser(enhancedUser)
           }
         }
-      }
 
-      // Check for regular auth token
-      const authToken = getCookie('auth-token')
-
-      if (authToken) {
-        try {
-          const response = await fetch('/api/auth/verify', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ token: authToken })
-          })
-
-          if (response.ok) {
-            const data = await response.json()
-            if (data.user) {
-              setUser(data.user)
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log('Auth state changed:', event, session?.user?.email)
+            
+            if (event === 'SIGNED_IN' && session?.user) {
+              const enhancedUser = await OAuthManager.getCurrentUser()
+              if (enhancedUser) {
+                setUser(enhancedUser)
+              }
+            } else if (event === 'SIGNED_OUT') {
+              setUser(null)
+              router.push('/auth/login')
+            } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+              const enhancedUser = await OAuthManager.getCurrentUser()
+              if (enhancedUser) {
+                setUser(enhancedUser)
+              }
             }
           }
-        } catch (error) {
-          console.error('Error verifying token:', error)
-        }
+        )
+
+        setLoading(false)
+        
+        return () => subscription.unsubscribe()
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Error checking auth status:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    initializeAuth()
+  }, [router])
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -159,24 +139,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signOut = async () => {
+  const signInWithOAuth = async (provider: 'google' | 'github' | 'microsoft') => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      })
-    } catch (error) {
-      console.error('Error during logout:', error)
-    } finally {
-      setUser(null)
-      router.push('/auth/login')
+      await OAuthManager.signInWithProvider(provider)
+      return {}
+    } catch (error: any) {
+      console.error('OAuth sign in error:', error)
+      return { error: error.message || 'OAuth login failed' }
     }
   }
 
-  const refreshUser = async () => {
-    await checkAuthStatus()
+  const signUp = async (name: string, email: string, password: string, company?: string) => {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password, company })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setUser(data.user)
+        return {}
+      } else {
+        return { error: data.error || 'Registration failed' }
+      }
+    } catch (error) {
+      console.error('Sign up error:', error)
+      return { error: 'Network error occurred' }
+    }
+  }
+
+  const signOut = async () => {
+    try {
+      await OAuthManager.signOut()
+      setUser(null)
+      router.push('/auth/login')
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
+  }
+
+  const updateProfile = async (profileData: any) => {
+    try {
+      const updatedUser = await OAuthManager.updateUserProfile(profileData)
+      if (updatedUser) {
+        setUser(updatedUser)
+        return {}
+      } else {
+        return { error: 'Failed to update profile' }
+      }
+    } catch (error: any) {
+      console.error('Update profile error:', error)
+      return { error: error.message || 'Failed to update profile' }
+    }
   }
 
   const value = {
@@ -184,12 +203,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signIn,
     signInDemo,
+    signInWithOAuth,
+    signUp,
     signOut,
-    refreshUser
-  }
-
-  if (!mounted) {
-    return <div>Loading...</div>
+    updateProfile
   }
 
   return (
@@ -199,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider')

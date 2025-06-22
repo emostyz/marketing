@@ -120,6 +120,37 @@ export async function createCustomerPortalSession(team: Team) {
   });
 }
 
+export async function handleSubscriptionUpgrade(
+  userId: string,
+  plan: string,
+  stripeSubscriptionId: string
+) {
+  try {
+    // Call the Supabase function to upgrade the user's subscription
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { error } = await supabase
+      .rpc('upgrade_user_subscription', {
+        user_uuid: userId,
+        new_plan: plan,
+        stripe_sub_id: stripeSubscriptionId,
+        reason: 'Stripe checkout completed'
+      });
+
+    if (error) {
+      console.error('Failed to upgrade user subscription:', error);
+    } else {
+      console.log(`Successfully upgraded user ${userId} to ${plan}`);
+    }
+  } catch (error) {
+    console.error('Error in handleSubscriptionUpgrade:', error);
+  }
+}
+
 export async function handleSubscriptionChange(
   subscription: Stripe.Subscription
 ) {

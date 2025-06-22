@@ -1,37 +1,25 @@
 import { Suspense } from 'react'
-import { UltimateDeckBuilder } from '@/components/deck-builder/UltimateDeckBuilder'
-import Skeleton from '@/components/ui/Skeleton'
+import UltimateDeckBuilder from '@/components/deck-builder/UltimateDeckBuilder'
+import { AuthSystem } from '@/lib/auth/auth-system'
+import { redirect } from 'next/navigation'
 
-export default function NewDeckBuilderPage() {
-  return (
-    <div className="min-h-screen">
-      <Suspense fallback={<DeckBuilderSkeleton />}>
-        <UltimateDeckBuilder />
-      </Suspense>
-    </div>
-  )
-}
+export default async function NewDeckBuilderPage() {
+  // Check authentication
+  const user = await AuthSystem.getCurrentUser()
+  if (!user) {
+    redirect('/auth/login')
+  }
 
-function DeckBuilderSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <Skeleton className="h-8 w-64 mb-4" />
-        <div className="flex space-x-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex items-center space-x-3">
-              <Skeleton className="w-8 h-8 rounded-full" />
-              <div>
-                <Skeleton className="h-4 w-20 mb-1" />
-                <Skeleton className="h-3 w-16" />
-              </div>
-            </div>
-          ))}
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-300">Creating new deck...</p>
         </div>
       </div>
-      <div className="p-6">
-        <Skeleton className="h-96 w-full" />
-      </div>
-    </div>
+    }>
+      <UltimateDeckBuilder />
+    </Suspense>
   )
 } 

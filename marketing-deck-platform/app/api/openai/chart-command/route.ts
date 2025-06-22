@@ -1,129 +1,160 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { AuthSystem } from '@/lib/auth/auth-system'
+import { DeckPersistence } from '@/lib/deck-persistence'
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
 export async function POST(request: NextRequest) {
   try {
-    const { query, currentConfig, data } = await request.json()
-
-    console.log(`🎨 Chart Command - Query: ${query}`)
-
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ 
-        error: 'OpenAI API key not configured',
-        fallback: true
-      }, { status: 200 })
+    const user = await AuthSystem.getCurrentUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const systemPrompt = `You are an expert chart designer and data visualization specialist. You excel at interpreting natural language requests and converting them into precise chart configuration changes.
+    const {
+      slideId,
+      dataType,
+      chartType,
+      data,
+      userPreferences,
+      businessContext
+    } = await request.json()
 
-Your task is to analyze the user's plain English request and return specific chart configuration updates that will implement their desired changes.
+    // Validate input
+    if (!slideId || !dataType || !chartType || !data) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
 
-Available chart types: line, bar, area, scatter, donut, pie, heatmap, combo, stacked, grouped, waterfall, funnel, radar
+    // Create a comprehensive prompt for chart generation
+    const systemPrompt = `You are an expert data visualization specialist and presentation designer. Your task is to create professional charts and narratives for business presentations.
 
-Available color palettes: corporate, modern, elegant, vibrant, monochrome, pastel
+Key Requirements:
+1. Generate charts that are visually appealing and business-appropriate
+2. Create compelling narratives that explain the data insights
+3. Follow the user's brand preferences and chart style guidelines
+4. Ensure charts are optimized for presentation slides
+5. Provide actionable insights and recommendations
 
-Available interactions: zoom, pan, selection, hover, click, drag
+User Preferences:
+- Chart Styles: ${userPreferences.chartStyles.join(', ')}
+- Color Schemes: ${userPreferences.colorSchemes.join(', ')}
+- Narrative Style: ${userPreferences.narrativeStyle}
+- Business Context: ${businessContext}
 
-Available style options: animation, tooltip, legend, gridLines, title, subtitle, height, colors, orientation, alignment
+Available Chart Types: bar, line, pie, scatter, area, donut, radar, heatmap, funnel, treemap
 
-Return ONLY a JSON object with the specific configuration changes needed. Do not include explanations or markdown formatting.`
+Data Type: ${dataType}
+Requested Chart Type: ${chartType}
 
-    const prompt = `
-USER REQUEST: "${query}"
+Respond with a JSON object containing:
+{
+  "chartData": {
+    "type": "chart_type",
+    "data": [...],
+    "options": {...}
+  },
+  "chartConfig": {
+    "colors": [...],
+    "layout": {...},
+    "annotations": [...]
+  },
+  "narrative": "compelling narrative explaining the insights",
+  "insights": ["key insight 1", "key insight 2", "key insight 3"],
+  "recommendations": ["actionable recommendation 1", "actionable recommendation 2"],
+  "suggestions": ["improvement suggestion 1", "improvement suggestion 2"]
+}`
 
-CURRENT CHART CONFIG:
-${JSON.stringify(currentConfig, null, 2)}
+    const userPrompt = `Please analyze this data and create a ${chartType} chart:
 
-SAMPLE DATA:
-${JSON.stringify(data.slice(0, 5), null, 2)}
+Data: ${JSON.stringify(data, null, 2)}
 
-INSTRUCTIONS:
-1. Analyze the user's request carefully
-2. Identify what changes they want to make to the chart
-3. Return ONLY a JSON object with the specific configuration properties that need to be updated
-4. Use the exact property names from the current config
-5. Only include properties that need to change
-6. Ensure the response is valid JSON without markdown formatting
+Requirements:
+1. Create a professional ${chartType} chart optimized for presentation slides
+2. Use the specified chart styles and color schemes
+3. Generate a compelling narrative that explains the key insights
+4. Provide actionable business recommendations
+5. Suggest improvements for the presentation
 
-EXAMPLE RESPONSES:
-- "Make this a line chart" → {"type": "line"}
-- "Use blue colors" → {"colors": ["#1f77b4", "#ff7f0e", "#2ca02c"]}
-- "Add a title" → {"title": "Chart Title"}
-- "Make it taller" → {"height": 600}
-- "Show percentages" → {"valueFormatter": "percentage"}
+Please respond with the complete JSON structure as specified in the system prompt.`
 
-RESPONSE (JSON only):`
-
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4-turbo-preview",
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt }
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
       ],
-      temperature: 0.1,
-      max_tokens: 1000,
+      temperature: 0.7,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
     })
 
-    const content = response.choices[0].message.content
-    console.log(`📥 Received chart command response: ${content}`)
-
-    let result
-
-    try {
-      // Clean the content to handle markdown code blocks
-      let cleanedContent = content || '{}'
-      
-      if (cleanedContent.includes('```json')) {
-        cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '')
-      } else if (cleanedContent.includes('```')) {
-        cleanedContent = cleanedContent.replace(/```\n?/g, '')
-      }
-      
-      cleanedContent = cleanedContent.trim()
-      
-      result = JSON.parse(cleanedContent)
-      console.log(`✅ Chart command parsed successfully`)
-    } catch (parseError) {
-      console.error(`❌ Chart command parse error:`, parseError)
-      
-      try {
-        const jsonMatch = content?.match(/\{[\s\S]*\}/)
-        if (jsonMatch) {
-          result = JSON.parse(jsonMatch[0])
-          console.log('✅ Extracted JSON from chart command content')
-        } else {
-          result = { 
-            error: 'Failed to parse chart command response',
-            rawResponse: content
-          }
-        }
-      } catch (extractError) {
-        console.error('Failed to extract JSON from chart command:', extractError)
-        result = { 
-          error: 'Failed to parse or extract chart command JSON',
-          rawResponse: content
-        }
-      }
+    const response = completion.choices[0]?.message?.content
+    if (!response) {
+      throw new Error('No response from OpenAI')
     }
 
+    let chartResult
+    try {
+      chartResult = JSON.parse(response)
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error)
+      return NextResponse.json(
+        { error: 'Invalid response format from AI' },
+        { status: 500 }
+      )
+    }
+
+    // Validate the response structure
+    if (!chartResult.chartData || !chartResult.narrative) {
+      return NextResponse.json(
+        { error: 'Invalid chart generation response' },
+        { status: 500 }
+      )
+    }
+
+    // Track the chart generation activity
+    await DeckPersistence.trackUserActivity('chart_generated', {
+      slideId,
+      chartType,
+      dataType,
+      success: true
+    })
+
+    // Return the generated chart data
     return NextResponse.json({
       success: true,
-      config: result,
-      query,
-      tokensUsed: response.usage?.total_tokens || 0
+      chartData: chartResult.chartData,
+      chartConfig: chartResult.chartConfig,
+      narrative: chartResult.narrative,
+      insights: chartResult.insights || [],
+      recommendations: chartResult.recommendations || [],
+      suggestions: chartResult.suggestions || []
     })
 
   } catch (error) {
-    console.error('Chart command error:', error)
+    console.error('Chart generation error:', error)
     
-    return NextResponse.json({ 
-      error: 'Chart command failed',
-      fallback: true,
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 200 })
+    // Track the error
+    try {
+      await DeckPersistence.trackUserActivity('chart_generation_error', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+    } catch (trackError) {
+      console.error('Error tracking activity:', trackError)
+    }
+
+    return NextResponse.json(
+      { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Chart generation failed' 
+      },
+      { status: 500 }
+    )
   }
 } 

@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750616200142_mkgcmpgn",
+      "fileName": "marketing_campaign_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Campaign":"Holiday_Launch","Channel":"Google_Ads","Audience_Segment":"Gen_Z","Budget":25000,"Impressions":450000,"Clicks":12500,"Conversions":450,"Cost_Per_Click":2.00,"Cost_Per_Conversion":55.56,"Conversion_Rate":3.6,"Revenue_Generated":67500,"ROI":2.7,"CTR":2.78,"Brand_Awareness_Lift":12.5,"Engagement_Rate":4.2},
+        {"Date":"2024-10-01","Campaign":"Black_Friday_Prep","Channel":"Facebook_Ads","Audience_Segment":"Millennials","Budget":18000,"Impressions":320000,"Clicks":8900,"Conversions":320,"Cost_Per_Click":2.02,"Cost_Per_Conversion":56.25,"Conversion_Rate":3.6,"Revenue_Generated":48000,"ROI":2.67,"CTR":2.78,"Brand_Awareness_Lift":15.2,"Engagement_Rate":6.8}
+      ],
+      "columns": ["Date","Campaign","Channel","Audience_Segment","Budget","Impressions","Clicks","Conversions","Cost_Per_Click","Cost_Per_Conversion","Conversion_Rate","Revenue_Generated","ROI","CTR","Brand_Awareness_Lift","Engagement_Rate"],
+      "rowCount": 24,
+      "dataType": "timeseries"
+    }
+  ],
+  "context": {
+    "industry": "Digital Marketing",
+    "targetAudience": "Marketing Leadership Team",
+    "businessContext": "Q4 2024 Marketing Campaign Performance Analysis for CMO Review",
+    "description": "Comprehensive marketing campaign performance data across multiple channels, audiences, and campaigns with key metrics including ROI, conversion rates, cost efficiency, and brand awareness impact",
+    "factors": ["Seasonal holiday shopping patterns", "Multi-channel attribution complexity", "Audience segment preferences", "Creative fatigue effects", "Competitive advertising landscape", "Budget allocation efficiency"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-31",
+    "dataFrequency": "daily",
+    "analysisType": "campaign_performance",
+    "comparisons": ["channel", "audience", "campaign_type"],
+    "granularity": "daily",
+    "focusPeriods": ["pre-holiday", "black_friday_prep", "halloween"]
+  },
+  "requirements": {
+    "slidesCount": 15,
+    "presentationDuration": 25,
+    "focusAreas": ["Campaign ROI Analysis", "Channel Performance Comparison", "Audience Segmentation Insights", "Budget Optimization", "Creative Performance", "Attribution Modeling", "Strategic Recommendations"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["channel", "audience", "temporal", "campaign_type"]
+  }
+}

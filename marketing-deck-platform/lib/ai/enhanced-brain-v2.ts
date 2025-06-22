@@ -253,7 +253,7 @@ export class EnhancedBrainV2 {
       
       return stringified
     } catch (error) {
-      return `Error processing data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      return 'Error processing data: ' + (error instanceof Error ? error.message : 'Unknown error')
     }
   }
 
@@ -264,6 +264,7 @@ export class EnhancedBrainV2 {
       return JSON.parse(content)
     } catch (error) {
       console.log('🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...')
+      console.log('🧠 DEBUG: Raw content preview:', content.substring(0, 200))
       
       try {
         // Try to extract JSON from markdown code blocks
@@ -275,19 +276,25 @@ export class EnhancedBrainV2 {
         // Try to find JSON object in the content
         const jsonObjectMatch = content.match(/\{[\s\S]*\}/)
         if (jsonObjectMatch) {
-          return JSON.parse(jsonObjectMatch[0])
+          // Clean up the match - remove any trailing text after the JSON
+          const cleanJson = jsonObjectMatch[0].trim()
+          return JSON.parse(cleanJson)
         }
         
         // Try to find JSON array in the content
         const jsonArrayMatch = content.match(/\[[\s\S]*\]/)
         if (jsonArrayMatch) {
-          return JSON.parse(jsonArrayMatch[0])
+          // Clean up the match - remove any trailing text after the JSON
+          const cleanJson = jsonArrayMatch[0].trim()
+          return JSON.parse(cleanJson)
         }
         
-        console.log('🧠 EnhancedBrainV2: Could not extract JSON from markdown, using fallback')
+        console.log('🧠 EnhancedBrainV2: Could not extract JSON from content')
+        console.log('🧠 DEBUG: Full content:', content)
         return fallback
       } catch (fallbackError) {
-        console.log('🧠 EnhancedBrainV2: Fallback parsing also failed, using default fallback')
+        console.log('🧠 EnhancedBrainV2: Fallback parsing also failed:', fallbackError)
+        console.log('🧠 DEBUG: Content that failed to parse:', content)
         return fallback
       }
     }
@@ -411,7 +418,7 @@ CONTEXT:
 - Business Context: ${context.businessContext}
 - Data Description: ${context.description}
 - Data Quality: ${context.dataQuality}
-- Influencing Factors: ${context.factors.join(', ')}
+- Influencing Factors: ${context.factors ? context.factors.join(', ') : 'None specified'}
 
 TIME FRAME:
 - Primary Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
@@ -431,7 +438,7 @@ TASK: Perform an initial comprehensive scan of this data and identify:
 5. Initial business implications
 6. Questions that need deeper analysis
 
-Respond with a JSON object containing:
+Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON) containing:
 {
   "dataStructure": {
     "variables": ["list of key variables"],
@@ -464,7 +471,8 @@ Respond with a JSON object containing:
         model: 'gpt-4-turbo-preview',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
-        max_tokens: 2000
+        max_tokens: 2000,
+        response_format: { type: "json_object" }
       })
 
       console.log('🧠 EnhancedBrainV2: performInitialScan - OpenAI response received');
@@ -498,43 +506,51 @@ Respond with a JSON object containing:
   ): Promise<any> {
     this.analysisDepth++
     
-    const prompt = `You are an expert data scientist performing deep pattern analysis.
+    const prompt = `You are an ELITE data scientist with PhD-level expertise combining advanced analytics with deep ${context.industry} industry knowledge. Perform BREAKTHROUGH pattern analysis that would impress McKinsey's advanced analytics team.
 
-CONTEXT:
-- Industry: ${context.industry}
-- Business Context: ${context.businessContext}
-- Initial Scan Results: ${JSON.stringify(initialScan, null, 2)}
+🎯 BUSINESS INTELLIGENCE BRIEF:
+Industry: ${context.industry} | Context: ${context.businessContext}
+Analysis Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
+Comparison: ${timeFrame.comparisonPeriod ? JSON.stringify(timeFrame.comparisonPeriod) : 'None'}
 
-TIME FRAME ANALYSIS:
-- Primary Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
-- Analysis Type: ${timeFrame.analysisType}
-- Comparison Period: ${timeFrame.comparisonPeriod ? JSON.stringify(timeFrame.comparisonPeriod) : 'None'}
+📊 INITIAL FINDINGS:
+${JSON.stringify(initialScan, null, 2)}
 
-${statisticalAnalysis ? `ADVANCED STATISTICAL ANALYSIS:
+${statisticalAnalysis ? `🔬 STATISTICAL FOUNDATION:
 ${JSON.stringify(statisticalAnalysis, null, 2)}` : ''}
 
-DATA SAMPLE (truncated for token limits):
-[Limited sample due to OpenAI token constraints - Full analysis will be performed on complete dataset]
+🧠 ADVANCED PATTERN ANALYSIS MANDATE:
+Apply cutting-edge analytical techniques to uncover patterns that drive competitive advantage in ${context.industry}:
 
-TASK: Perform deep pattern analysis focusing on:
-1. Temporal patterns (seasonality, trends, cycles)
-2. Correlations between variables
-3. Segment analysis (if applicable)
-4. Predictive patterns
-5. Comparative analysis (if comparison period exists)
-6. Statistical significance of findings
-${statisticalAnalysis ? '7. Integration with advanced statistical analysis findings' : ''}
+🔍 ANALYTICAL FRAMEWORKS TO APPLY:
+1. **COHORT ANALYSIS**: Track performance groups over time to identify success patterns
+2. **REGRESSION DISCONTINUITY**: Find inflection points that indicate strategy changes  
+3. **CAUSAL INFERENCE**: Distinguish correlation from causation using difference-in-differences
+4. **ANOMALY DETECTION**: Identify outliers that signal opportunities or threats
+5. **ELASTICITY ANALYSIS**: Understand how key variables respond to changes
+6. **SEGMENTATION DYNAMICS**: Uncover hidden customer/product/market segments
+7. **PREDICTIVE MODELING**: Forecast future performance with confidence intervals
+8. **COMPETITIVE BENCHMARKING**: Compare against industry standards and best practices
 
-For each pattern found, provide:
-- Pattern description
-- Statistical confidence
-- Business significance
-- Supporting evidence
-- Potential causes
-- Future implications
-${statisticalAnalysis ? '- How it relates to the statistical analysis findings' : ''}
+💡 PATTERN CATEGORIES TO EXPLORE:
+A) **GROWTH ACCELERATORS**: What drives exponential vs. linear growth?
+B) **EFFICIENCY MULTIPLIERS**: Where small changes create massive impact?
+C) **RISK INDICATORS**: Early warning signals for potential problems?
+D) **MARKET TIMING**: Optimal windows for strategic moves?
+E) **CUSTOMER LIFECYCLE**: Patterns in acquisition, retention, and expansion?
+F) **OPERATIONAL EXCELLENCE**: Hidden inefficiencies and optimization opportunities?
+G) **COMPETITIVE DYNAMICS**: How market forces affect performance?
 
-Respond with a JSON object containing:
+🎯 STRATEGIC DRIVER ANALYSIS:
+- PERFORMANCE DRIVERS: Root causes behind performance variations
+- TAILWINDS: Market/operational forces creating positive momentum  
+- HEADWINDS: Challenges/risks that could limit performance
+- LEVERAGE POINTS: Small changes that create massive business impact
+- COMPETITIVE ADVANTAGES: Unique patterns that create market differentiation
+- QUANTIFIED IMPACT: Revenue/cost implications with statistical confidence
+- ACTIONABLE INSIGHTS: Specific steps for next 30/90/365 days
+
+Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON) containing:
 {
   "temporalPatterns": [
     {
@@ -575,6 +591,40 @@ Respond with a JSON object containing:
     "keyDifferences": ["list of differences"],
     "improvements": ["areas of improvement"],
     "concerns": ["areas of concern"]
+  },
+  "strategicDrivers": {
+    "primaryDrivers": [
+      {
+        "driver": "root cause factor",
+        "impact": "quantified impact",
+        "evidence": ["supporting data points"],
+        "leverage": "how to optimize this driver"
+      }
+    ],
+    "tailwinds": [
+      {
+        "force": "positive momentum factor",
+        "strength": "strong|moderate|emerging",
+        "duration": "expected timeframe",
+        "capitalizeStrategy": "how to leverage this tailwind"
+      }
+    ],
+    "headwinds": [
+      {
+        "challenge": "resistance factor",
+        "severity": "high|medium|low",
+        "timeframe": "when this will impact",
+        "mitigationStrategy": "how to overcome this headwind"
+      }
+    ],
+    "leveragePoints": [
+      {
+        "lever": "small change with big impact",
+        "effort": "low|medium|high",
+        "potential": "quantified business impact",
+        "implementationPlan": "specific steps to execute"
+      }
+    ]
   }
 }`
 
@@ -582,7 +632,8 @@ Respond with a JSON object containing:
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.4,
-      max_tokens: 3000
+      max_tokens: 3000,
+      response_format: { type: "json_object" }
     })
 
     return this.parseJsonResponse(response.choices[0].message.content || '{}')
@@ -597,70 +648,116 @@ Respond with a JSON object containing:
   ): Promise<DataInsight[]> {
     this.analysisDepth++
     
-    const prompt = `You are an expert business strategist and data scientist tasked with generating NOVEL and ACTIONABLE insights.
+    const prompt = `You are a WORLD-CLASS business strategist combining McKinsey partner-level strategic thinking with elite data scientist capabilities. Your mission: generate BREAKTHROUGH insights that will revolutionize how this business operates.
 
-CONTEXT:
-- Industry: ${context.industry}
-- Business Context: ${context.businessContext}
-- Data Quality: ${context.dataQuality}
-- Influencing Factors: ${context.factors.join(', ')}
+EXECUTIVE BRIEFING:
+Industry: ${context.industry} | Business Context: ${context.businessContext}
+Data Quality: ${context.dataQuality} | Key Factors: ${context.factors.join(', ')}
 
-PATTERN ANALYSIS:
+ANALYTICAL FOUNDATION:
 ${JSON.stringify(patternAnalysis, null, 2)}
 
-${enhancedInsights && enhancedInsights.length > 0 ? `STATISTICAL INSIGHTS FOUNDATION:
+${enhancedInsights && enhancedInsights.length > 0 ? `STATISTICAL INTELLIGENCE:
 ${JSON.stringify(enhancedInsights, null, 2)}` : ''}
 
-TASK: Generate NOVEL insights that go beyond obvious patterns${enhancedInsights && enhancedInsights.length > 0 ? ' and build upon the statistical analysis foundation' : ''}. Focus on:
-1. UNEXPECTED correlations or relationships
-2. COUNTER-INTUITIVE findings
-3. HIDDEN opportunities or risks
-4. EMERGING trends before they become obvious
-5. UNIQUE business implications
-6. ACTIONABLE recommendations
+STRATEGIC DIRECTIVE: Generate 6-8 GAME-CHANGING insights using the McKinsey MECE framework. Each insight must be:
 
-For each insight, ensure it is:
-- NOVEL (not obvious from surface-level analysis)
-- ACTIONABLE (leads to specific business actions)
-- EVIDENCE-BASED (supported by data)
-- BUSINESS-RELEVANT (impacts business outcomes)
-- TIMELY (relevant to current business context)
+🎯 STRATEGIC IMPACT CRITERIA:
+1. PARADIGM-SHIFTING: Challenges conventional wisdom in ${context.industry}
+2. PROFIT-DRIVING: Direct path to revenue growth, cost reduction, or competitive advantage  
+3. DATA-POWERED: Supported by concrete evidence from the dataset
+4. ACTION-ORIENTED: Includes specific, implementable recommendations
+5. TIME-SENSITIVE: Urgent opportunity that requires immediate attention
+6. RISK-AWARE: Identifies both opportunities AND potential threats
 
-Respond with a JSON array of insights:
-[
-  {
-    "id": "unique_id",
-    "type": "trend|pattern|anomaly|correlation|prediction|novel",
-    "title": "compelling title",
-    "description": "detailed description of the insight",
-    "confidence": 0-100,
-    "impact": "high|medium|low",
-    "dataPoints": ["specific data points that support this insight"],
-    "visualization": {
-      "type": "chart type",
-      "config": "chart configuration",
-      "recommended": true/false
-    },
-    "businessImplication": "what this means for the business",
-    "actionableInsights": ["specific actions to take"],
-    "supportingEvidence": ["additional evidence"],
-    "noveltyScore": 0-100
-  }
-]
+🧠 INSIGHT GENERATION METHODOLOGY:
+- Apply 80/20 principle to identify highest-impact opportunities
+- Use hypothesis-driven approach: What would surprise the C-suite?
+- Think like a McKinsey partner: What would you present to Fortune 500 CEOs?
+- Consider market dynamics, competitive positioning, and operational excellence
+- Look for inflection points that indicate major shifts
+- Identify white space opportunities competitors are missing
 
-Focus on insights that would surprise and excite business stakeholders. Look for the "WHY" behind the data and novel ways to leverage this information.`
+💡 INSIGHT CATEGORIES TO EXPLORE:
+A) MARKET DISRUPTION SIGNALS: Early indicators of industry transformation
+B) OPERATIONAL EXCELLENCE GAPS: Hidden inefficiencies costing millions
+C) CUSTOMER BEHAVIOR SHIFTS: Emerging patterns affecting lifetime value
+D) COMPETITIVE BLIND SPOTS: Advantages others haven't discovered
+E) FINANCIAL OPTIMIZATION: Capital allocation and margin improvement opportunities
+F) STRATEGIC PIVOTS: When to double-down vs. when to divest
+G) TECHNOLOGY LEVERAGE: AI, automation, and digital transformation opportunities
+
+Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON) containing an 'insights' array:
+{
+  "insights": [
+    {
+      "id": "unique_id",
+      "type": "market_disruption|operational_excellence|customer_behavior|competitive_advantage|financial_optimization|strategic_pivot|technology_leverage",
+      "title": "Compelling executive-level headline",
+      "description": "Detailed strategic analysis with specific implications",
+      "confidence": 85-95,
+      "impact": "transformational|high|medium",
+      "urgency": "immediate|30_days|90_days|strategic",
+      "dataPoints": ["Specific metrics and evidence from the dataset"],
+      "businessCase": {
+        "opportunity": "Quantified revenue/cost impact",
+        "investment": "Required resources and timeline",
+        "roi": "Expected return on investment",
+        "risks": ["Key risks and mitigation strategies"]
+      },
+      "visualization": {
+        "type": "executive_chart|trend_analysis|comparison|waterfall|heatmap",
+        "priority": "slide_1|slide_2|slide_3|appendix",
+        "message": "Key takeaway for executives"
+      },
+      "strategicDrivers": {
+        "primaryDrivers": ["Root causes behind this insight"],
+        "tailwinds": [
+          {
+            "factor": "positive force supporting this insight",
+            "strength": "strong|moderate|emerging",
+            "leverageStrategy": "how to capitalize on this tailwind"
+          }
+        ],
+        "headwinds": [
+          {
+            "factor": "challenge that could limit this insight",
+            "severity": "high|medium|low", 
+            "mitigationStrategy": "how to overcome this headwind"
+          }
+        ]
+      },
+      "actionPlan": {
+        "immediate": ["Actions for next 30 days"],
+        "shortTerm": ["Actions for next 90 days"],
+        "longTerm": ["Strategic initiatives"],
+        "owners": ["Department/role responsible"]
+      },
+      "competitiveAngle": "How this creates sustainable competitive advantage",
+      "kpis": ["Metrics to track success"],
+      "noveltyScore": 80-100,
+      "mckinsey_framework": "MECE category this insight belongs to"
+    }
+  ]
+}
+
+DELIVER INSIGHTS THAT WOULD MAKE A FORTUNE 500 CEO SAY "THIS IS EXACTLY WHAT WE NEED TO WIN IN THE MARKET."
+
+Focus on breakthrough thinking that transforms ${context.industry} businesses. Think bigger than incremental improvements - identify game-changing opportunities.`
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 4000
+      max_tokens: 4000,
+      response_format: { type: "json_object" }
     })
 
-    const insights = this.parseJsonResponse(response.choices[0].message.content || '[]', [])
+    const parsedResponse = this.parseJsonResponse(response.choices[0].message.content || '{"insights": []}', { insights: [] })
+    const insights = parsedResponse.insights || []
     const aiGeneratedInsights = insights.map((insight: any) => ({
       ...insight,
-      id: insight.id || `insight_${Date.now()}_${Math.random()}`
+      id: insight.id || 'insight_' + Date.now() + '_' + Math.random()
     }))
 
     // Combine AI-generated insights with statistical insights
@@ -712,7 +809,7 @@ The narrative should:
 - Include emotional journey mapping
 - Be tailored to the presentation style (formal, casual, technical, etc.)
 
-Respond with a JSON object:
+Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON):
 {
   "id": "narrative_id",
   "title": "compelling title",
@@ -734,13 +831,14 @@ Respond with a JSON object:
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.6,
-      max_tokens: 3000
+      max_tokens: 3000,
+      response_format: { type: "json_object" }
     })
 
     const narrative = this.parseJsonResponse(response.choices[0].message.content || '{}')
     return {
       ...narrative,
-      id: narrative.id || `narrative_${Date.now()}_${Math.random()}`
+      id: narrative.id || 'narrative_' + Date.now() + '_' + Math.random()
     }
   }
 
@@ -751,66 +849,116 @@ Respond with a JSON object:
   ): Promise<BrainAnalysisResult['slideStructure']> {
     this.analysisDepth++
     
-    const prompt = `You are an expert presentation designer creating slide structure.
+    const prompt = `You are a WORLD-CLASS presentation architect designing the ultimate ${requirements.audienceType} presentation - the kind that wins billion-dollar deals and transforms companies.
 
-REQUIREMENTS:
-- Slide Count: ${requirements.slideCount}
-- Duration: ${requirements.targetDuration} minutes
-- Structure: ${requirements.structure}
-- Audience: ${requirements.audienceType}
-- Style: ${requirements.presentationStyle}
-- User Descriptions: ${JSON.stringify(requirements.slideDescriptions, null, 2)}
+EXECUTIVE CONTEXT:
+🎯 Target: ${requirements.audienceType} | Duration: ${requirements.targetDuration} min | Slides: ${requirements.slideCount}
+📊 Style: ${requirements.presentationStyle} | Structure: ${requirements.structure}
 
-NARRATIVE:
+STRATEGIC NARRATIVE:
 ${JSON.stringify(narrative, null, 2)}
 
-INSIGHTS:
+BREAKTHROUGH INSIGHTS:
 ${JSON.stringify(insights, null, 2)}
 
-TASK: Create a detailed slide structure that:
-1. Follows the narrative arc
-2. Incorporates key insights at appropriate moments
-3. Balances content and visual elements
-4. Maintains audience engagement
-5. Achieves presentation objectives
-6. Respects user preferences and descriptions
+PRESENTATION DESIGN MANDATE:
+Create a MCKINSEY-QUALITY slide deck that follows the "Situation-Complication-Question-Answer" framework. Every slide must have a PURPOSE and drive toward a DECISION.
 
-Each slide should have:
-- Clear purpose and message
-- Appropriate content type
-- Recommended visualizations
-- Key takeaways
-- Timing considerations
+🏗️ SLIDE ARCHITECTURE PRINCIPLES:
+1. PYRAMID PRINCIPLE: Start with conclusion, then support with evidence
+2. MECE FRAMEWORK: Mutually exclusive, collectively exhaustive arguments
+3. SO WHAT TEST: Every slide must answer "So what does this mean for our business?"
+4. ACTION ORIENTATION: Clear next steps and decision points
+5. EXECUTIVE PRESENCE: Bold headlines that grab C-suite attention
 
-Respond with a JSON array of slides:
-[
-  {
-    "id": "slide_id",
-    "number": 1,
-    "type": "title|content|chart|summary|custom",
-    "title": "slide title",
-    "content": "detailed content description",
-    "charts": [
-      {
-        "type": "chart type",
-        "data": "data requirements",
-        "config": "chart configuration",
-        "insights": ["insights to highlight"]
-      }
-    ],
-    "keyTakeaways": ["main points to remember"],
-    "timing": "estimated time for this slide"
-  }
-]`
+📈 SLIDE FLOW METHODOLOGY:
+- Slide 1: HOOK + KEY MESSAGE (Grab attention with the biggest insight)
+- Slides 2-3: SITUATION ANALYSIS (Current state with data-driven evidence)
+- Slides 4-6: BREAKTHROUGH INSIGHTS (Game-changing discoveries)
+- Slides 7-8: STRATEGIC RECOMMENDATIONS (Specific actions and business case)
+- Final Slide: CALL TO ACTION (What happens next)
+
+💡 CONTENT EXCELLENCE STANDARDS:
+- Headlines are CONCLUSIONS, not topics ("Revenue can grow 40%" not "Revenue Analysis")
+- Charts tell ONE story with clear message
+- Each slide builds logically to the next
+- Insights are QUANTIFIED with business impact
+- Recommendations include timeline, resources, and success metrics
+
+Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON) containing a 'slides' array:
+{
+  "slides": [
+    {
+      "id": "slide_id",
+      "number": 1,
+      "type": "hook|situation|insight|recommendation|action",
+      "headline": "Bold conclusion-based headline that grabs attention",
+      "subtitle": "Supporting statement that reinforces the headline",
+      "narrative": "The story this slide tells in the overall presentation flow",
+      "purpose": "Why this slide exists and what decision it supports",
+      "soWhat": "Specific business implication and impact",
+      "content": {
+        "summary": "Executive summary for slide content",
+        "bulletPoints": ["3-5 key supporting points"],
+        "dataStory": "How the data supports the conclusion",
+        "evidence": ["Specific metrics and proof points"]
+      },
+      "charts": [
+        {
+          "type": "executive_dashboard|dual_axis_trend|performance_matrix|waterfall|cohort_heatmap|scatter_correlation|multi_series_comparison|strategic_quadrant",
+          "tableauStyle": {
+            "visualType": "tableau_professional",
+            "colorPalette": "executive_blues|strategic_grays|performance_gradient|diverging_spectrum",
+            "chartComplexity": "sophisticated|multi_dimensional",
+            "interactivity": "hover_insights|drill_down|filter_controls",
+            "annotations": ["key_inflection_points", "performance_thresholds", "strategic_zones"]
+          },
+          "message": "Single clear strategic message this chart conveys",
+          "dataStory": "Complete narrative this visualization tells",
+          "dataSource": "Which specific data powers this visualization",
+          "callout": "Most important strategic insight to highlight",
+          "driversAnalysis": {
+            "primaryDrivers": ["key factors driving the trend"],
+            "tailwinds": ["positive forces supporting performance"],
+            "headwinds": ["challenges limiting performance"]
+          },
+          "chartSpecification": {
+            "xAxis": "primary dimension",
+            "yAxis": "primary metric", 
+            "secondaryAxis": "additional metric if dual-axis",
+            "colorEncoding": "categorical or continuous encoding",
+            "sizeEncoding": "if bubble chart or proportional",
+            "filterDimensions": ["interactive filter options"],
+            "tooltipData": ["additional context on hover"]
+          },
+          "executiveHighlight": "The one number that matters most for decision-making"
+        }
+      ],
+      "executiveAction": {
+        "decision": "What decision this slide informs",
+        "nextSteps": ["Immediate actions required"],
+        "owner": "Who is responsible for action",
+        "timeline": "When action must be taken"
+      },
+      "speakerNotes": "Talking points for presenter to maximize impact",
+      "transitionToNext": "How this slide connects to the following slide",
+      "timing": "2-3 minutes per slide for executive presentation"
+    }
+  ]
+}
+
+DESIGN EACH SLIDE TO BE PRESENTATION-READY FOR A FORTUNE 500 BOARDROOM. Every element should drive toward clear business decisions and actions.`
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.5,
-      max_tokens: 4000
+      max_tokens: 4000,
+      response_format: { type: "json_object" }
     })
 
-    const slides = this.parseJsonResponse(response.choices[0].message.content || '[]', [])
+    const parsedResponse = this.parseJsonResponse(response.choices[0].message.content || '{"slides": []}', { slides: [] })
+    const slides = parsedResponse.slides || []
     return slides.map((slide: any) => ({
       ...slide,
       id: slide.id || `slide_${Date.now()}_${Math.random()}`
@@ -838,21 +986,22 @@ CONTEXT:
 - Business Context: ${context.businessContext}
 - Requirements: ${JSON.stringify(requirements, null, 2)}
 
-TASK: Refine the analysis and presentation based on user feedback:
-1. Address specific concerns or requests
-2. Enhance insights based on feedback
-3. Adjust narrative to better align with user preferences
-4. Modify slide structure as needed
-5. Maintain coherence and quality
-6. Ensure all feedback is addressed
-
-Respond with the refined JSON object containing insights, narrative, and slideStructure.`
+` +
+      'TASK: Refine the analysis and presentation based on user feedback:\n' +
+      '1. Address specific concerns or requests\n' +
+      '2. Enhance insights based on feedback\n' +
+      '3. Adjust narrative to better align with user preferences\n' +
+      '4. Modify slide structure as needed\n' +
+      '5. Maintain coherence and quality\n' +
+      '6. Ensure all feedback is addressed\n\n' +
+      'Respond with the refined JSON object containing insights, narrative, and slideStructure.'
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.4,
-      max_tokens: 4000
+      max_tokens: 4000,
+      response_format: { type: "json_object" }
     })
 
     return this.parseJsonResponse(response.choices[0].message.content || '{}')
@@ -865,37 +1014,33 @@ Respond with the refined JSON object containing insights, narrative, and slideSt
   ): Promise<BrainAnalysisResult['recommendations']> {
     this.analysisDepth++
     
-    const prompt = `You are providing strategic recommendations for the presentation.
-
-ANALYSIS RESULTS:
-${JSON.stringify(result, null, 2)}
-
-CONTEXT:
-- Industry: ${context.industry}
-- Business Context: ${context.businessContext}
-- Requirements: ${JSON.stringify(requirements, null, 2)}
-
-TASK: Provide strategic recommendations for:
-1. Visualizations: Best chart types and visual approaches
-2. Messaging: How to communicate key points effectively
-3. Structure: Presentation flow and organization
-4. Audience: How to engage this specific audience
-
-Focus on actionable, specific recommendations that will enhance the presentation's impact.
-
-Respond with a JSON object:
-{
-  "visualizations": ["specific visualization recommendations"],
-  "messaging": ["messaging strategy recommendations"],
-  "structure": ["structure and flow recommendations"],
-  "audience": ["audience engagement recommendations"]
-}`
+    const prompt = 'You are providing strategic recommendations for the presentation.\n\n' +
+      'ANALYSIS RESULTS:\n' +
+      JSON.stringify(result, null, 2) + '\n\n' +
+      'CONTEXT:\n' +
+      '- Industry: ' + context.industry + '\n' +
+      '- Business Context: ' + context.businessContext + '\n' +
+      '- Requirements: ' + JSON.stringify(requirements, null, 2) + '\n\n' +
+      'TASK: Provide strategic recommendations for:\n' +
+      '1. Visualizations: Best chart types and visual approaches\n' +
+      '2. Messaging: How to communicate key points effectively\n' +
+      '3. Structure: Presentation flow and organization\n' +
+      '4. Audience: How to engage this specific audience\n\n' +
+      'Focus on actionable, specific recommendations that will enhance the presentation\'s impact.\n\n' +
+      'Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON):\n' +
+      '{\n' +
+      '  "visualizations": ["specific visualization recommendations"],\n' +
+      '  "messaging": ["messaging strategy recommendations"],\n' +
+      '  "structure": ["structure and flow recommendations"],\n' +
+      '  "audience": ["audience engagement recommendations"]\n' +
+      '}'
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.5,
-      max_tokens: 2000
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
     })
 
     return this.parseJsonResponse(response.choices[0].message.content || '{}')

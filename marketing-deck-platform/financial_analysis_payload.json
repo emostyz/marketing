@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750616400143_finmetrics",
+      "fileName": "financial_metrics_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Department":"Sales","Revenue":2500000,"Costs":1200000,"Profit_Margin":52.0,"Cash_Flow":800000,"EBITDA":1300000,"Debt_to_Equity":0.35,"ROI":18.2,"Customer_Acquisition_Cost":150,"Lifetime_Value":4500,"Burn_Rate":45000,"Runway_Months":18,"ARR":12000000,"MRR":1000000,"Churn_Rate":2.1},
+        {"Date":"2024-10-01","Department":"Marketing","Revenue":450000,"Costs":320000,"Profit_Margin":28.9,"Cash_Flow":130000,"EBITDA":130000,"Debt_to_Equity":0.35,"ROI":12.5,"Customer_Acquisition_Cost":95,"Lifetime_Value":4200,"Burn_Rate":85000,"Runway_Months":18,"ARR":12000000,"MRR":1000000,"Churn_Rate":2.1}
+      ],
+      "columns": ["Date","Department","Revenue","Costs","Profit_Margin","Cash_Flow","EBITDA","Debt_to_Equity","ROI","Customer_Acquisition_Cost","Lifetime_Value","Burn_Rate","Runway_Months","ARR","MRR","Churn_Rate"],
+      "rowCount": 30,
+      "dataType": "timeseries"
+    }
+  ],
+  "context": {
+    "industry": "SaaS Technology",
+    "targetAudience": "Board of Directors and Investors",
+    "businessContext": "Q4 2024 Financial Performance Review and Strategic Planning Session",
+    "description": "Comprehensive financial metrics analysis across all departments including revenue, profitability, cash flow, debt ratios, customer economics, and growth indicators for strategic decision making",
+    "factors": ["Market expansion opportunities", "Operational efficiency improvements", "Customer retention strategies", "Capital allocation decisions", "Growth vs profitability balance", "Competitive market dynamics"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-10",
+    "dataFrequency": "daily",
+    "analysisType": "financial_performance",
+    "comparisons": ["departmental", "temporal", "efficiency_metrics"],
+    "granularity": "daily",
+    "focusPeriods": ["growth_acceleration", "profitability_improvement"]
+  },
+  "requirements": {
+    "slidesCount": 18,
+    "presentationDuration": 30,
+    "focusAreas": ["Revenue Growth Analysis", "Profitability Optimization", "Cash Flow Management", "Customer Economics", "Department Performance", "Strategic KPIs", "Investment Recommendations"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["departmental", "temporal", "benchmark"]
+  }
+}

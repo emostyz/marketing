@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750616600144_opsefficiency",
+      "fileName": "operational_efficiency_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Process":"Order_Processing","Department":"Operations","Task_Completion_Time":45,"Resource_Utilization":85.2,"Error_Rate":2.1,"Throughput":120,"Cost_per_Unit":8.50,"Automation_Level":35,"Employee_Satisfaction":7.2,"Downtime_Hours":0.5,"Quality_Score":92,"Process_Efficiency":78.5,"SLA_Adherence":98.2,"Bottleneck_Identified":"Inventory_Check"},
+        {"Date":"2024-10-01","Process":"Customer_Support","Department":"Support","Task_Completion_Time":12,"Resource_Utilization":92.1,"Error_Rate":1.8,"Throughput":85,"Cost_per_Unit":15.20,"Automation_Level":60,"Employee_Satisfaction":8.1,"Downtime_Hours":0.2,"Quality_Score":95,"Process_Efficiency":88.7,"SLA_Adherence":99.1,"Bottleneck_Identified":"None"}
+      ],
+      "columns": ["Date","Process","Department","Task_Completion_Time","Resource_Utilization","Error_Rate","Throughput","Cost_per_Unit","Automation_Level","Employee_Satisfaction","Downtime_Hours","Quality_Score","Process_Efficiency","SLA_Adherence","Bottleneck_Identified"],
+      "rowCount": 30,
+      "dataType": "operational"
+    }
+  ],
+  "context": {
+    "industry": "Technology Operations",
+    "targetAudience": "Operations Leadership and Process Improvement Team",
+    "businessContext": "Q4 2024 Operational Excellence Review and Process Optimization Initiative",
+    "description": "Comprehensive operational efficiency analysis across key business processes including order processing, customer support, software deployment, invoice processing, and quality assurance with focus on automation, resource utilization, and performance optimization",
+    "factors": ["Process automation opportunities", "Resource allocation optimization", "Quality improvement initiatives", "Employee productivity enhancement", "Technology infrastructure upgrades", "Bottleneck elimination strategies"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-08",
+    "dataFrequency": "daily",
+    "analysisType": "process_optimization",
+    "comparisons": ["departmental", "process_type", "efficiency_trends"],
+    "granularity": "process_level",
+    "focusPeriods": ["peak_efficiency", "bottleneck_resolution"]
+  },
+  "requirements": {
+    "slidesCount": 14,
+    "presentationDuration": 25,
+    "focusAreas": ["Process Efficiency Analysis", "Automation Impact Assessment", "Resource Optimization", "Quality Management", "Bottleneck Identification", "Employee Performance", "Strategic Improvement Recommendations"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["process", "departmental", "temporal", "efficiency_metrics"]
+  }
+}

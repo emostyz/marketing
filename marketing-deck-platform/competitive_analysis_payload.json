@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750617300146_competitive",
+      "fileName": "competitive_analysis_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Competitor":"TechCorp_A","Market_Share":25.5,"Revenue_Growth":12.8,"Product_Features":45,"Pricing_Strategy":"Premium","Customer_Satisfaction":8.2,"Marketing_Spend":2500000,"R_D_Investment":15000000,"Employee_Count":1250,"Geographic_Presence":15,"Partnership_Count":8,"Patent_Applications":12,"Market_Position":"Leader"},
+        {"Date":"2024-10-01","Competitor":"InnovateInc_B","Market_Share":18.7,"Revenue_Growth":18.3,"Product_Features":38,"Pricing_Strategy":"Competitive","Customer_Satisfaction":7.9,"Marketing_Spend":1800000,"R_D_Investment":12000000,"Employee_Count":980,"Geographic_Presence":12,"Partnership_Count":6,"Patent_Applications":8,"Market_Position":"Challenger"}
+      ],
+      "columns": ["Date","Competitor","Market_Share","Revenue_Growth","Product_Features","Pricing_Strategy","Customer_Satisfaction","Marketing_Spend","R_D_Investment","Employee_Count","Geographic_Presence","Partnership_Count","Patent_Applications","Market_Position"],
+      "rowCount": 30,
+      "dataType": "competitive"
+    }
+  ],
+  "context": {
+    "industry": "Technology & Software",
+    "targetAudience": "Strategic Planning Team and Executive Leadership",
+    "businessContext": "Q4 2024 Competitive Intelligence Analysis for Strategic Market Positioning",
+    "description": "Comprehensive competitive landscape analysis tracking key competitors across market share, growth metrics, innovation indicators, investment patterns, and strategic positioning to inform competitive strategy and market opportunities",
+    "factors": ["Market consolidation trends", "Innovation velocity differences", "Investment strategy variations", "Geographic expansion patterns", "Partnership ecosystem development", "Intellectual property landscape"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-08",
+    "dataFrequency": "daily",
+    "analysisType": "competitive_intelligence",
+    "comparisons": ["competitor", "market_position", "strategic_metrics"],
+    "granularity": "competitor_level",
+    "focusPeriods": ["market_leadership", "disruption_threats"]
+  },
+  "requirements": {
+    "slidesCount": 18,
+    "presentationDuration": 35,
+    "focusAreas": ["Market Share Analysis", "Competitive Positioning", "Innovation Landscape", "Investment Strategies", "Threat Assessment", "Strategic Opportunities", "Competitive Response Plan"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["competitive", "strategic", "temporal", "performance_based"]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750618000146_product",
+      "fileName": "product_performance_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Product_ID":"PROD_001","Product_Name":"SmartPhone_Pro_X","Category":"Electronics","Units_Sold":1250,"Revenue":1875000,"Cost_of_Goods":1125000,"Gross_Margin":750000,"Return_Rate":2.1,"Customer_Rating":4.8,"Inventory_Level":5500,"Promotion_Active":1,"Marketing_Spend":125000,"Conversion_Rate":12.5,"Traffic":10000,"Market_Share":15.2},
+        {"Date":"2024-10-01","Product_ID":"PROD_002","Product_Name":"Wireless_Earbuds_Elite","Category":"Audio","Units_Sold":850,"Revenue":212500,"Cost_of_Goods":127500,"Gross_Margin":85000,"Return_Rate":1.8,"Customer_Rating":4.6,"Inventory_Level":3200,"Promotion_Active":0,"Marketing_Spend":45000,"Conversion_Rate":8.5,"Traffic":10000,"Market_Share":22.1}
+      ],
+      "columns": ["Date","Product_ID","Product_Name","Category","Units_Sold","Revenue","Cost_of_Goods","Gross_Margin","Return_Rate","Customer_Rating","Inventory_Level","Promotion_Active","Marketing_Spend","Conversion_Rate","Traffic","Market_Share"],
+      "rowCount": 30,
+      "dataType": "product_performance"
+    }
+  ],
+  "context": {
+    "industry": "Consumer Electronics & Technology",
+    "targetAudience": "Product Management Team and Executive Leadership",
+    "businessContext": "Q4 2024 Product Performance Analysis for Portfolio Optimization and Strategic Planning",
+    "description": "Comprehensive product performance analysis tracking key metrics across product lines including sales performance, profitability, customer satisfaction, market positioning, and operational efficiency to inform product strategy and resource allocation",
+    "factors": ["Seasonal demand variations", "Promotional campaign effectiveness", "Competitive product launches", "Supply chain optimization", "Customer preference shifts", "Market segment dynamics"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-08",
+    "dataFrequency": "daily",
+    "analysisType": "product_performance",
+    "comparisons": ["product", "category", "performance_tier"],
+    "granularity": "product_level",
+    "focusPeriods": ["peak_sales", "optimization_opportunities"]
+  },
+  "requirements": {
+    "slidesCount": 14,
+    "presentationDuration": 25,
+    "focusAreas": ["Product Revenue Analysis", "Profitability Assessment", "Market Share Trends", "Customer Satisfaction Analysis", "Inventory & Operations", "Marketing ROI", "Strategic Product Recommendations"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["product", "category", "temporal", "performance_based"]
+  }
+}

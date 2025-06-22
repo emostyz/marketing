@@ -10,8 +10,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null)
   const router = useRouter()
-  const { signIn, signInDemo } = useAuth()
+  const { signIn, signInDemo, signInWithOAuth } = useAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,12 +54,21 @@ export default function LoginPage() {
   }
 
   const handleOAuthLogin = async (provider: 'google' | 'github' | 'microsoft') => {
-    setLoading(true)
+    setOauthLoading(provider)
     setError('')
     
-    // For now, OAuth is disabled until Supabase is properly configured
-    setError(`${provider} login is not available yet. Please use the demo login.`)
-    setLoading(false)
+    try {
+      const result = await signInWithOAuth(provider)
+      
+      if (result.error) {
+        setError(result.error)
+        setOauthLoading(null)
+      }
+      // OAuth redirects to callback page, so we don't need to navigate here
+    } catch (error: any) {
+      setError(error.message || 'OAuth login failed')
+      setOauthLoading(null)
+    }
   }
 
   return (
@@ -119,24 +129,39 @@ export default function LoginPage() {
         <div className="space-y-3 mb-6">
           <button
             onClick={() => handleOAuthLogin('google')}
-            disabled={loading}
+            disabled={loading || oauthLoading !== null}
             className="w-full bg-white hover:bg-gray-50 text-gray-900 rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            🔍 Continue with Google
+            {oauthLoading === 'google' ? (
+              <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              '🔍'
+            )}
+            {oauthLoading === 'google' ? 'Connecting...' : 'Continue with Google'}
           </button>
           <button
             onClick={() => handleOAuthLogin('github')}
-            disabled={loading}
+            disabled={loading || oauthLoading !== null}
             className="w-full bg-gray-800 hover:bg-gray-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            🐙 Continue with GitHub
+            {oauthLoading === 'github' ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              '🐙'
+            )}
+            {oauthLoading === 'github' ? 'Connecting...' : 'Continue with GitHub'}
           </button>
           <button
             onClick={() => handleOAuthLogin('microsoft')}
-            disabled={loading}
+            disabled={loading || oauthLoading !== null}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            🏢 Continue with Microsoft
+            {oauthLoading === 'microsoft' ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              '🏢'
+            )}
+            {oauthLoading === 'microsoft' ? 'Connecting...' : 'Continue with Microsoft'}
           </button>
         </div>
 
@@ -151,7 +176,7 @@ export default function LoginPage() {
 
         <button
           onClick={handleDemoLogin}
-          disabled={loading}
+          disabled={loading || oauthLoading !== null}
           className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed mb-4"
         >
           🚀 Try Demo (No Account Required)

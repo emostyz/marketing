@@ -1,4 +1,6 @@
 import { cookies } from 'next/headers'
+import { supabase } from '@/lib/supabase/enhanced-client'
+import bcrypt from 'bcryptjs'
 
 export interface User {
   id: number
@@ -12,10 +14,16 @@ export interface User {
 }
 
 export interface UserProfile {
+  id?: string
+  companyName?: string
+  logoUrl?: string
+  brandColors?: {
+    primary: string
+    secondary: string
+  }
   industry?: string
   targetAudience?: string
   businessContext?: string
-  companyName?: string
   keyMetrics?: string[]
   dataPreferences?: {
     chartStyles: string[]
@@ -63,82 +71,245 @@ const activeSessions = new Map<string, AuthSession>()
 
 export class AuthSystem {
   static async authenticate(email: string, password: string): Promise<{ success: boolean; session?: AuthSession; error?: string }> {
-    // Simple authentication - in production, use proper password hashing
-    const user = mockUsers.find(u => u.email === email)
-    
-    if (!user) {
-      return { success: false, error: 'User not found' }
+    try {
+      // First try Supabase authentication
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) {
+        // If it's an invalid login credentials error, check demo users
+        if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
+          const user = mockUsers.find(u => u.email === email)
+          
+          if (user) {
+            // Demo user found, create session
+            const session: AuthSession = {
+              user: { ...user, lastLoginAt: new Date() },
+              token: this.generateToken(),
+              expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+            }
+
+            // Store session
+            activeSessions.set(session.token, session)
+
+            return { success: true, session }
+          }
+        }
+        
+        // Return appropriate error message
+        if (error.message.includes('Invalid login credentials')) {
+          return { success: false, error: 'Invalid email or password' }
+        } else if (error.message.includes('Email not confirmed')) {
+          return { success: false, error: 'Please check your email and confirm your account before signing in' }
+        } else {
+          return { success: false, error: error.message }
+        }
+      }
+
+      // Supabase authentication successful
+      if (data.user) {
+        // Get or create user profile
+        const profile = await this.getOrCreateUserProfile(data.user)
+        
+        const user: User = {
+          id: parseInt(data.user.id) || 0,
+          email: data.user.email || '',
+          name: profile?.companyName || data.user.user_metadata?.full_name || 'User',
+          avatar: profile?.logoUrl || data.user.user_metadata?.avatar_url,
+          subscription: 'pro', // Default to pro for real users
+          createdAt: new Date(data.user.created_at || Date.now()),
+          lastLoginAt: new Date(),
+          profile: profile || undefined
+        }
+
+        const session: AuthSession = {
+          user,
+          token: data.session?.access_token || this.generateToken(),
+          expiresAt: new Date(data.session?.expires_at || Date.now() + 24 * 60 * 60 * 1000)
+        }
+
+        return { success: true, session }
+      }
+
+      return { success: false, error: 'Authentication failed' }
+    } catch (error) {
+      console.error('Authentication error:', error)
+      return { success: false, error: 'Authentication failed' }
     }
-
-    // Mock password validation (accept any password for demo)
-    if (!password || password.length < 4) {
-      return { success: false, error: 'Invalid password' }
-    }
-
-    // Create session
-    const session: AuthSession = {
-      user: { ...user, lastLoginAt: new Date() },
-      token: this.generateToken(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-    }
-
-    // Store session
-    activeSessions.set(session.token, session)
-
-    return { success: true, session }
   }
 
-  static async register(email: string, password: string, name: string): Promise<{ success: boolean; session?: AuthSession; error?: string }> {
-    // Check if user already exists
-    if (mockUsers.find(u => u.email === email)) {
-      return { success: false, error: 'User already exists' }
+  static async register(email: string, password: string, name: string, company?: string): Promise<{ success: boolean; session?: AuthSession; error?: string }> {
+    try {
+      // Validate input
+      if (!email || !password || !name) {
+        return { success: false, error: 'All fields are required' }
+      }
+
+      if (password.length < 6) {
+        return { success: false, error: 'Password must be at least 6 characters' }
+      }
+
+      // Create user in Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+            company_name: company
+          }
+        }
+      })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      if (data.user) {
+        // Create user profile
+        const profile = await this.createUserProfile(data.user, { companyName: company, name })
+        
+        const user: User = {
+          id: parseInt(data.user.id) || 0,
+          email: data.user.email || '',
+          name: name,
+          avatar: profile?.logoUrl,
+          subscription: 'free', // Start with free plan
+          createdAt: new Date(data.user.created_at || Date.now()),
+          lastLoginAt: new Date(),
+          profile: profile || undefined
+        }
+
+        const session: AuthSession = {
+          user,
+          token: data.session?.access_token || this.generateToken(),
+          expiresAt: new Date(data.session?.expires_at || Date.now() + 24 * 60 * 60 * 1000)
+        }
+
+        return { success: true, session }
+      }
+
+      return { success: false, error: 'Registration failed' }
+    } catch (error) {
+      console.error('Registration error:', error)
+      return { success: false, error: 'Registration failed' }
     }
+  }
 
-    // Validate input
-    if (!email || !password || !name) {
-      return { success: false, error: 'All fields are required' }
+  static async getOrCreateUserProfile(supabaseUser: any): Promise<UserProfile | null> {
+    try {
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single()
+
+      if (existingProfile) {
+        return existingProfile
+      }
+
+      // Create new profile
+      return await this.createUserProfile(supabaseUser)
+    } catch (error) {
+      console.error('Error getting/creating user profile:', error)
+      return null
     }
+  }
 
-    if (password.length < 6) {
-      return { success: false, error: 'Password must be at least 6 characters' }
+  static async createUserProfile(supabaseUser: any, additionalData: any = {}): Promise<UserProfile | null> {
+    try {
+      const profileData = {
+        id: supabaseUser.id,
+        email: supabaseUser.email,
+        name: additionalData.name || supabaseUser.user_metadata?.full_name,
+        companyName: additionalData.companyName || supabaseUser.user_metadata?.company_name,
+        logoUrl: supabaseUser.user_metadata?.avatar_url,
+        brandColors: {
+          primary: '#3b82f6',
+          secondary: '#10b981'
+        },
+        industry: '',
+        targetAudience: '',
+        businessContext: '',
+        businessGoals: [],
+        keyQuestions: [],
+        keyMetrics: [],
+        datasetTypes: [],
+        usagePlan: '',
+        presentationStyle: '',
+        dataPreferences: {
+          chartStyles: ['modern', 'clean'],
+          colorSchemes: ['blue', 'green'],
+          narrativeStyle: 'professional'
+        },
+        customRequirements: '',
+        onboardingCompleted: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(profileData)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating user profile:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error creating user profile:', error)
+      return null
     }
-
-    // Create new user
-    const newUser: User = {
-      id: mockUsers.length + 1,
-      email,
-      name,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=ffffff`,
-      subscription: 'free',
-      createdAt: new Date(),
-      lastLoginAt: new Date()
-    }
-
-    mockUsers.push(newUser)
-
-    // Create session
-    const session: AuthSession = {
-      user: newUser,
-      token: this.generateToken(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-    }
-
-    activeSessions.set(session.token, session)
-
-    return { success: true, session }
   }
 
   static async getSession(token: string): Promise<AuthSession | null> {
-    const session = activeSessions.get(token)
-    
-    if (!session || session.expiresAt < new Date()) {
-      if (session) {
-        activeSessions.delete(token)
+    try {
+      // First check Supabase session
+      const { data: { session: supabaseSession } } = await supabase.auth.getSession()
+      
+      if (supabaseSession && supabaseSession.access_token === token) {
+        const profile = await this.getOrCreateUserProfile(supabaseSession.user)
+        
+        const user: User = {
+          id: parseInt(supabaseSession.user.id) || 0,
+          email: supabaseSession.user.email || '',
+          name: profile?.companyName || supabaseSession.user.user_metadata?.full_name || 'User',
+          avatar: profile?.logoUrl || supabaseSession.user.user_metadata?.avatar_url,
+          subscription: 'pro',
+          createdAt: new Date(supabaseSession.user.created_at || Date.now()),
+          lastLoginAt: new Date(),
+          profile: profile || undefined
+        }
+
+        return {
+          user,
+          token: supabaseSession.access_token,
+          expiresAt: new Date(supabaseSession.expires_at || Date.now() + 24 * 60 * 60 * 1000)
+        }
       }
+
+      // Fallback to mock sessions
+      const mockSession = activeSessions.get(token)
+      
+      if (!mockSession || mockSession.expiresAt < new Date()) {
+        if (mockSession) {
+          activeSessions.delete(token)
+        }
+        return null
+      }
+
+      return mockSession
+    } catch (error) {
+      console.error('Error getting session:', error)
       return null
     }
-
-    return session
   }
 
   static async getCurrentUser(): Promise<User | null> {
@@ -163,8 +334,17 @@ export class AuthSystem {
   }
 
   static async logout(token: string): Promise<boolean> {
-    const deleted = activeSessions.delete(token)
-    return deleted
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut()
+      
+      // Clear mock sessions
+      const deleted = activeSessions.delete(token)
+      return deleted
+    } catch (error) {
+      console.error('Logout error:', error)
+      return false
+    }
   }
 
   static async setAuthCookie(session: AuthSession): Promise<void> {
@@ -207,10 +387,9 @@ export class AuthSystem {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60
+      maxAge: 7 * 24 * 60 * 60 // 1 week
     })
 
-    // Set demo user info
     cookieStore.set('user-info', JSON.stringify({
       id: 1,
       name: 'Demo User',
@@ -220,14 +399,12 @@ export class AuthSystem {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60
+      maxAge: 7 * 24 * 60 * 60
     })
   }
 
   private static generateToken(): string {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15) + 
-           Date.now().toString(36)
+    return Math.random().toString(36).substring(2) + Date.now().toString(36)
   }
 
   static async requireAuth(): Promise<User> {
@@ -242,38 +419,71 @@ export class AuthSystem {
     const user = await this.requireAuth()
     
     const levels = { free: 0, pro: 1, enterprise: 2 }
-    const userLevel = levels[user.subscription]
-    const requiredLevel = levels[minLevel]
+    const userLevel = levels[user.subscription] || 0
+    const requiredLevel = levels[minLevel] || 0
     
     if (userLevel < requiredLevel) {
-      throw new Error(`${minLevel} subscription required`)
+      throw new Error(`Subscription level ${minLevel} required`)
     }
     
     return user
   }
 
   static async updateUserProfile(profileData: Partial<UserProfile>): Promise<User | null> {
-    const user = await this.getCurrentUser()
-    if (!user) return null
+    try {
+      const user = await this.getCurrentUser()
+      if (!user) return null
 
-    // Find the user in mockUsers and update their profile
-    const userIndex = mockUsers.findIndex(u => u.id === user.id)
-    if (userIndex !== -1) {
-      mockUsers[userIndex].profile = {
-        ...mockUsers[userIndex].profile,
-        ...profileData
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          ...profileData,
+          updatedAt: new Date().toISOString()
+        })
+        .eq('id', user.id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating user profile:', error)
+        return null
       }
-      return mockUsers[userIndex]
+
+      // Update user object with new profile data
+      const updatedUser: User = {
+        ...user,
+        name: data.companyName || user.name,
+        avatar: data.logoUrl || user.avatar,
+        profile: data
+      }
+
+      return updatedUser
+    } catch (error) {
+      console.error('Error updating user profile:', error)
+      return null
     }
-    
-    return null
   }
 
   static async getUserProfile(): Promise<UserProfile | null> {
-    const user = await this.getCurrentUser()
-    if (!user) return null
-    
-    const foundUser = mockUsers.find(u => u.id === user.id)
-    return foundUser?.profile || null
+    try {
+      const user = await this.getCurrentUser()
+      if (!user) return null
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (error) {
+        console.error('Error getting user profile:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error getting user profile:', error)
+      return null
+    }
   }
 }

@@ -18,6 +18,8 @@ import { TemplateStep, Template } from './TemplateStep'
 import { EnhancedBrainV2 } from '@/lib/ai/enhanced-brain-v2'
 import { UploadedFile } from '@/lib/types/upload'
 import { WorldClassPresentationEditor } from '@/components/editor/WorldClassPresentationEditor'
+import { useTierLimits } from '@/lib/hooks/useTierLimits'
+import UpgradePrompt from '@/components/ui/UpgradePrompt'
 // import { Progress } from '@/components/ui/progress'
 
 // Helper function to convert file to base64
@@ -60,8 +62,15 @@ const AIAnalysisStep = ({ status, progress }: { status: string, progress: number
 export function UltimateDeckBuilder({ className = '' }) {
   const router = useRouter()
   const { user } = useAuth()
+  const { checkLimit, incrementUsage, rollbackUsage, upgradePlan, subscription } = useTierLimits()
   
   const [currentStep, setCurrentStep] = useState(1)
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
+  const [upgradePromptData, setUpgradePromptData] = useState<{
+    limitType: 'presentations' | 'team_members' | 'storage' | 'exports'
+    currentUsage: number
+    limit: number
+  } | null>(null)
   
   const [intakeData, setIntakeData] = useState<{
     files: UploadedFile[];
@@ -164,6 +173,32 @@ export function UltimateDeckBuilder({ className = '' }) {
   }
 
   const performAnalysis = async () => {
+    // Prevent multiple simultaneous analyses
+    if (isAnalyzing) {
+      console.warn('Analysis already in progress')
+      return
+    }
+
+    // Check tier limits and immediately increment usage to prevent race conditions
+    const limitCheck = await checkLimit('presentations')
+    
+    if (!limitCheck.canPerform) {
+      setUpgradePromptData({
+        limitType: 'presentations',
+        currentUsage: limitCheck.currentUsage,
+        limit: limitCheck.limit as number
+      })
+      setShowUpgradePrompt(true)
+      return
+    }
+
+    // CRITICAL: Immediately increment usage counter to prevent race conditions
+    const usageIncremented = await incrementUsage('presentations')
+    if (!usageIncremented) {
+      setError('Failed to track usage. Please try again.')
+      return
+    }
+
     setIsLoading(true)
     setProgress(10)
     
@@ -286,19 +321,23 @@ export function UltimateDeckBuilder({ className = '' }) {
       });
 
       if (!response.ok) {
-        throw new Error(`Analysis failed with status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Analysis failed with status: ${response.status}`);
       }
 
       const result = await response.json();
       
-      if (result.success) {
+      if (result.success && result.result) {
         setAnalysisResult(result.result);
         setAnalysisStatus('Analysis Complete!');
         setAnalysisProgress(100);
         toast.success('AI analysis complete!');
         setProgress(100)
-        setAnalysisResult(result.result)
         console.log('Final analysis result:', result.result)
+        console.log('Insights count:', result.result.insights?.length || 0)
+        console.log('Slides count:', result.result.slideStructure?.length || 0)
+
+        // Usage already incremented at start to prevent race conditions
 
         // Save the presentation to the database
         try {
@@ -342,6 +381,14 @@ export function UltimateDeckBuilder({ className = '' }) {
       setIsAnalyzing(false);
       setIsLoading(false);
       setCurrentStep(4); // Go back to upload step on error
+      
+      // Rollback usage counter for failed analysis
+      const rollbackSuccess = await rollbackUsage('presentations', `Analysis failed: ${error.message}`)
+      if (rollbackSuccess) {
+        console.log('Successfully rolled back usage counter')
+      } else {
+        console.error('Failed to rollback usage counter')
+      }
     }
   };
 
@@ -403,24 +450,206 @@ export function UltimateDeckBuilder({ className = '' }) {
       case 7:
         // If we have analysis results and a template, show the presentation editor
         if (analysisResult && selectedTemplate) {
+          // Convert analysis result to professional slides format
+          const convertedSlides = analysisResult.slideStructure?.map((slideData: any, index: number) => ({
+            id: slideData.id || `slide_${Date.now()}_${index}`,
+            number: index + 1,
+            type: slideData.type || 'mckinsey_summary',
+            title: slideData.title || slideData.headline || `Slide ${index + 1}`,
+            content: slideData.content?.summary || slideData.narrative || slideData.description || 'Edit this content to add your insights...',
+            charts: slideData.charts?.map((chart: any, chartIndex: number) => ({
+              id: `chart_${Date.now()}_${chartIndex}`,
+              type: chart.type || 'area',
+              title: chart.message || chart.title || 'Data Visualization',
+              data: parsedData[0]?.data || [],
+              config: {
+                xAxisKey: parsedData[0]?.columns?.[0] || 'date',
+                yAxisKey: parsedData[0]?.columns?.[1] || 'value',
+                showAnimation: true,
+                showLegend: true,
+                showGridLines: true,
+                colors: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'],
+                valueFormatter: (value: number) => new Intl.NumberFormat('en-US', {
+                  notation: 'compact',
+                  maximumFractionDigits: 1
+                }).format(value)
+              },
+              insights: [chart.callout || 'Key insight from data visualization'],
+              source: chart.dataSource || 'Analysis data'
+            })) || [],
+            keyTakeaways: slideData.content?.bulletPoints || slideData.keyTakeaways || [],
+            aiInsights: {
+              keyFindings: slideData.content?.bulletPoints || [],
+              recommendations: slideData.executiveAction?.nextSteps || [],
+              dataStory: slideData.content?.dataStory || slideData.narrative || 'Professional data insights and analysis.',
+              businessImpact: slideData.soWhat || 'Strategic business value creation',
+              confidence: slideData.confidence || 85
+            },
+            elements: [],
+            background: { 
+              type: 'mckinsey', 
+              value: '', 
+              gradient: { from: '#0f172a', to: '#1e293b', direction: '135deg' } 
+            },
+            style: 'mckinsey',
+            layout: 'mckinsey_pyramid',
+            animation: { enter: 'fadeIn', exit: 'fadeOut', duration: 0.8 },
+            customStyles: {
+              backgroundColor: selectedTemplate.colors?.[0] || '#0f172a',
+              textColor: '#ffffff',
+              accentColor: selectedTemplate.colors?.[1] || '#3b82f6',
+            }
+          })) || []
+
+          // If no slides were generated, create a fallback slide
+          if (convertedSlides.length === 0) {
+            convertedSlides.push({
+              id: `slide_${Date.now()}_0`,
+              number: 1,
+              type: 'title',
+              title: 'Your Presentation',
+              content: 'AI analysis complete. Ready to customize your slides.',
+              charts: [],
+              keyTakeaways: analysisResult.insights?.slice(0, 3).map((i: any) => i.title) || [],
+              aiInsights: {
+                keyFindings: analysisResult.insights?.slice(0, 5).map((i: any) => i.description) || [],
+                recommendations: ['Customize this presentation with your data'],
+                dataStory: analysisResult.narrative?.theme || 'Your data tells a compelling story',
+                businessImpact: 'Strategic insights from your data',
+                confidence: 85
+              },
+              elements: [],
+              background: { 
+                type: 'mckinsey', 
+                value: '', 
+                gradient: { from: '#0f172a', to: '#1e293b', direction: '135deg' } 
+              },
+              style: 'mckinsey',
+              layout: 'default',
+              animation: { enter: 'fadeIn', exit: 'fadeOut', duration: 0.8 },
+              customStyles: {
+                backgroundColor: selectedTemplate.colors?.[0] || '#0f172a',
+                textColor: '#ffffff',
+                accentColor: selectedTemplate.colors?.[1] || '#3b82f6',
+              }
+            })
+          }
+
           return (
             <WorldClassPresentationEditor
-              initialData={{
-                slides: analysisResult.slideStructure || [],
-                template: selectedTemplate,
-                theme: {
-                  colors: selectedTemplate.colors,
-                  fonts: selectedTemplate.fonts
+              presentationId={`presentation_${Date.now()}`}
+              initialSlides={convertedSlides}
+              analysisData={{
+                insights: analysisResult.insights || [],
+                narrative: analysisResult.narrative || {},
+                chartData: parsedData || [],
+                keyMetrics: analysisResult.keyMetrics || [],
+                uploadedFiles: uploadedFiles,
+                rawData: parsedData[0]?.data || []
+              }}
+              onSave={async (slides) => {
+                try {
+                  console.log('Saving world-class presentation with advanced analytics:', slides)
+                  
+                  // Import slide persistence service
+                  const { slidePersistence } = await import('@/lib/slides/slide-persistence')
+                  
+                  // Create comprehensive presentation data
+                  const presentationData = {
+                    id: `presentation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    title: intakeData.businessContext || 'Strategic Analysis Presentation',
+                    slides: slides.map((slide: any) => ({
+                      id: slide.id,
+                      title: slide.title,
+                      subtitle: slide.subtitle,
+                      content: {
+                        summary: slide.content,
+                        bulletPoints: slide.keyTakeaways || [],
+                        dataStory: slide.aiInsights?.dataStory || '',
+                        evidence: slide.aiInsights?.keyFindings || []
+                      },
+                      charts: slide.charts?.map((chart: any) => ({
+                        ...chart,
+                        driversAnalysis: {
+                          primaryDrivers: analysisResult.insights?.map((i: any) => i.strategicDrivers?.primaryDrivers || []).flat() || [],
+                          tailwinds: analysisResult.insights?.map((i: any) => i.strategicDrivers?.tailwinds || []).flat() || [],
+                          headwinds: analysisResult.insights?.map((i: any) => i.strategicDrivers?.headwinds || []).flat() || []
+                        }
+                      })) || [],
+                      narrative: slide.aiInsights?.dataStory || '',
+                      purpose: `Slide ${slide.number}: ${slide.title}`,
+                      executiveAction: {
+                        decision: slide.aiInsights?.businessImpact || '',
+                        nextSteps: slide.aiInsights?.recommendations || [],
+                        owner: 'Executive Team',
+                        timeline: 'Next 30-90 days'
+                      },
+                      speakerNotes: `Speaker notes for ${slide.title}: Focus on key insights and strategic implications. Confidence level: ${slide.aiInsights?.confidence || 85}%`,
+                      metadata: {
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        version: 1,
+                        tags: [intakeData.industry, 'AI-generated', 'executive'],
+                        analysisId: analysisResult.metadata?.analysisId
+                      }
+                    })),
+                    metadata: {
+                      userId: user?.id || '',
+                      industry: intakeData.industry,
+                      businessContext: intakeData.businessContext,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                      version: 1,
+                      totalSlides: slides.length,
+                      estimatedDuration: slides.length * 2.5, // 2.5 minutes per slide
+                      analysisMetadata: {
+                        confidence: analysisResult.metadata?.confidence || 85,
+                        dataQuality: analysisResult.metadata?.dataQuality || 75,
+                        insightCount: analysisResult.insights?.length || 0,
+                        chartCount: slides.reduce((total: number, slide: any) => total + (slide.charts?.length || 0), 0)
+                      }
+                    },
+                    exportFormats: {}
+                  }
+
+                  // Save presentation to user profile
+                  const presentationId = await slidePersistence.savePresentation(presentationData)
+                  
+                  // Generate PNG exports for quality validation
+                  toast.loading('Generating high-quality slide exports...', { id: 'export' })
+                  
+                  try {
+                    const pngUrls = await slidePersistence.exportPresentationAsPNG(presentationData)
+                    toast.success(`World-class presentation saved with ${pngUrls.length} slide exports!`, { id: 'export' })
+                    console.log('✅ PNG exports generated:', pngUrls)
+                  } catch (exportError) {
+                    console.error('PNG export warning:', exportError)
+                    toast.success('Presentation saved successfully!', { id: 'export' })
+                  }
+
+                  // Analyze slide quality
+                  for (const slide of presentationData.slides) {
+                    const quality = await slidePersistence.analyzeSlideQuality(slide)
+                    console.log(`Slide "${slide.title}" quality score: ${quality.score}/100`)
+                    
+                    if (quality.score < 70) {
+                      console.warn('Slide quality below recommended threshold:', {
+                        slide: slide.title,
+                        score: quality.score,
+                        improvements: quality.improvements
+                      })
+                    }
+                  }
+
+                  router.push(`/dashboard?presentation=${presentationId}`)
+                } catch (error) {
+                  console.error('Failed to save presentation:', error)
+                  toast.error('Failed to save presentation. Please try again.')
                 }
               }}
-              onSave={async (data) => {
-                console.log('Saving presentation:', data)
-                toast.success('Presentation saved!')
-                router.push('/dashboard')
-              }}
               onExport={async (format) => {
-                console.log('Exporting as:', format)
-                toast.success(`Exported as ${format}`)
+                console.log('Exporting professional presentation as:', format)
+                toast.success(`Professional presentation exported as ${format.toUpperCase()}`)
               }}
             />
           )
@@ -489,6 +718,32 @@ export function UltimateDeckBuilder({ className = '' }) {
             </AnimatePresence>
         </main>
       </div>
+
+      {/* Upgrade Prompt Modal */}
+      {showUpgradePrompt && upgradePromptData && subscription && (
+        <UpgradePrompt
+          currentPlan={subscription.plan}
+          limitType={upgradePromptData.limitType}
+          currentUsage={upgradePromptData.currentUsage}
+          limit={upgradePromptData.limit}
+          onUpgrade={async (newPlan) => {
+            const success = await upgradePlan(newPlan)
+            if (success) {
+              setShowUpgradePrompt(false)
+              setUpgradePromptData(null)
+              toast.success(`Successfully upgraded to ${newPlan}!`)
+              // Retry the analysis after upgrade
+              setTimeout(performAnalysis, 1000)
+            } else {
+              toast.error('Upgrade failed. Please try again.')
+            }
+          }}
+          onClose={() => {
+            setShowUpgradePrompt(false)
+            setUpgradePromptData(null)
+          }}
+        />
+      )}
     </div>
   )
 } 

@@ -6,7 +6,7 @@ import { ComprehensiveSlideRenderer } from '@/components/slides/ComprehensiveSli
 import { ThemeSelector } from '@/components/themes/ThemeSelector'
 import { savePresentation } from '@/lib/storage/presentation-storage'
 import { AdvancedDataUploadModal } from '@/components/upload/AdvancedDataUploadModal'
-import { EnhancedDeckBuilder } from '@/components/deck-builder/EnhancedDeckBuilder'
+import EnhancedDeckBuilder from '@/components/deck-builder/EnhancedDeckBuilder'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Toaster, toast } from 'react-hot-toast'

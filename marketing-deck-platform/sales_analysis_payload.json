@@ -1,0 +1,42 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750615860141_oogyi77sy",
+      "fileName": "sales_performance_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Region":"North America","Product":"Enterprise SaaS","Sales_Rep":"John Smith","Revenue":125000,"Units_Sold":5,"Customer_Acquisition_Cost":2500,"Customer_LTV":45000,"Lead_Source":"Website","Conversion_Rate":12.5,"Deal_Size":25000},
+        {"Date":"2024-10-01","Region":"North America","Product":"Professional SaaS","Sales_Rep":"Sarah Johnson","Revenue":85000,"Units_Sold":17,"Customer_Acquisition_Cost":1200,"Customer_LTV":15000,"Lead_Source":"Referral","Conversion_Rate":18.3,"Deal_Size":5000}
+      ],
+      "columns": ["Date","Region","Product","Sales_Rep","Revenue","Units_Sold","Customer_Acquisition_Cost","Customer_LTV","Lead_Source","Conversion_Rate","Deal_Size"],
+      "rowCount": 30,
+      "dataType": "timeseries"
+    }
+  ],
+  "context": {
+    "industry": "SaaS Technology",
+    "targetAudience": "Sales Leadership Team",
+    "businessContext": "Q4 2024 Sales Performance Review for Board Presentation",
+    "description": "Comprehensive sales performance data across regions, products, and sales representatives with key metrics including revenue, conversion rates, customer acquisition costs, and lifetime value",
+    "factors": ["Regional market conditions", "Product-market fit variations", "Sales rep performance differences", "Lead source effectiveness", "Seasonal buying patterns"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-31",
+    "dataFrequency": "daily",
+    "analysisType": "performance",
+    "comparisons": ["regional", "product", "rep"],
+    "granularity": "daily",
+    "focusPeriods": ["month-end", "quarter-end"]
+  },
+  "requirements": {
+    "slidesCount": 12,
+    "presentationDuration": 20,
+    "focusAreas": ["Revenue Performance", "Sales Efficiency", "Lead Source ROI", "Regional Analysis", "Product Performance", "Strategic Recommendations"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["regional", "product", "temporal"]
+  }
+}
+EOF < /dev/null

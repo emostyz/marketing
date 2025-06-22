@@ -11,13 +11,28 @@ interface Socket {
   connected: boolean
 }
 
-const io = (url: string, options?: any): Socket => ({
-  emit: () => {},
-  on: () => {},
-  off: () => {},
-  disconnect: () => {},
-  connected: false
-})
+const io = (url: string, options?: any): Socket => {
+  const socket = {
+    emit: (event: string, data: any) => {
+      console.log(`[Mock Socket] Emitting ${event}:`, data)
+    },
+    on: (event: string, callback: (data: any) => void) => {
+      console.log(`[Mock Socket] Listening for ${event}`)
+      // Simulate connection after a short delay
+      if (event === 'connect') {
+        setTimeout(() => callback({}), 100)
+      }
+    },
+    off: (event: string, callback?: (data: any) => void) => {
+      console.log(`[Mock Socket] Removing listener for ${event}`)
+    },
+    disconnect: () => {
+      console.log(`[Mock Socket] Disconnecting`)
+    },
+    connected: true // Mock as connected for development
+  }
+  return socket
+}
 
 interface User {
   id: string

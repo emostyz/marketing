@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750621000149_board",
+      "fileName": "board_presentation_q4_2024.csv",
+      "data": [
+        {"Date":"2024-12-31","Metric_Category":"Financial","KPI_Name":"Total_Revenue","Q4_Target":50000000,"Q4_Actual":52500000,"YoY_Growth":15.2,"Strategic_Impact":"Transformative","Board_Priority":"Critical","Investment_Required":5000000,"Market_Context":"Expanding_Market","Competitive_Position":"Leading","Risk_Rating":"Low","Confidence_Level":"High","Next_Quarter_Forecast":54000000,"Long_Term_Outlook":"Strong_Growth"},
+        {"Date":"2024-12-31","Metric_Category":"Financial","KPI_Name":"Gross_Margin","Q4_Target":65.0,"Q4_Actual":67.8,"YoY_Growth":8.5,"Strategic_Impact":"Significant","Board_Priority":"Critical","Investment_Required":2000000,"Market_Context":"Margin_Pressure","Competitive_Position":"Competitive","Risk_Rating":"Medium","Confidence_Level":"High","Next_Quarter_Forecast":68.5,"Long_Term_Outlook":"Stable_Improvement"}
+      ],
+      "columns": ["Date","Metric_Category","KPI_Name","Q4_Target","Q4_Actual","YoY_Growth","Strategic_Impact","Board_Priority","Investment_Required","Market_Context","Competitive_Position","Risk_Rating","Confidence_Level","Next_Quarter_Forecast","Long_Term_Outlook"],
+      "rowCount": 20,
+      "dataType": "board_metrics"
+    }
+  ],
+  "context": {
+    "industry": "Technology & Software",
+    "targetAudience": "Board of Directors and C-Suite Executives",
+    "businessContext": "Q4 2024 Board Presentation - Annual Performance Review and Strategic Vision for Future Growth",
+    "description": "Comprehensive board-level presentation analyzing annual performance across all strategic dimensions including financial results, market position, operational excellence, innovation progress, and long-term strategic positioning for board governance and strategic decision-making",
+    "factors": ["Market dynamics and competitive landscape", "Financial performance and profitability", "Strategic initiative execution", "Risk management and governance", "Long-term value creation", "Stakeholder value optimization"]
+  },
+  "timeFrame": {
+    "start": "2024-01-01",
+    "end": "2024-12-31",
+    "dataFrequency": "quarterly",
+    "analysisType": "board_governance",
+    "comparisons": ["annual_targets", "market_benchmarks", "strategic_priorities"],
+    "granularity": "strategic_level",
+    "focusPeriods": ["annual_review", "future_strategy"]
+  },
+  "requirements": {
+    "slidesCount": 25,
+    "presentationDuration": 60,
+    "focusAreas": ["Executive Summary", "Financial Performance & Outlook", "Market Position & Strategy", "Operational Excellence", "Innovation & Technology", "Risk Management", "ESG & Sustainability", "Strategic Vision & Roadmap", "Investment Priorities", "Governance & Board Actions"],
+    "style": "board_level",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["annual_performance", "market_benchmarks", "strategic_goals", "long_term_vision"]
+  }
+}

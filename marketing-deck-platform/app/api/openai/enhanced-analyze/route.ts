@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EnhancedBrainV2 } from '@/lib/ai/enhanced-brain-v2'
+import { AuthSystem } from '@/lib/auth/auth-system'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +19,8 @@ export async function POST(request: NextRequest) {
 
     console.log('🧠 Enhanced Analysis - Extracted data:', {
       dataLength: data?.length,
+      isArray: Array.isArray(data),
+      firstDataItem: data && data[0] ? Object.keys(data[0]) : null,
       contextKeys: context ? Object.keys(context) : null,
       timeFrameKeys: timeFrame ? Object.keys(timeFrame) : null,
       requirementsKeys: requirements ? Object.keys(requirements) : null
@@ -48,7 +51,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🧠 Enhanced Analysis - All validations passed, initializing brain')
+    console.log('🧠 Enhanced Analysis - All validations passed, getting user context')
+
+    // Get user profile for context
+    let userProfile = null
+    try {
+      userProfile = await AuthSystem.getUserProfile()
+      console.log('🧠 Enhanced Analysis - User profile retrieved:', userProfile ? 'Yes' : 'No')
+    } catch (error) {
+      console.log('🧠 Enhanced Analysis - No user profile available (guest user)')
+    }
+
+    // Enhance context with user profile information
+    const enhancedContext = {
+      ...context,
+      userProfile: userProfile ? {
+        companyName: userProfile.companyName,
+        industry: userProfile.industry,
+        targetAudience: userProfile.targetAudience,
+        businessContext: userProfile.businessContext,
+        businessGoals: userProfile.businessGoals,
+        keyQuestions: userProfile.keyQuestions,
+        keyMetrics: userProfile.keyMetrics,
+        datasetTypes: userProfile.datasetTypes,
+        usagePlan: userProfile.usagePlan,
+        presentationStyle: userProfile.presentationStyle,
+        customRequirements: userProfile.customRequirements
+      } : null
+    }
+
+    console.log('🧠 Enhanced Analysis - Enhanced context prepared')
 
     // Transform timeFrame to match EnhancedBrainV2 expectations
     const mapAnalysisType = (comparisons: string[] = []) => {
@@ -96,10 +128,19 @@ export async function POST(request: NextRequest) {
 
     console.log('🧠 Enhanced Analysis - Brain initialized, performing analysis...')
 
+    // Process data array if it contains file information
+    let processedData = data
+    if (Array.isArray(data) && data.length > 0 && data[0].data) {
+      // If data is an array of file objects with data property, extract the actual data
+      console.log('🧠 Enhanced Analysis - Processing file data array')
+      processedData = data.map(file => file.data).flat()
+      console.log('🧠 Enhanced Analysis - Flattened data length:', processedData.length)
+    }
+
     // Perform comprehensive analysis
     const result = await brain.analyzeData(
-      data,
-      context,
+      processedData,
+      enhancedContext,
       transformedTimeFrame,
       transformedRequirements,
       userFeedback

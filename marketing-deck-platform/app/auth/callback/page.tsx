@@ -1,80 +1,80 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { OAuthManager } from '@/lib/auth/oauth-config'
-import { Card } from '@/components/ui/Card'
-import { Brain, CheckCircle, AlertCircle } from 'lucide-react'
+import { Brain } from 'lucide-react'
+import OAuthManager from '@/lib/auth/oauth-config'
 
 export default function AuthCallbackPage() {
-  const router = useRouter()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-  const [message, setMessage] = useState('Processing authentication...')
+  const [error, setError] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        setStatus('loading')
+        
+        // Handle the OAuth callback
         const session = await OAuthManager.handleAuthCallback()
         
         if (session) {
           setStatus('success')
-          setMessage('Authentication successful! Redirecting...')
-          
-          // Redirect after a short delay
+          // Redirect to dashboard after a brief delay
           setTimeout(() => {
             router.push('/dashboard')
-          }, 2000)
+          }, 1000)
         } else {
-          throw new Error('No session found')
+          setStatus('error')
+          setError('Authentication failed. Please try again.')
         }
-      } catch (error) {
-        console.error('OAuth callback error:', error)
+      } catch (error: any) {
+        console.error('Auth callback error:', error)
         setStatus('error')
-        setMessage('Authentication failed. Please try again.')
-        
-        // Redirect to login after error
-        setTimeout(() => {
-          router.push('/auth/login')
-        }, 3000)
+        setError(error.message || 'Authentication failed. Please try again.')
       }
     }
 
     handleCallback()
   }, [router])
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white flex items-center justify-center p-6">
-      <Card className="max-w-md w-full p-8 text-center">
-        <div className="mb-6">
-          {status === 'loading' && (
-            <Brain className="w-16 h-16 text-blue-400 mx-auto animate-pulse" />
-          )}
-          {status === 'success' && (
-            <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto" />
-          )}
-          {status === 'error' && (
-            <AlertCircle className="w-16 h-16 text-red-400 mx-auto" />
-          )}
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+        <div className="text-center">
+          <Brain className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-pulse" />
+          <h2 className="text-2xl font-bold text-white mb-2">Completing Sign In</h2>
+          <p className="text-gray-400">Please wait while we set up your account...</p>
         </div>
+      </div>
+    )
+  }
 
-        <h1 className="text-xl font-semibold mb-4">
-          {status === 'loading' && 'Authenticating...'}
-          {status === 'success' && 'Welcome to AEDRIN!'}
-          {status === 'error' && 'Authentication Error'}
-        </h1>
+  if (status === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+        <div className="text-center">
+          <Brain className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">Authentication Error</h2>
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={() => router.push('/auth/login')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    )
+  }
 
-        <p className="text-gray-400 text-sm">
-          {message}
-        </p>
-
-        {status === 'loading' && (
-          <div className="mt-6">
-            <div className="w-full bg-gray-700 rounded-full h-2">
-              <div className="bg-gradient-to-r from-blue-500 to-emerald-500 h-2 rounded-full w-2/3 animate-pulse"></div>
-            </div>
-          </div>
-        )}
-      </Card>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      <div className="text-center">
+        <Brain className="w-16 h-16 text-green-400 mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-white mb-2">Welcome to AEDRIN!</h2>
+        <p className="text-gray-400">Redirecting you to your dashboard...</p>
+      </div>
     </div>
   )
 }

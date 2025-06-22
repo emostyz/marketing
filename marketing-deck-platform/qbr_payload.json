@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750620000148_qbr",
+      "fileName": "qbr_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Department":"Sales","KPI_Name":"Revenue","Target_Value":12500000,"Actual_Value":13125000,"Variance_Percent":5.0,"Trend_Direction":"Up","Risk_Level":"Low","Action_Required":"Continue","Owner":"John_Smith","Budget_Allocated":2500000,"Budget_Spent":2350000,"ROI_Percent":558.5,"Customer_Impact":"High","Strategic_Priority":"Critical"},
+        {"Date":"2024-10-01","Department":"Sales","KPI_Name":"New_Customers","Target_Value":2500,"Actual_Value":2750,"Variance_Percent":10.0,"Trend_Direction":"Up","Risk_Level":"Low","Action_Required":"Accelerate","Owner":"Sarah_Johnson","Budget_Allocated":500000,"Budget_Spent":485000,"ROI_Percent":566.5,"Customer_Impact":"High","Strategic_Priority":"Critical"}
+      ],
+      "columns": ["Date","Department","KPI_Name","Target_Value","Actual_Value","Variance_Percent","Trend_Direction","Risk_Level","Action_Required","Owner","Budget_Allocated","Budget_Spent","ROI_Percent","Customer_Impact","Strategic_Priority"],
+      "rowCount": 30,
+      "dataType": "qbr_dashboard"
+    }
+  ],
+  "context": {
+    "industry": "Technology & Software",
+    "targetAudience": "Executive Leadership Team and Board of Directors",
+    "businessContext": "Q4 2024 Quarterly Business Review - Comprehensive Performance Assessment and Strategic Planning Session",
+    "description": "Executive quarterly business review analyzing cross-functional KPI performance, budget utilization, strategic initiative progress, risk assessment, and forward-looking strategic recommendations for organizational alignment and decision-making",
+    "factors": ["Market performance drivers", "Operational efficiency gains", "Customer satisfaction trends", "Competitive positioning changes", "Strategic initiative outcomes", "Resource allocation effectiveness"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-03",
+    "dataFrequency": "daily",
+    "analysisType": "qbr_analysis",
+    "comparisons": ["department", "target_vs_actual", "quarterly_trends"],
+    "granularity": "kpi_level",
+    "focusPeriods": ["quarterly_performance", "strategic_priorities"]
+  },
+  "requirements": {
+    "slidesCount": 20,
+    "presentationDuration": 45,
+    "focusAreas": ["Executive Summary", "Financial Performance", "Operational Excellence", "Customer Success Metrics", "Strategic Initiative Progress", "Risk Assessment", "Forward-Looking Strategy", "Resource Allocation Review"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["departmental", "target_variance", "temporal", "strategic_priority"]
+  }
+}

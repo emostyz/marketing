@@ -3,8 +3,24 @@ import { AuthSystem } from '@/lib/auth/auth-system'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, name } = await request.json()
+    const { name, email, password, company } = await request.json()
 
+    // Validate input
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { error: 'Name, email, and password are required' },
+        { status: 400 }
+      )
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password must be at least 6 characters' },
+        { status: 400 }
+      )
+    }
+
+    // Register user
     const result = await AuthSystem.register(email, password, name)
     
     if (!result.success) {

@@ -1,294 +1,544 @@
-'use client'
+"use client"
 
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Check, X, Zap, Crown, Building, ArrowRight, Star } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { useState } from 'react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
+import { Check, Star, Zap, Crown, Users, BarChart3, Shield, Globe, ArrowRight, TrendingUp, Brain, Award, Clock, Sparkles, Rocket, Target, Infinity, Lock, Headphones, Palette, Code, Database, Cloud, Smartphone, Monitor } from 'lucide-react'
+
+const pricingTiers = [
+  {
+    name: 'Starter',
+    price: 29,
+    period: 'month',
+    description: 'Perfect for individuals and small teams getting started',
+    icon: Zap,
+    color: 'blue',
+    gradient: 'from-blue-500 to-cyan-500',
+    features: [
+      '5 presentations per month',
+      'Basic AI insights & analysis',
+      '20+ professional templates',
+      'CSV/Excel data upload',
+      'PDF export',
+      'Email support',
+      'Basic analytics dashboard',
+      '1 team member',
+      'Standard charts & graphs',
+      'Mobile responsive design'
+    ],
+    limitations: [
+      'No advanced AI features',
+      'No custom branding',
+      'No priority support',
+      'No API access'
+    ],
+    stripePriceId: 'price_starter_monthly',
+    popular: false,
+    savings: null
+  },
+  {
+    name: 'Professional',
+    price: 99,
+    period: 'month',
+    description: 'For growing teams and businesses that need more power',
+    icon: Star,
+    color: 'purple',
+    gradient: 'from-purple-500 to-pink-500',
+    features: [
+      '25 presentations per month',
+      'Advanced AI insights & predictions',
+      '50+ premium templates',
+      'All file formats supported',
+      'PowerPoint & Keynote export',
+      'Priority email & chat support',
+      'Advanced analytics & reporting',
+      '5 team members',
+      'Custom branding & themes',
+      'Advanced charts & visualizations',
+      'Real-time collaboration',
+      'API access',
+      'Data integrations',
+      'Custom color schemes',
+      'Presentation scheduling'
+    ],
+    limitations: [
+      'No enterprise security features',
+      'No dedicated account manager',
+      'No SSO integration'
+    ],
+    stripePriceId: 'price_professional_monthly',
+    popular: true,
+    savings: 'Most Popular'
+  },
+  {
+    name: 'Enterprise',
+    price: 299,
+    period: 'month',
+    description: 'For large organizations with advanced security needs',
+    icon: Crown,
+    color: 'gold',
+    gradient: 'from-yellow-500 to-orange-500',
+    features: [
+      'Unlimited presentations',
+      'Custom AI models & training',
+      'Custom template creation',
+      'All integrations & APIs',
+      'All export formats',
+      '24/7 phone & priority support',
+      'Advanced analytics & BI',
+      'Unlimited team members',
+      'Full custom branding',
+      'Advanced AI features',
+      'Real-time collaboration',
+      'Full API access',
+      'SSO & SAML integration',
+      'Dedicated account manager',
+      'Custom training sessions',
+      'SLA guarantee',
+      'Advanced security & compliance',
+      'White-label options',
+      'Custom integrations',
+      'On-premise deployment'
+    ],
+    limitations: [],
+    stripePriceId: 'price_enterprise_monthly',
+    popular: false,
+    savings: 'Best Value'
+  }
+]
+
+const testimonials = [
+  {
+    name: 'Sarah Chen',
+    role: 'VP of Marketing',
+    company: 'TechFlow Inc.',
+    content: 'AEDRIN has transformed how we create quarterly presentations. What used to take days now takes hours, and the quality is consistently better.',
+    rating: 5,
+    avatar: '👩‍💼'
+  },
+  {
+    name: 'Marcus Rodriguez',
+    role: 'CEO',
+    company: 'StartupXYZ',
+    content: 'The AI insights are incredible. It\'s like having a data scientist on our team. Our investors are always impressed with our presentations.',
+    rating: 5,
+    avatar: '👨‍💼'
+  },
+  {
+    name: 'Emily Watson',
+    role: 'Product Manager',
+    company: 'InnovateCorp',
+    content: 'The collaboration features are game-changing. Our entire team can work on presentations simultaneously, and the real-time updates are seamless.',
+    rating: 5,
+    avatar: '👩‍💻'
+  }
+]
+
+const faqs = [
+  {
+    question: 'Can I change my plan at any time?',
+    answer: 'Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we\'ll prorate any billing adjustments.'
+  },
+  {
+    question: 'Do you offer refunds?',
+    answer: 'We offer a 30-day money-back guarantee. If you\'re not satisfied with AEDRIN, we\'ll refund your subscription no questions asked.'
+  },
+  {
+    question: 'What payment methods do you accept?',
+    answer: 'We accept all major credit cards, PayPal, and bank transfers for Enterprise plans. All payments are processed securely through Stripe.'
+  },
+  {
+    question: 'Is my data secure?',
+    answer: 'Absolutely. We use enterprise-grade encryption, SOC 2 compliance, and regular security audits. Your data is never shared with third parties.'
+  },
+  {
+    question: 'Do you offer custom pricing?',
+    answer: 'Yes! For Enterprise customers with specific needs, we offer custom pricing and features. Contact our sales team for a personalized quote.'
+  },
+  {
+    question: 'Can I export my presentations?',
+    answer: 'Yes! You can export to PowerPoint, PDF, Keynote, and more. Enterprise users also get access to custom export formats.'
+  }
+]
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly')
+  const [billingPeriod, setBillingPeriod] = useState<'month' | 'year'>('month')
+  const [loading, setLoading] = useState<string | null>(null)
 
-  const plans = [
-    {
-      name: 'Starter',
-      description: 'Perfect for individuals and small teams',
-      icon: <Zap className="w-6 h-6" />,
-      price: {
-        monthly: 0,
-        annual: 0
-      },
-      badge: 'Free Forever',
-      features: [
-        '5 presentations per month',
-        'Basic AI analysis',
-        'Standard templates',
-        'PDF export',
-        'Email support',
-        '1 GB storage'
-      ],
-      limitations: [
-        'No PowerPoint export',
-        'No custom branding',
-        'No team collaboration'
-      ],
-      cta: 'Start Free',
-      href: '/auth/signup',
-      popular: false
-    },
-    {
-      name: 'Professional',
-      description: 'For growing businesses and teams',
-      icon: <Crown className="w-6 h-6" />,
-      price: {
-        monthly: 29,
-        annual: 290
-      },
-      badge: 'Most Popular',
-      features: [
-        'Unlimited presentations',
-        'Advanced AI insights',
-        'Premium templates',
-        'PDF & PowerPoint export',
-        'Custom branding',
-        'Team collaboration (up to 5 users)',
-        'Priority support',
-        '50 GB storage',
-        'Advanced analytics',
-        'Integration with Google Drive'
-      ],
-      limitations: [],
-      cta: 'Start 14-day Free Trial',
-      href: '/auth/signup?plan=professional',
-      popular: true
-    },
-    {
-      name: 'Enterprise',
-      description: 'For large organizations with advanced needs',
-      icon: <Building className="w-6 h-6" />,
-      price: {
-        monthly: 99,
-        annual: 990
-      },
-      badge: 'Custom Solutions',
-      features: [
-        'Everything in Professional',
-        'Unlimited team members',
-        'White-label solution',
-        'Custom AI training',
-        'SSO integration',
-        'Advanced security',
-        'Dedicated account manager',
-        'Custom integrations',
-        'Unlimited storage',
-        'SLA guarantee',
-        'Phone support',
-        'Custom training sessions'
-      ],
-      limitations: [],
-      cta: 'Contact Sales',
-      href: '/contact',
-      popular: false
+  const getPrice = (tier: typeof pricingTiers[0]) => {
+    if (billingPeriod === 'year') {
+      return Math.round(tier.price * 10) // 2 months free for annual
     }
-  ]
+    return tier.price
+  }
+
+  const handleSubscribe = async (tier: typeof pricingTiers[0]) => {
+    setLoading(tier.name)
+    
+    try {
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: tier.stripePriceId,
+          billingPeriod,
+          tier: tier.name.toLowerCase()
+        })
+      })
+
+      const { sessionId } = await response.json()
+      
+      // Redirect to Stripe Checkout
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+      await stripe?.redirectToCheckout({ sessionId })
+    } catch (error) {
+      console.error('Error creating checkout session:', error)
+    } finally {
+      setLoading(null)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
-      <div className="container mx-auto px-6 py-20">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Choose Your Plan
-          </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
-            Transform your presentations with AI-powered insights. Start free, upgrade when you're ready.
-          </p>
-
-          {/* Billing Toggle */}
-          <div className="inline-flex items-center bg-gray-800/50 border border-gray-700 rounded-lg p-1">
-            <button
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                billingCycle === 'monthly'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingCycle('annual')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                billingCycle === 'annual'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              Annual
-              <span className="ml-2 px-2 py-1 bg-green-600 text-xs rounded">Save 17%</span>
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      {/* Navigation */}
+      <nav className="relative z-50 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Brain className="w-8 h-8 text-blue-500" />
+            <span className="text-2xl font-bold text-white">AEDRIN</span>
           </div>
-        </motion.div>
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-gray-300 hover:text-white transition-colors">Home</Link>
+            <Link href="/#features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
+            <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
+            <Link href="/auth/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
+            <Link href="/auth/signup">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                Get Started
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
 
-        {/* Pricing Cards */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`relative bg-gray-800/50 border rounded-2xl p-8 ${
-                plan.popular
-                  ? 'border-blue-500 scale-105 shadow-2xl shadow-blue-500/20'
-                  : 'border-gray-700'
-              }`}
+      {/* Header */}
+      <section className="px-6 py-20 text-center">
+        <div className="max-w-4xl mx-auto">
+          <div className="inline-flex items-center px-4 py-2 bg-blue-900/20 border border-blue-500/30 rounded-full text-blue-300 text-sm mb-6">
+            <Award className="w-4 h-4 mr-2" />
+            Trusted by 10,000+ professionals
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
+            Simple, Transparent
+            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"> Pricing</span>
+          </h1>
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            Choose the plan that's right for your business. All plans include our core AI features 
+            with no hidden fees or surprises.
+          </p>
+          
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center space-x-4 mb-12">
+            <span className={`text-lg ${billingPeriod === 'month' ? 'text-white' : 'text-gray-400'}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setBillingPeriod(billingPeriod === 'month' ? 'year' : 'month')}
+              className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-700 transition-colors"
             >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                    <Star className="w-3 h-3" />
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  billingPeriod === 'year' ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-lg ${billingPeriod === 'year' ? 'text-white' : 'text-gray-400'}`}>
+              Annual
+              <span className="ml-2 text-sm bg-green-500 text-white px-2 py-1 rounded-full">
+                Save 20%
+              </span>
+            </span>
+          </div>
+        </div>
+      </section>
 
-              <div className="text-center mb-8">
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4 ${
-                  plan.popular ? 'bg-blue-600/20' : 'bg-gray-700/50'
-                }`}>
-                  {plan.icon}
-                </div>
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-gray-400 mb-4">{plan.description}</p>
-                
-                <div className="mb-6">
-                  {plan.price.monthly === 0 ? (
-                    <div className="text-4xl font-bold">Free</div>
-                  ) : (
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold">
-                        ${billingCycle === 'monthly' ? plan.price.monthly : Math.round(plan.price.annual / 12)}
+      {/* Pricing Cards */}
+      <section className="px-6 py-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {pricingTiers.map((tier) => {
+              const IconComponent = tier.icon
+              const isPopular = tier.popular
+              
+              return (
+                <div
+                  key={tier.name}
+                  className={`relative p-8 rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
+                    isPopular 
+                      ? 'border-purple-500 bg-gradient-to-br from-purple-900/20 to-pink-900/20 shadow-2xl shadow-purple-500/20' 
+                      : 'border-gray-700 bg-gray-800/30 hover:border-gray-600'
+                  }`}
+                >
+                  {isPopular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                        {tier.savings}
                       </span>
-                      <span className="text-gray-400">/month</span>
                     </div>
                   )}
-                  {billingCycle === 'annual' && plan.price.monthly > 0 && (
-                    <div className="text-sm text-green-400">
-                      ${plan.price.annual}/year (2 months free!)
+                  
+                  <div className="text-center mb-8">
+                    <div className={`w-16 h-16 bg-gradient-to-r ${tier.gradient} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
+                      <IconComponent className="w-8 h-8 text-white" />
                     </div>
-                  )}
-                </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">{tier.name}</h3>
+                    <p className="text-gray-400 mb-6">{tier.description}</p>
+                    <div className="mb-6">
+                      <span className="text-4xl font-bold text-white">${getPrice(tier)}</span>
+                      <span className="text-gray-400">/{billingPeriod}</span>
+                    </div>
+                  </div>
 
-                <Link href={plan.href}>
+                  <div className="space-y-4 mb-8">
+                    {tier.features.map((feature, index) => (
+                      <div key={index} className="flex items-start space-x-3">
+                        <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-300">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {tier.limitations.length > 0 && (
+                    <div className="mb-8">
+                      <h4 className="text-sm font-semibold text-gray-400 mb-3">Not included:</h4>
+                      <div className="space-y-2">
+                        {tier.limitations.map((limitation, index) => (
+                          <div key={index} className="flex items-start space-x-3">
+                            <span className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0">×</span>
+                            <span className="text-gray-500 text-sm">{limitation}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <Button
-                    className={`w-full ${
-                      plan.popular
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
-                        : 'bg-gray-700 hover:bg-gray-600'
+                    onClick={() => handleSubscribe(tier)}
+                    disabled={loading === tier.name}
+                    className={`w-full py-4 text-lg font-semibold ${
+                      isPopular 
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white' 
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
                     }`}
                   >
-                    {plan.cta}
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    {loading === tier.name ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      <>
+                        Get Started
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </>
+                    )}
                   </Button>
-                </Link>
-              </div>
-
-              {/* Features */}
-              <div className="space-y-3 mb-6">
-                {plan.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                    <span className="text-sm text-gray-300">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Limitations */}
-              {plan.limitations.length > 0 && (
-                <div className="space-y-3 pt-6 border-t border-gray-700">
-                  {plan.limitations.map((limitation, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <X className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      <span className="text-sm text-gray-500">{limitation}</span>
-                    </div>
-                  ))}
                 </div>
-              )}
-            </motion.div>
-          ))}
+              )
+            })}
+          </div>
         </div>
+      </section>
 
-        {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="max-w-3xl mx-auto"
-        >
-          <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            {[
-              {
-                q: "Can I change plans at any time?",
-                a: "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and we'll prorate your billing accordingly."
-              },
-              {
-                q: "What happens to my data if I cancel?",
-                a: "Your presentations and data remain accessible for 30 days after cancellation. You can export everything during this grace period."
-              },
-              {
-                q: "Do you offer refunds?",
-                a: "We offer a 30-day money-back guarantee for all paid plans. If you're not satisfied, we'll refund your payment in full."
-              },
-              {
-                q: "Is there a setup fee?",
-                a: "No setup fees ever. You only pay for your subscription, and you can start using all features immediately."
-              },
-              {
-                q: "Can I get a custom plan for my organization?",
-                a: "Absolutely! Contact our sales team to discuss custom pricing and features for organizations with special requirements."
-              }
-            ].map((faq, idx) => (
-              <div key={idx} className="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
-                <h3 className="font-semibold mb-2 text-gray-200">{faq.q}</h3>
-                <p className="text-gray-400">{faq.a}</p>
+      {/* Features Comparison */}
+      <section className="px-6 py-20 bg-gray-900/50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Compare Features</h2>
+            <p className="text-xl text-gray-300">See what's included in each plan</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-white mb-2">Features</h3>
+              </div>
+              <div className="space-y-4 text-sm text-gray-300">
+                <div className="h-6">Presentations per month</div>
+                <div className="h-6">AI Insights</div>
+                <div className="h-6">Templates</div>
+                <div className="h-6">Team Members</div>
+                <div className="h-6">Export Formats</div>
+                <div className="h-6">API Access</div>
+                <div className="h-6">Custom Branding</div>
+                <div className="h-6">Priority Support</div>
+                <div className="h-6">Advanced Analytics</div>
+                <div className="h-6">Collaboration</div>
+              </div>
+            </div>
+            
+            {pricingTiers.map((tier) => (
+              <div key={tier.name} className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-white mb-2">{tier.name}</h3>
+                </div>
+                <div className="space-y-4 text-sm">
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Enterprise' ? 'Unlimited' : tier.features[0].split(' ')[0]}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? 'Basic' : tier.name === 'Professional' ? 'Advanced' : 'Custom'}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? '20+' : tier.name === 'Professional' ? '50+' : 'Custom'}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? '1' : tier.name === 'Professional' ? '5' : 'Unlimited'}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? 'PDF' : tier.name === 'Professional' ? 'PowerPoint, PDF' : 'All'}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? '×' : '✓'}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? '×' : '✓'}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? '×' : tier.name === 'Professional' ? 'Email/Chat' : '24/7 Phone'}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? 'Basic' : 'Advanced'}
+                  </div>
+                  <div className="h-6 text-gray-300">
+                    {tier.name === 'Starter' ? '×' : '✓'}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="text-center mt-20"
-        >
-          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-12">
-            <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
-            <p className="text-gray-300 mb-8 max-w-md mx-auto">
-              Join thousands of professionals who are already creating amazing presentations with AI.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/signup">
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  Start Free Trial
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button variant="outline">
-                  Contact Sales
-                </Button>
-              </Link>
+      {/* Testimonials */}
+      <section className="px-6 py-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Loved by Teams Worldwide</h2>
+            <p className="text-xl text-gray-300">See what our customers are saying</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                <div className="flex items-center mb-4">
+                  <div className="text-2xl mr-3">{testimonial.avatar}</div>
+                  <div>
+                    <h4 className="text-white font-semibold">{testimonial.name}</h4>
+                    <p className="text-gray-400 text-sm">{testimonial.role} at {testimonial.company}</p>
+                  </div>
+                </div>
+                <div className="flex mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-300 italic">"{testimonial.content}"</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="px-6 py-20 bg-gray-900/50">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+            <p className="text-xl text-gray-300">Everything you need to know about AEDRIN pricing</p>
+          </div>
+          
+          <div className="space-y-6">
+            {faqs.map((faq, index) => (
+              <div key={index} className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-semibold text-white mb-3">{faq.question}</h3>
+                <p className="text-gray-300">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-6 py-20">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-white mb-6">Ready to Transform Your Presentations?</h2>
+          <p className="text-xl text-gray-300 mb-8">
+            Join thousands of professionals who are already creating stunning presentations with AEDRIN
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/auth/signup">
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold">
+                Start Free Trial
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700 px-8 py-4 text-lg font-semibold">
+                Contact Sales
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="px-6 py-12 bg-gray-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <Brain className="w-6 h-6 text-blue-500" />
+                <span className="text-xl font-bold text-white">AEDRIN</span>
+              </div>
+              <p className="text-gray-400">AI-powered presentation platform for modern businesses.</p>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/#features" className="hover:text-white transition-colors">Features</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="/templates" className="hover:text-white transition-colors">Templates</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link href="/docs" className="hover:text-white transition-colors">Documentation</Link></li>
+                <li><Link href="/status" className="hover:text-white transition-colors">Status</Link></li>
+              </ul>
             </div>
           </div>
-        </motion.div>
-      </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>© 2024 AEDRIN. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
+}
+
+async function loadStripe(stripePublishableKey: string) {
+  const { loadStripe } = await import('@stripe/stripe-js')
+  return loadStripe(stripePublishableKey)
 }

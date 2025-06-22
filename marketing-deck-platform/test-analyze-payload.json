@@ -1,0 +1,32 @@
+{
+  "data": [
+    {"Date": "2024-01-01", "Revenue": 125000, "Customers": 450, "Orders": 234},
+    {"Date": "2024-02-01", "Revenue": 130000, "Customers": 478, "Orders": 251},
+    {"Date": "2024-03-01", "Revenue": 142000, "Customers": 502, "Orders": 289},
+    {"Date": "2024-04-01", "Revenue": 138000, "Customers": 495, "Orders": 267},
+    {"Date": "2024-05-01", "Revenue": 155000, "Customers": 532, "Orders": 312},
+    {"Date": "2024-06-01", "Revenue": 162000, "Customers": 548, "Orders": 334}
+  ],
+  "context": {
+    "businessType": "e-commerce",
+    "industry": "retail",
+    "businessContext": "E-commerce platform analyzing monthly performance metrics",
+    "description": "Monthly sales and customer data for Q1-Q2 2024",
+    "dataQuality": "excellent",
+    "factors": ["seasonal trends", "marketing campaigns", "product launches"],
+    "dataSource": "monthly sales report",
+    "analysisGoal": "performance analysis"
+  },
+  "timeFrame": {
+    "start": "2024-01-01",
+    "end": "2024-06-01",
+    "comparisons": ["mm"],
+    "dataFrequency": "monthly"
+  },
+  "requirements": {
+    "slidesCount": 8,
+    "presentationDuration": 15,
+    "focusAreas": ["revenue growth", "customer acquisition", "order trends"],
+    "style": "modern"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750617000145_custbehavior",
+      "fileName": "customer_behavior_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Customer_ID":"CUST_001","Segment":"Premium","Product_Category":"Electronics","Purchase_Amount":850.00,"Session_Duration":45,"Page_Views":12,"Cart_Abandonment":0,"Email_Opens":8,"Click_Through_Rate":12.5,"Conversion_Rate":8.2,"Customer_Satisfaction":9.2,"Retention_Rate":95.5,"Lifetime_Value":4500,"Referral_Count":3,"Support_Tickets":0},
+        {"Date":"2024-10-01","Customer_ID":"CUST_002","Segment":"Standard","Product_Category":"Fashion","Purchase_Amount":125.50,"Session_Duration":22,"Page_Views":8,"Cart_Abandonment":1,"Email_Opens":5,"Click_Through_Rate":8.3,"Conversion_Rate":4.1,"Customer_Satisfaction":7.8,"Retention_Rate":78.2,"Lifetime_Value":1200,"Referral_Count":1,"Support_Tickets":1}
+      ],
+      "columns": ["Date","Customer_ID","Segment","Product_Category","Purchase_Amount","Session_Duration","Page_Views","Cart_Abandonment","Email_Opens","Click_Through_Rate","Conversion_Rate","Customer_Satisfaction","Retention_Rate","Lifetime_Value","Referral_Count","Support_Tickets"],
+      "rowCount": 30,
+      "dataType": "behavioral"
+    }
+  ],
+  "context": {
+    "industry": "E-commerce & Digital Retail",
+    "targetAudience": "Customer Experience Team and Marketing Leadership",
+    "businessContext": "Q4 2024 Customer Behavior Analysis for Experience Optimization and Retention Strategy",
+    "description": "Comprehensive customer behavior analysis across segments including purchase patterns, engagement metrics, satisfaction scores, retention rates, and support interactions to optimize customer experience and increase lifetime value",
+    "factors": ["Seasonal shopping behavior changes", "Customer segment preferences", "Digital engagement patterns", "Support experience impact", "Referral and advocacy behaviors", "Cart abandonment drivers"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-08",
+    "dataFrequency": "daily",
+    "analysisType": "behavioral_analysis",
+    "comparisons": ["segment", "product_category", "engagement_level"],
+    "granularity": "customer_level",
+    "focusPeriods": ["high_engagement", "conversion_optimization"]
+  },
+  "requirements": {
+    "slidesCount": 16,
+    "presentationDuration": 30,
+    "focusAreas": ["Customer Segmentation Analysis", "Purchase Behavior Patterns", "Engagement Optimization", "Retention Strategy", "Satisfaction & Experience", "Lifetime Value Analysis", "Strategic CX Recommendations"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["segment", "behavioral", "temporal", "value_based"]
+  }
+}

@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
     let useSupabase = false
     
     try {
-      const supabase = createRouteHandlerClient({ cookies })
+      const cookieStore = await cookies()
+      const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
       const { data: { session } } = await supabase.auth.getSession()
       
       if (session?.user?.id) {
@@ -86,7 +87,8 @@ export async function POST(request: NextRequest) {
     // Try to upload to Supabase storage if available
     if (useSupabase) {
       try {
-        const supabase = createRouteHandlerClient({ cookies })
+        const cookieStore = await cookies()
+        const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
         const fileExt = file.name.split('.').pop()
         const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
 
@@ -129,7 +131,8 @@ export async function POST(request: NextRequest) {
     // Try to save to database if Supabase is available
     if (useSupabase && parsedDataset) {
       try {
-        const supabase = createRouteHandlerClient({ cookies })
+        const cookieStore = await cookies()
+        const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
         await supabase
           .from('data_imports')
           .insert({

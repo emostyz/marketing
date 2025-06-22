@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "fileId": "upload_1750619000147_geographic",
+      "fileName": "geographic_market_q4_2024.csv",
+      "data": [
+        {"Date":"2024-10-01","Region":"North_America","Country":"USA","Market_Size":125000000,"Revenue":15625000,"Market_Share":12.5,"Customer_Count":125000,"Growth_Rate":8.2,"Penetration_Rate":25.8,"Competition_Index":7.2,"Local_Partnerships":15,"Regulatory_Score":9.1,"Currency_Impact":1.02,"Marketing_Spend":2500000,"Local_Staff":850,"Distribution_Centers":12},
+        {"Date":"2024-10-01","Region":"North_America","Country":"Canada","Market_Size":18500000,"Revenue":1480000,"Market_Share":8.0,"Customer_Count":18500,"Growth_Rate":12.5,"Penetration_Rate":15.2,"Competition_Index":6.8,"Local_Partnerships":8,"Regulatory_Score":8.9,"Currency_Impact":0.98,"Marketing_Spend":350000,"Local_Staff":120,"Distribution_Centers":3}
+      ],
+      "columns": ["Date","Region","Country","Market_Size","Revenue","Market_Share","Customer_Count","Growth_Rate","Penetration_Rate","Competition_Index","Local_Partnerships","Regulatory_Score","Currency_Impact","Marketing_Spend","Local_Staff","Distribution_Centers"],
+      "rowCount": 30,
+      "dataType": "geographic_market"
+    }
+  ],
+  "context": {
+    "industry": "Global Technology & Software",
+    "targetAudience": "International Business Development Team and Executive Leadership",
+    "businessContext": "Q4 2024 Geographic Market Analysis for Global Expansion Strategy and Regional Performance Optimization",
+    "description": "Comprehensive geographic market analysis tracking performance across regions including market penetration, revenue generation, competitive landscape, regulatory environment, and operational efficiency to inform global expansion and regional optimization strategies",
+    "factors": ["Regional economic conditions", "Local competition intensity", "Regulatory environment changes", "Currency fluctuation impacts", "Cultural market preferences", "Infrastructure development patterns"]
+  },
+  "timeFrame": {
+    "start": "2024-10-01",
+    "end": "2024-10-08",
+    "dataFrequency": "daily",
+    "analysisType": "geographic_market",
+    "comparisons": ["region", "country", "market_maturity"],
+    "granularity": "country_level",
+    "focusPeriods": ["expansion_opportunities", "optimization_targets"]
+  },
+  "requirements": {
+    "slidesCount": 16,
+    "presentationDuration": 30,
+    "focusAreas": ["Regional Performance Analysis", "Market Penetration Assessment", "Competitive Landscape", "Growth Opportunity Mapping", "Operational Efficiency", "Risk & Regulatory Analysis", "Strategic Expansion Recommendations"],
+    "style": "executive",
+    "includeCharts": true,
+    "includeExecutiveSummary": true,
+    "includeComparisons": true,
+    "comparisonTypes": ["regional", "temporal", "market_based", "performance_tier"]
+  }
+}

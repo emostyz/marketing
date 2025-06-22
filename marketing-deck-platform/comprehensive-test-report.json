@@ -1,0 +1,116 @@
+{
+  "timestamp": "2025-06-22T19:05:21.438Z",
+  "summary": {
+    "total": 21,
+    "success": 9,
+    "error": 3,
+    "warning": 0
+  },
+  "results": [
+    {
+      "timestamp": "2025-06-22T19:05:19.656Z",
+      "type": "info",
+      "message": "Starting comprehensive user data system tests..."
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.658Z",
+      "type": "info",
+      "message": "Testing Supabase connection..."
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.658Z",
+      "type": "info",
+      "message": "Testing database schema..."
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.658Z",
+      "type": "info",
+      "message": "Testing database functions..."
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.658Z",
+      "type": "info",
+      "message": "Testing database views..."
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.658Z",
+      "type": "info",
+      "message": "Testing RLS policies..."
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.658Z",
+      "type": "info",
+      "message": "Testing default data..."
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.658Z",
+      "type": "info",
+      "message": "Testing API routes..."
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.892Z",
+      "type": "error",
+      "message": "❌ track_user_activity function failed: Could not find the function public.track_user_activity(activity_subtype, activity_type, metadata, resource_type, user_uuid) in the schema cache"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.902Z",
+      "type": "success",
+      "message": "✅ Table profiles accessible"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.913Z",
+      "type": "success",
+      "message": "✅ Supabase connection successful"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.924Z",
+      "type": "success",
+      "message": "✅ RLS policies working correctly - unauthenticated user cannot access profiles"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.963Z",
+      "type": "error",
+      "message": "❌ user_dashboard view failed: relation \"public.user_dashboard\" does not exist"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.972Z",
+      "type": "success",
+      "message": "✅ Found 2 public templates"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:19.978Z",
+      "type": "success",
+      "message": "✅ Table presentations accessible"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:20.028Z",
+      "type": "success",
+      "message": "✅ Table data_imports accessible"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:20.093Z",
+      "type": "error",
+      "message": "❌ Table user_activities not accessible: relation \"public.user_activities\" does not exist"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:20.754Z",
+      "type": "success",
+      "message": "✅ Dashboard API properly protected"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:21.118Z",
+      "type": "success",
+      "message": "✅ Presentations API properly protected"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:21.437Z",
+      "type": "success",
+      "message": "✅ Data imports API properly protected"
+    },
+    {
+      "timestamp": "2025-06-22T19:05:21.437Z",
+      "type": "info",
+      "message": "Generating comprehensive test report..."
+    }
+  ]
+}

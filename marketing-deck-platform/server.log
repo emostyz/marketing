@@ -7,8 +7,8 @@
    * /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/package-lock.json
 
    ▲ Next.js 15.4.0-canary.88 (Turbopack)
-   - Local:        http://localhost:3001
-   - Network:      http://192.168.1.207:3001
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.207:3000
    - Environments: .env.local
    - Experiments (use with caution):
      ✓ ppr
@@ -16,745 +16,1577 @@
      ✓ clientSegmentCache
 
  ✓ Starting...
- ✓ Compiled middleware in 82ms
- ✓ Ready in 959ms
- ⚠ Webpack is configured while Turbopack is not, which may cause problems.
- ⚠ See instructions if you need to configure Turbopack:
-  https://nextjs.org/docs/app/api-reference/next-config-js/turbopack
-
- ○ Compiling /api/openai/enhanced-analyze ...
- ✓ Compiled /api/openai/enhanced-analyze in 555ms
-🧠 Enhanced Analysis - Starting request processing
-🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
-🧠 Enhanced Analysis - Extracted data: {
-  dataLength: 1,
-  contextKeys: [
-    'description',
-    'factors',
-    'industry',
-    'businessContext',
-    'dataQuality',
-    'dataSource',
-    'collectionMethod',
-    'lastUpdated',
-    'confidence',
-    'targetAudience'
-  ],
-  timeFrameKeys: [ 'start', 'end', 'dataFrequency' ],
-  requirementsKeys: [
-    'slidesCount',
-    'presentationDuration',
-    'tone',
-    'style',
-    'focusAreas'
-  ]
-}
-🧠 Enhanced Analysis - All validations passed, initializing brain
-🧠 Enhanced Analysis - Brain initialized, performing analysis...
-🧠 EnhancedBrainV2: Starting analysis...
-🧠 EnhancedBrainV2: Input validation passed
-🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
-🧠 EnhancedBrainV2: performInitialScan - Starting...
-❌ EnhancedBrainV2: performInitialScan Error: TypeError: Cannot read properties of undefined (reading 'start')
-    at EnhancedBrainV2.performInitialScan (lib/ai/enhanced-brain-v2.ts:263:44)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:192:37)
-    at POST (app/api/openai/enhanced-analyze/route.ts:59:31)
-  261 |
-  262 | TIME FRAME:
-> 263 | - Primary Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
-      |                                            ^
-  264 | - Analysis Type: ${timeFrame.analysisType}
-  265 | - Include Trends: ${timeFrame.includeTrends}
-  266 | - Include Seasonality: ${timeFrame.includeSeasonality}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'start')
-❌ EnhancedBrainV2.analyzeData Error: TypeError: Cannot read properties of undefined (reading 'start')
-    at EnhancedBrainV2.performInitialScan (lib/ai/enhanced-brain-v2.ts:263:44)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:192:37)
-    at POST (app/api/openai/enhanced-analyze/route.ts:59:31)
-  261 |
-  262 | TIME FRAME:
-> 263 | - Primary Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
-      |                                            ^
-  264 | - Analysis Type: ${timeFrame.analysisType}
-  265 | - Include Trends: ${timeFrame.includeTrends}
-  266 | - Include Seasonality: ${timeFrame.includeSeasonality}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'start')
-Error stack: TypeError: Cannot read properties of undefined (reading 'start')
-    at EnhancedBrainV2.performInitialScan (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:193:45)
-    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:133:44)
-    at POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:719:36)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
-    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
-    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
-    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
-    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
-    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
-    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
-    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
-    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
-    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
-    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
-    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
-    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
-    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
-    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
-    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
-    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
-    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
-❌ Enhanced analysis error: TypeError: Cannot read properties of undefined (reading 'start')
-    at EnhancedBrainV2.performInitialScan (lib/ai/enhanced-brain-v2.ts:263:44)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:192:37)
-    at POST (app/api/openai/enhanced-analyze/route.ts:59:31)
-  261 |
-  262 | TIME FRAME:
-> 263 | - Primary Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
-      |                                            ^
-  264 | - Analysis Type: ${timeFrame.analysisType}
-  265 | - Include Trends: ${timeFrame.includeTrends}
-  266 | - Include Seasonality: ${timeFrame.includeSeasonality}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'start')
-Error stack: TypeError: Cannot read properties of undefined (reading 'start')
-    at EnhancedBrainV2.performInitialScan (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:193:45)
-    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:133:44)
-    at POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:719:36)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
-    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
-    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
-    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
-    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
-    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
-    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
-    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
-    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
-    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
-    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
-    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
-    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
-    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
-    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
-    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
-    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
-    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
-Full error object: {}
- POST /api/openai/enhanced-analyze 500 in 792ms
- ○ Compiling / ...
- ✓ Compiled / in 1012ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET / 200 in 1207ms
- ✓ Compiled /dashboard in 422ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /dashboard 200 in 455ms
- ✓ Compiled /auth/login in 386ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /auth/login 200 in 430ms
- GET /auth/login 200 in 430ms
- ✓ Compiled /api/auth/login in 172ms
- POST /api/auth/login 401 in 199ms
- POST /api/auth/login 401 in 30ms
- POST /api/auth/login 401 in 33ms
-🧠 Enhanced Analysis - Starting request processing
-🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
-🧠 Enhanced Analysis - Extracted data: {
-  dataLength: 1,
-  contextKeys: [
-    'description',
-    'factors',
-    'industry',
-    'businessContext',
-    'dataQuality',
-    'dataSource',
-    'collectionMethod',
-    'lastUpdated',
-    'confidence',
-    'targetAudience'
-  ],
-  timeFrameKeys: [ 'start', 'end', 'dataFrequency' ],
-  requirementsKeys: [
-    'slidesCount',
-    'presentationDuration',
-    'tone',
-    'style',
-    'focusAreas'
-  ]
-}
-🧠 Enhanced Analysis - All validations passed, initializing brain
-🧠 Enhanced Analysis - Transformed timeFrame: {
-  primaryPeriod: {
-    start: '2024-01-01',
-    end: '2024-03-31',
-    label: '2024-01-01 to 2024-03-31'
-  },
-  analysisType: 'custom',
-  includeTrends: true,
-  includeSeasonality: true,
-  includeOutliers: true
-}
-🧠 Enhanced Analysis - Brain initialized, performing analysis...
-🧠 EnhancedBrainV2: Starting analysis...
-🧠 EnhancedBrainV2: Input validation passed
-🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
-🧠 EnhancedBrainV2: performInitialScan - Starting...
-🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
-🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
-🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
-🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
-🧠 EnhancedBrainV2: performInitialScan - Completed successfully
-🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
-🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
-🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
- POST /api/openai/enhanced-analyze 200 in 29962ms
- ✓ Compiled middleware in 1ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /auth/login 200 in 95ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /auth/login 200 in 83ms
-🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
-🧠 EnhancedBrainV2: Phase 4 - Narrative Development
-❌ EnhancedBrainV2.analyzeData Error: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.developNarrative (lib/ai/enhanced-brain-v2.ts:518:39)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:204:35)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:74:19)
-  516 | - Style: ${requirements.presentationStyle}
-  517 | - Duration: ${requirements.targetDuration} minutes
-> 518 | - Key Points: ${requirements.keyPoints.join(', ')}
-      |                                       ^
-  519 |
-  520 | INSIGHTS:
-  521 | ${JSON.stringify(insights, null, 2)}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'join')
-Error stack: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.developNarrative (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:431:40)
-    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:142:42)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:732:24)
-    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
-    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
-    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
-    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
-    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
-    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
-    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
-    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
-    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
-    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
-    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
-    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
-    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
-    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
-    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
-    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
-    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
-    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
-❌ Enhanced analysis error: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.developNarrative (lib/ai/enhanced-brain-v2.ts:518:39)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:204:35)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:74:19)
-  516 | - Style: ${requirements.presentationStyle}
-  517 | - Duration: ${requirements.targetDuration} minutes
-> 518 | - Key Points: ${requirements.keyPoints.join(', ')}
-      |                                       ^
-  519 |
-  520 | INSIGHTS:
-  521 | ${JSON.stringify(insights, null, 2)}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'join')
-Error stack: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.developNarrative (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:431:40)
-    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:142:42)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:732:24)
-    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
-    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
-    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
-    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
-    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
-    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
-    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
-    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
-    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
-    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
-    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
-    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
-    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
-    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
-    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
-    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
-    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
-    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
-Full error object: {}
-🧠 Enhanced Analysis - Starting request processing
-🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
-🧠 Enhanced Analysis - Extracted data: {
-  dataLength: 1,
-  contextKeys: [
-    'description',
-    'factors',
-    'industry',
-    'businessContext',
-    'dataQuality',
-    'dataSource',
-    'collectionMethod',
-    'lastUpdated',
-    'confidence',
-    'targetAudience'
-  ],
-  timeFrameKeys: [ 'start', 'end', 'dataFrequency' ],
-  requirementsKeys: [
-    'slidesCount',
-    'presentationDuration',
-    'tone',
-    'style',
-    'focusAreas'
-  ]
-}
-🧠 Enhanced Analysis - All validations passed, initializing brain
-🧠 Enhanced Analysis - Transformed timeFrame: {
-  primaryPeriod: {
-    start: '2024-01-01',
-    end: '2024-03-31',
-    label: '2024-01-01 to 2024-03-31'
-  },
-  analysisType: 'custom',
-  includeTrends: true,
-  includeSeasonality: true,
-  includeOutliers: true
-}
-🧠 Enhanced Analysis - Brain initialized, performing analysis...
-🧠 EnhancedBrainV2: Starting analysis...
-🧠 EnhancedBrainV2: Input validation passed
-🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
-🧠 EnhancedBrainV2: performInitialScan - Starting...
-🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
- ✓ Compiled /api/auth/test in 290ms
- ⨯ Error: POSTGRES_URL environment variable is not set
-    at [project]/lib/db/drizzle.ts [app-route] (ecmascript) (lib/db/drizzle.ts:9:8)
-    at [project]/app/api/auth/test/route.ts [app-route] (ecmascript) (app/api/auth/test/route.ts:3:0)
-    at Object.<anonymous> (.next/server/app/api/auth/test/route.js:8:9)
-   7 |
-   8 | if (!process.env.POSTGRES_URL) {
->  9 |   throw new Error('POSTGRES_URL environment variable is not set');
-     |        ^
-  10 | }
-  11 |
-  12 | export const client = postgres(process.env.POSTGRES_URL); {
-  page: '/api/auth/test'
-}
-🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
-🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
-🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
-🧠 EnhancedBrainV2: performInitialScan - Completed successfully
-🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
- ✓ Compiled /_error in 445ms
- GET /api/auth/test 500 in 906ms
-🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
-🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
- POST /api/openai/enhanced-analyze 200 in 59898ms
-🧠 EnhancedBrainV2: JSON parse failed, trying to extract from markdown...
-🧠 EnhancedBrainV2: Phase 4 - Narrative Development
-❌ EnhancedBrainV2.analyzeData Error: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.developNarrative (lib/ai/enhanced-brain-v2.ts:518:39)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:204:35)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:74:19)
-  516 | - Style: ${requirements.presentationStyle}
-  517 | - Duration: ${requirements.targetDuration} minutes
-> 518 | - Key Points: ${requirements.keyPoints.join(', ')}
-      |                                       ^
-  519 |
-  520 | INSIGHTS:
-  521 | ${JSON.stringify(insights, null, 2)}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'join')
-Error stack: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.developNarrative (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:431:40)
-    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:142:42)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:732:24)
-    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
-    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
-    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
-    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
-    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
-    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
-    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
-    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
-    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
-    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
-    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
-    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
-    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
-    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
-    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
-    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
-    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
-    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
-❌ Enhanced analysis error: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.developNarrative (lib/ai/enhanced-brain-v2.ts:518:39)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:204:35)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:74:19)
-  516 | - Style: ${requirements.presentationStyle}
-  517 | - Duration: ${requirements.targetDuration} minutes
-> 518 | - Key Points: ${requirements.keyPoints.join(', ')}
-      |                                       ^
-  519 |
-  520 | INSIGHTS:
-  521 | ${JSON.stringify(insights, null, 2)}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'join')
-Error stack: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.developNarrative (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:431:40)
-    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:142:42)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__3e276605._.js:732:24)
-    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
-    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
-    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
-    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
-    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
-    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
-    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
-    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
-    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
-    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
-    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
-    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
-    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
-    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
-    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
-    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
-    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
-    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
-Full error object: {}
- ✓ Compiled middleware in 2ms
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ⚠ Fast Refresh had to perform a full reload when ./node_modules/next/dist/shared/lib/router/router.js changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ✓ Compiled in 34ms
-Auth test error: [Error [PostgresError]: column "logo_url" does not exist] {
-  severity_local: 'ERROR',
-  severity: 'ERROR',
-  code: '42703',
-  position: '39',
-  file: 'parse_relation.c',
-  line: '3716',
-  routine: 'errorMissingColumn'
-}
- GET /api/auth/test 500 in 263ms
-Auth test error: [Error [PostgresError]: column "logo_url" does not exist] {
-  severity_local: 'ERROR',
-  severity: 'ERROR',
-  code: '42703',
-  position: '39',
-  file: 'parse_relation.c',
-  line: '3716',
-  routine: 'errorMissingColumn'
-}
- GET /api/auth/test 500 in 103ms
-Auth test error: [Error [PostgresError]: column "logo_url" does not exist] {
-  severity_local: 'ERROR',
-  severity: 'ERROR',
-  code: '42703',
-  position: '39',
-  file: 'parse_relation.c',
-  line: '3716',
-  routine: 'errorMissingColumn'
-}
- GET /api/auth/test 500 in 108ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /auth/login 200 in 125ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /auth/login 200 in 105ms
-   Reload env: .env.local
- ✓ Compiled in 49ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at [project]/lib/supabase/enhanced-client.ts [app-ssr] (ecmascript) (lib/supabase/enhanced-client.ts:6:37)
-    at [project]/lib/auth/oauth-config.ts [app-ssr] (ecmascript) (lib/auth/oauth-config.ts:1:0)
-    at [project]/app/auth/login/page.tsx [app-ssr] (ecmascript) (app/auth/login/page.tsx:6:0)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    |                                     ^
-  7 |   auth: {
-  8 |     autoRefreshToken: true,
-  9 |     persistSession: true, {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '4157781006'
-}
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at [project]/lib/supabase/enhanced-client.ts [app-ssr] (ecmascript) (lib/supabase/enhanced-client.ts:6:37)
-    at [project]/lib/auth/oauth-config.ts [app-ssr] (ecmascript) (lib/auth/oauth-config.ts:1:0)
-    at [project]/app/auth/login/page.tsx [app-ssr] (ecmascript) (app/auth/login/page.tsx:6:0)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    |                                     ^
-  7 |   auth: {
-  8 |     autoRefreshToken: true,
-  9 |     persistSession: true, {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '4157781006'
-}
- GET /auth/login 200 in 968ms
- ✓ Compiled /api/debug/env in 283ms
- GET /api/debug/env 200 in 435ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET / 200 in 477ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /dashboard 200 in 226ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at <instance_members_initializer> (lib/supabase/database-helpers.ts:45:47)
-    at new DatabaseHelpers (lib/supabase/database-helpers.ts:44:0)
-    at [project]/lib/supabase/database-helpers.ts [app-ssr] (ecmascript) (lib/supabase/database-helpers.ts:255:25)
-    at [project]/components/dashboard/DashboardClient.tsx [app-ssr] (ecmascript) (components/dashboard/DashboardClient.tsx:9:0)
-  43 |
-  44 | class DatabaseHelpers {
-> 45 |   private supabase = createClientComponentClient()
-     |                                               ^
-  46 |
-  47 |   // Presentations
-  48 |   async savePresentation(presentationData: PresentationData): Promise<{ data?: PresentationData, error?: string }> { {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '3933410953'
-}
- GET /dashboard 200 in 467ms
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at <instance_members_initializer> (lib/supabase/database-helpers.ts:45:47)
-    at new DatabaseHelpers (lib/supabase/database-helpers.ts:44:0)
-    at [project]/lib/supabase/database-helpers.ts [app-ssr] (ecmascript) (lib/supabase/database-helpers.ts:255:25)
-    at [project]/components/dashboard/DashboardClient.tsx [app-ssr] (ecmascript) (components/dashboard/DashboardClient.tsx:9:0)
-  43 |
-  44 | class DatabaseHelpers {
-> 45 |   private supabase = createClientComponentClient()
-     |                                               ^
-  46 |
-  47 |   // Presentations
-  48 |   async savePresentation(presentationData: PresentationData): Promise<{ data?: PresentationData, error?: string }> { {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '3933410953'
-}
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /dashboard 200 in 357ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET / 200 in 161ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /auth/login 200 in 164ms
- ✓ Compiled in 174ms
- ✓ Compiled in 63ms
- ✓ Compiled in 155ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ○ Compiling /auth/login ...
- ✓ Compiled /auth/login in 569ms
+ ✓ Compiled middleware in 94ms
+ ✓ Ready in 970ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 1132ms
  ⚠ Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /auth/login 404 in 743ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at [project]/lib/supabase/enhanced-client.ts [app-ssr] (ecmascript) (lib/supabase/enhanced-client.ts:6:37)
-    at [project]/lib/auth/oauth-config.ts [app-ssr] (ecmascript) (lib/auth/oauth-config.ts:1:0)
-    at [project]/app/auth/login/page.tsx [app-ssr] (ecmascript) (app/auth/login/page.tsx:6:0)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    |                                     ^
-  7 |   auth: {
-  8 |     autoRefreshToken: true,
-  9 |     persistSession: true, {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '3540256037'
+ GET /api/health 404 in 1309ms
+ ✓ Compiled /api/upload in 384ms
+Error: Route "/api/upload" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/upload" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/upload" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at <unknown> (../../src/GoTrueClient.ts:1162:18)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+Error: Route "/api/upload" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at <unknown> (../../src/GoTrueClient.ts:1162:18)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+ POST /api/upload 401 in 565ms
+ POST /api/upload 401 in 112ms
+📊 File parsed successfully: {
+  fileName: 'test-data.csv',
+  rowCount: 6,
+  columns: 4,
+  dataQuality: 'excellent',
+  timeSeriesDetected: true
 }
- GET /auth/login 200 in 687ms
- ✓ Compiled / in 51ms
+ ✓ Compiled /api/presentations/session in 362ms
+ POST /api/presentations/session 401 in 409ms
+ POST /api/upload 200 in 499ms
+ ✓ Compiled /api/openai/enhanced-analyze in 239ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 6,
+  isArray: true,
+  firstDataItem: [ 'Date', 'Revenue', 'Customers', 'Orders' ],
+  contextKeys: [ 'businessType', 'industry', 'dataSource', 'analysisGoal' ],
+  timeFrameKeys: [ 'start', 'end', 'comparisons', 'dataFrequency' ],
+  requirementsKeys: [ 'slidesCount', 'presentationDuration', 'focusAreas', 'style' ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-01-01',
+    end: '2024-06-01',
+    label: '2024-01-01 to 2024-06-01'
+  },
+  analysisType: 'm/m',
+  includeTrends: true,
+  includeSeasonality: true,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 8,
+  targetDuration: 15,
+  structure: 'ai_suggested',
+  keyPoints: [ 'revenue growth', 'customer acquisition', 'order trends' ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'storytelling',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+❌ EnhancedBrainV2: performInitialScan Error: TypeError: Cannot read properties of undefined (reading 'join')
+    at EnhancedBrainV2.performInitialScan (lib/ai/enhanced-brain-v2.ts:421:41)
+    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:346:37)
+    at POST (app/api/openai/enhanced-analyze/route.ts:111:31)
+  419 | - Data Description: ${context.description}
+  420 | - Data Quality: ${context.dataQuality}
+> 421 | - Influencing Factors: ${context.factors.join(', ')}
+      |                                         ^
+  422 |
+  423 | TIME FRAME:
+  424 | - Primary Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
+Error name: TypeError
+Error message: Cannot read properties of undefined (reading 'join')
+❌ EnhancedBrainV2.analyzeData Error: TypeError: Cannot read properties of undefined (reading 'join')
+    at EnhancedBrainV2.performInitialScan (lib/ai/enhanced-brain-v2.ts:421:41)
+    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:346:37)
+    at POST (app/api/openai/enhanced-analyze/route.ts:111:31)
+  419 | - Data Description: ${context.description}
+  420 | - Data Quality: ${context.dataQuality}
+> 421 | - Influencing Factors: ${context.factors.join(', ')}
+      |                                         ^
+  422 |
+  423 | TIME FRAME:
+  424 | - Primary Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
+Error name: TypeError
+Error message: Cannot read properties of undefined (reading 'join')
+Error stack: TypeError: Cannot read properties of undefined (reading 'join')
+    at EnhancedBrainV2.performInitialScan (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__d2679152._.js:872:42)
+    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__d2679152._.js:810:44)
+    at POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__d2679152._.js:1496:36)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
+    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
+    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
+    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
+    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
+    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
+    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
+    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
+    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
+    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
+    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
+    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
+    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
+    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
+    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
+    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
+    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
+❌ Enhanced analysis error: TypeError: Cannot read properties of undefined (reading 'join')
+    at EnhancedBrainV2.performInitialScan (lib/ai/enhanced-brain-v2.ts:421:41)
+    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:346:37)
+    at POST (app/api/openai/enhanced-analyze/route.ts:111:31)
+  419 | - Data Description: ${context.description}
+  420 | - Data Quality: ${context.dataQuality}
+> 421 | - Influencing Factors: ${context.factors.join(', ')}
+      |                                         ^
+  422 |
+  423 | TIME FRAME:
+  424 | - Primary Period: ${timeFrame.primaryPeriod.start} to ${timeFrame.primaryPeriod.end}
+Error name: TypeError
+Error message: Cannot read properties of undefined (reading 'join')
+Error stack: TypeError: Cannot read properties of undefined (reading 'join')
+    at EnhancedBrainV2.performInitialScan (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__d2679152._.js:872:42)
+    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__d2679152._.js:810:44)
+    at POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__d2679152._.js:1496:36)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
+    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
+    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
+    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
+    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
+    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
+    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
+    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
+    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
+    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
+    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
+    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
+    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
+    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
+    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
+    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
+    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
+Full error object: {}
+ POST /api/openai/enhanced-analyze 500 in 430ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 6,
+  isArray: true,
+  firstDataItem: [ 'Date', 'Revenue', 'Customers', 'Orders' ],
+  contextKeys: [
+    'businessType',
+    'industry',
+    'businessContext',
+    'description',
+    'dataQuality',
+    'factors',
+    'dataSource',
+    'analysisGoal'
+  ],
+  timeFrameKeys: [ 'start', 'end', 'comparisons', 'dataFrequency' ],
+  requirementsKeys: [ 'slidesCount', 'presentationDuration', 'focusAreas', 'style' ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-01-01',
+    end: '2024-06-01',
+    label: '2024-01-01 to 2024-06-01'
+  },
+  analysisType: 'm/m',
+  includeTrends: true,
+  includeSeasonality: true,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 8,
+  targetDuration: 15,
+  structure: 'ai_suggested',
+  keyPoints: [ 'revenue growth', 'customer acquisition', 'order trends' ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'storytelling',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 4 insights
+ POST /api/openai/enhanced-analyze 200 in 119090ms
+ ○ Compiling /deck-builder/new ...
+ ✓ Compiled /deck-builder/new in 526ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /deck-builder/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /deck-builder/new 200 in 637ms
+TypeError: Failed to parse body as FormData.
+    at async POST (app/api/upload/route.ts:10:19)
+   8 |
+   9 | export async function POST(request: NextRequest) {
+> 10 |   const formData = await request.formData()
+     |                   ^
+  11 |   const file = formData.get('file') as File
+  12 |   
+  13 |   if (!file) {
+ POST /api/upload 500 in 99ms
+TypeError: Failed to parse body as FormData.
+    at async POST (app/api/upload/route.ts:10:19)
+   8 |
+   9 | export async function POST(request: NextRequest) {
+> 10 |   const formData = await request.formData()
+     |                   ^
+  11 |   const file = formData.get('file') as File
+  12 |   
+  13 |   if (!file) {
+ POST /api/upload 500 in 90ms
+TypeError: Failed to parse body as FormData.
+    at async POST (app/api/upload/route.ts:10:19)
+   8 |
+   9 | export async function POST(request: NextRequest) {
+> 10 |   const formData = await request.formData()
+     |                   ^
+  11 |   const file = formData.get('file') as File
+  12 |   
+  13 |   if (!file) {
+ POST /api/upload 500 in 84ms
+📊 File parsed successfully: {
+  fileName: 'test-data.csv',
+  rowCount: 6,
+  columns: 4,
+  dataQuality: 'excellent',
+  timeSeriesDetected: true
+}
+ POST /api/presentations/session 401 in 35ms
+ POST /api/upload 200 in 79ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 6,
+  isArray: true,
+  firstDataItem: [ 'Date', 'Revenue', 'Customers', 'Orders' ],
+  contextKeys: [
+    'businessType',
+    'industry',
+    'businessContext',
+    'description',
+    'dataQuality',
+    'factors',
+    'dataSource',
+    'analysisGoal'
+  ],
+  timeFrameKeys: [ 'start', 'end', 'comparisons', 'dataFrequency' ],
+  requirementsKeys: [ 'slidesCount', 'presentationDuration', 'focusAreas', 'style' ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-01-01',
+    end: '2024-06-01',
+    label: '2024-01-01 to 2024-06-01'
+  },
+  analysisType: 'm/m',
+  includeTrends: true,
+  includeSeasonality: true,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 8,
+  targetDuration: 15,
+  structure: 'ai_suggested',
+  keyPoints: [ 'revenue growth', 'customer acquisition', 'order trends' ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'storytelling',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+ POST /api/openai/enhanced-analyze 200 in 119917ms
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 4 insights
+CSV parsing warnings: [
+  {
+    type: 'FieldMismatch',
+    code: 'TooFewFields',
+    message: 'Too few fields: expected 11 fields but parsed 1',
+    row: 29
+  }
+]
+📊 File parsed successfully: {
+  fileName: 'sales_performance_q4_2024.csv',
+  rowCount: 30,
+  columns: 11,
+  dataQuality: 'excellent',
+  timeSeriesDetected: true
+}
+ POST /api/presentations/session 401 in 53ms
+ POST /api/upload 200 in 118ms
+ ⨯ ./lib/ai/enhanced-brain-v2.ts:889:45
+Parsing ecmascript source code failed
+[0m [90m 887 |[39m [32m    return slides.map((slide: any) => ({[39m
+ [90m 888 |[39m [32m      ...slide,[39m
+[31m[1m>[22m[39m[90m 889 |[39m [32m      id: slide.id || `[39mslide_${[33mDate[39m[33m.[39mnow()}_${[33mMath[39m[33m.[39mrandom()}[32m`[39m
+ [90m     |[39m                                             [31m[1m^[22m[39m
+ [90m 890 |[39m [32m    }))[39m
+ [90m 891 |[39m [32m  }[39m
+ [90m 892 |[39m [32m[39m[0m
+
+Unexpected token `{`. Expected * for generator, private key, identifier or async
+
+Example import trace:
+  ./lib/ai/enhanced-brain-v2.ts
+  ./app/api/openai/enhanced-analyze/route.ts
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 651ms
+ POST /api/openai/enhanced-analyze 500 in 781ms
+ ⨯ ./lib/ai/enhanced-brain-v2.ts:903:10
+Parsing ecmascript source code failed
+[0m [90m 901 |[39m [32m    const prompt = `[39m[33mYou[39m are integrating user feedback to refine the analysis and presentation[33m.[39m
+ [90m 902 |[39m
+[31m[1m>[22m[39m[90m 903 |[39m [33mORIGINAL[39m [33mRESULTS[39m[33m:[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 904 |[39m ${[33mJSON[39m[33m.[39mstringify(result[33m,[39m [36mnull[39m[33m,[39m [35m2[39m)}
+ [90m 905 |[39m
+ [90m 906 |[39m [33mUSER[39m [33mFEEDBACK[39m[33m:[39m[0m
+
+Expected ';', '}' or <eof>
+
+Example import trace:
+  ./lib/ai/enhanced-brain-v2.ts
+  ./app/api/openai/enhanced-analyze/route.ts
+
+
+ POST /api/openai/enhanced-analyze 500 in 71ms
+ ⨯ ./lib/ai/enhanced-brain-v2.ts:1012:3
+Parsing ecmascript source code failed
+[0m [90m 1010 |[39m [32m    return qualityScores[context.dataQuality] || 50[39m
+ [90m 1011 |[39m [32m  }[39m
+[31m[1m>[22m[39m[90m 1012 |[39m [32m} [39m
+ [90m      |[39m   [31m[1m^[22m[39m[0m
+
+Unexpected eof
+
+Example import trace:
+  ./lib/ai/enhanced-brain-v2.ts
+  ./app/api/openai/enhanced-analyze/route.ts
+
+
+ POST /api/openai/enhanced-analyze 500 in 67ms
+🧠 Enhanced Analysis - Starting request processing
+❌ Enhanced analysis error: SyntaxError: Unexpected non-whitespace character after JSON at position 2114 (line 1 column 2115)
+    at JSON.parse (<anonymous>)
+    at async POST (app/api/openai/enhanced-analyze/route.ts:8:17)
+   6 |     console.log('🧠 Enhanced Analysis - Starting request processing')
+   7 |     
+>  8 |     const body = await request.json()
+     |                 ^
+   9 |     console.log('🧠 Enhanced Analysis - Request body received:', Object.keys(body))
+  10 |     
+  11 |     const {
+Error name: SyntaxError
+Error message: Unexpected non-whitespace character after JSON at position 2114 (line 1 column 2115)
+Error stack: SyntaxError: Unexpected non-whitespace character after JSON at position 2114 (line 1 column 2115)
+    at JSON.parse (<anonymous>)
+    at parseJSONFromBytes (node:internal/deps/undici/undici:5738:19)
+    at successSteps (node:internal/deps/undici/undici:5719:27)
+    at fullyReadBody (node:internal/deps/undici/undici:4609:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async consumeBody (node:internal/deps/undici/undici:5728:7)
+    at async POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__d2679152._.js:1419:22)
+    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
+    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
+    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21627:38)
+    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
+    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21689:32)
+    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_c36fdaf9._.js:21741:13)
+    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
+    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
+    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
+    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
+    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
+    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
+    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
+    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
+    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
+    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
+    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
+Full error object: {}
+ POST /api/openai/enhanced-analyze 500 in 224ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-31',
+    label: '2024-10-01 to 2024-10-31'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 12,
+  targetDuration: 20,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Revenue Performance',
+    'Sales Efficiency',
+    'Lead Source ROI',
+    'Regional Analysis',
+    'Product Performance',
+    'Strategic Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 3 insights
+ POST /api/openai/enhanced-analyze 200 in 183623ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-31',
+    label: '2024-10-01 to 2024-10-31'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 15,
+  targetDuration: 25,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Campaign ROI Analysis',
+    'Channel Performance Comparison',
+    'Audience Segmentation Insights',
+    'Budget Optimization',
+    'Creative Performance',
+    'Attribution Modeling',
+    'Strategic Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+ POST /api/openai/enhanced-analyze 200 in 120156ms
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 3 insights
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-31',
+    label: '2024-10-01 to 2024-10-31'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 15,
+  targetDuration: 25,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Campaign ROI Analysis',
+    'Channel Performance Comparison',
+    'Audience Segmentation Insights',
+    'Budget Optimization',
+    'Creative Performance',
+    'Attribution Modeling',
+    'Strategic Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+ POST /api/openai/enhanced-analyze 200 in 180183ms
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-31',
+    label: '2024-10-01 to 2024-10-31'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 15,
+  targetDuration: 25,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Campaign ROI Analysis',
+    'Channel Performance Comparison',
+    'Audience Segmentation Insights',
+    'Budget Optimization',
+    'Creative Performance',
+    'Attribution Modeling',
+    'Strategic Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 3 insights
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 2 insights
+ POST /api/openai/enhanced-analyze 200 in 181720ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-10',
+    label: '2024-10-01 to 2024-10-10'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 18,
+  targetDuration: 30,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Revenue Growth Analysis',
+    'Profitability Optimization',
+    'Cash Flow Management',
+    'Customer Economics',
+    'Department Performance',
+    'Strategic KPIs',
+    'Investment Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+ ○ Compiling / ...
+ ✓ Compiled / in 1150ms
  ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET / 200 in 597ms
- ✓ Compiled /dashboard in 64ms
+ GET / 200 in 1408ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 711ms
  ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /dashboard 200 in 261ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at <instance_members_initializer> (lib/supabase/database-helpers.ts:45:47)
-    at new DatabaseHelpers (lib/supabase/database-helpers.ts:44:0)
-    at [project]/lib/supabase/database-helpers.ts [app-ssr] (ecmascript) (lib/supabase/database-helpers.ts:255:25)
-    at [project]/components/dashboard/DashboardClient.tsx [app-ssr] (ecmascript) (components/dashboard/DashboardClient.tsx:9:0)
-  43 |
-  44 | class DatabaseHelpers {
-> 45 |   private supabase = createClientComponentClient()
-     |                                               ^
-  46 |
-  47 |   // Presentations
-  48 |   async savePresentation(presentationData: PresentationData): Promise<{ data?: PresentationData, error?: string }> { {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '3657208545'
+Error loading drafts: {
+  code: '22P02',
+  details: null,
+  hint: null,
+  message: 'invalid input syntax for type uuid: "1"'
 }
- GET /dashboard 200 in 676ms
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at <instance_members_initializer> (lib/supabase/database-helpers.ts:45:47)
-    at new DatabaseHelpers (lib/supabase/database-helpers.ts:44:0)
-    at [project]/lib/supabase/database-helpers.ts [app-ssr] (ecmascript) (lib/supabase/database-helpers.ts:255:25)
-    at [project]/components/dashboard/DashboardClient.tsx [app-ssr] (ecmascript) (components/dashboard/DashboardClient.tsx:9:0)
-  43 |
-  44 | class DatabaseHelpers {
-> 45 |   private supabase = createClientComponentClient()
-     |                                               ^
-  46 |
-  47 |   // Presentations
-  48 |   async savePresentation(presentationData: PresentationData): Promise<{ data?: PresentationData, error?: string }> { {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '3657208545'
+ GET /dashboard 200 in 1108ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /deck-builder/new. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /deck-builder/new 200 in 103ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+Error loading drafts: {
+  code: '22P02',
+  details: null,
+  hint: null,
+  message: 'invalid input syntax for type uuid: "1"'
 }
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
+ GET /dashboard 200 in 173ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /deck-builder/new. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /dashboard 200 in 510ms
- GET /dashboard 200 in 122ms
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at <instance_members_initializer> (lib/supabase/database-helpers.ts:45:47)
-    at new DatabaseHelpers (lib/supabase/database-helpers.ts:44:0)
-    at [project]/lib/supabase/database-helpers.ts [app-ssr] (ecmascript) (lib/supabase/database-helpers.ts:255:25)
-    at [project]/components/dashboard/DashboardClient.tsx [app-ssr] (ecmascript) (components/dashboard/DashboardClient.tsx:9:0)
-  43 |
-  44 | class DatabaseHelpers {
-> 45 |   private supabase = createClientComponentClient()
-     |                                               ^
-  46 |
-  47 |   // Presentations
-  48 |   async savePresentation(presentationData: PresentationData): Promise<{ data?: PresentationData, error?: string }> { {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '3657208545'
+ GET /deck-builder/new 200 in 99ms
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 3 insights
+ POST /api/openai/enhanced-analyze 200 in 167545ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
 }
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⨯ TypeError: Invalid URL
-    at new SupabaseClient (../../src/SupabaseClient.ts:79:20)
-    at createClient (../../src/index.ts:40:9)
-    at <instance_members_initializer> (lib/supabase/database-helpers.ts:45:47)
-    at new DatabaseHelpers (lib/supabase/database-helpers.ts:44:0)
-    at [project]/lib/supabase/database-helpers.ts [app-ssr] (ecmascript) (lib/supabase/database-helpers.ts:255:25)
-    at [project]/components/dashboard/DashboardClient.tsx [app-ssr] (ecmascript) (components/dashboard/DashboardClient.tsx:9:0)
-  43 |
-  44 | class DatabaseHelpers {
-> 45 |   private supabase = createClientComponentClient()
-     |                                               ^
-  46 |
-  47 |   // Presentations
-  48 |   async savePresentation(presentationData: PresentationData): Promise<{ data?: PresentationData, error?: string }> { {
-  code: 'ERR_INVALID_URL',
-  input: 'your_supabase_project_url/',
-  digest: '3657208545'
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-08',
+    label: '2024-10-01 to 2024-10-08'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
 }
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /dashboard 200 in 776ms
- ✓ Compiled in 131ms
- ✓ Compiled /dashboard in 262ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /dashboard 200 in 1605ms
- ○ Compiling /test ...
- ✓ Compiled /test in 599ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /test. Please move it to viewport export instead.
-Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /test 200 in 1036ms
- GET /api/auth/test 200 in 237ms
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 14,
+  targetDuration: 25,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Process Efficiency Analysis',
+    'Automation Impact Assessment',
+    'Resource Optimization',
+    'Quality Management',
+    'Bottleneck Identification',
+    'Employee Performance',
+    'Strategic Improvement Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 2 insights
+ POST /api/openai/enhanced-analyze 200 in 181164ms
+ ✓ Compiled in 170ms
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ✓ Compiled in 100ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /test. Please move it to viewport export instead.
+ ⚠ Unsupported metadata viewport is configured in metadata export in /deck-builder/new. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /test 200 in 636ms
- GET /api/auth/test 200 in 1099ms
- GET /api/auth/test 200 in 1117ms
- ✓ Compiled in 231ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /test. Please move it to viewport export instead.
+ GET /deck-builder/new 200 in 530ms
+ ✓ Compiled /favicon.ico in 240ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 536ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/oauth-config.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 57ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /deck-builder/new. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /test 200 in 356ms
- ✓ Compiled in 208ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /test. Please move it to viewport export instead.
+ GET /deck-builder/new 200 in 329ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 301ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/oauth-config.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 60ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /deck-builder/new. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /test 200 in 435ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /test. Please move it to viewport export instead.
+ GET /deck-builder/new 200 in 513ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 315ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/oauth-config.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 88ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /deck-builder/new. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /test 200 in 904ms
- GET /api/auth/test 200 in 461ms
- GET /api/auth/test 200 in 480ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+ GET /deck-builder/new 200 in 441ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 329ms
+ ✓ Compiled middleware in 10ms
+ ✓ Compiled in 126ms
+ ○ Compiling /auth/login ...
+ ✓ Compiled /auth/login in 585ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET / 200 in 689ms
- ✓ Compiled /dashboard in 95ms
- ⚠ Unsupported metadata viewport is configured in metadata export in /dashboard. Please move it to viewport export instead.
+ GET /auth/login 200 in 835ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /dashboard 200 in 389ms
+ GET /auth/login 200 in 532ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 326ms
+ ✓ Compiled in 828ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 192ms
+ POST /api/upload 401 in 158ms
+ ✓ Compiled in 120ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/supabase/enhanced-client.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
  ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
  ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
- GET /auth/login 200 in 672ms
- GET /auth/login 200 in 668ms
+ GET /auth/login 200 in 946ms
+ GET /auth/login 200 in 935ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 360ms
+ ✓ Compiled /api/auth/login in 356ms
+ POST /api/auth/login 200 in 569ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 340ms
+ ✓ Compiled in 10ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-08',
+    label: '2024-10-01 to 2024-10-08'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 16,
+  targetDuration: 30,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Customer Segmentation Analysis',
+    'Purchase Behavior Patterns',
+    'Engagement Optimization',
+    'Retention Strategy',
+    'Satisfaction & Experience',
+    'Lifetime Value Analysis',
+    'Strategic CX Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 2 insights
+ POST /api/openai/enhanced-analyze 200 in 191396ms
+ ✓ Compiled middleware in 109ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 1011ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 233ms
+ ✓ Compiled middleware in 38ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 298ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 273ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-08',
+    label: '2024-10-01 to 2024-10-08'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 18,
+  targetDuration: 35,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Market Share Analysis',
+    'Competitive Positioning',
+    'Innovation Landscape',
+    'Investment Strategies',
+    'Threat Assessment',
+    'Strategic Opportunities',
+    'Competitive Response Plan'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+ ✓ Compiled in 152ms
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+ ✓ Compiled in 399ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 300ms
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 3 insights
+ POST /api/openai/enhanced-analyze 200 in 184118ms
+ ✓ Compiled middleware in 21ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 404 in 459ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 277ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 595ms
+ ✓ Compiled in 541ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 325ms
+ ✓ Compiled in 177ms
+ ✓ Compiled middleware in 9ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 763ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 404 in 292ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 752ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-08',
+    label: '2024-10-01 to 2024-10-08'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 14,
+  targetDuration: 25,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Product Revenue Analysis',
+    'Profitability Assessment',
+    'Market Share Trends',
+    'Customer Satisfaction Analysis',
+    'Inventory & Operations',
+    'Marketing ROI',
+    'Strategic Product Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+ POST /api/openai/enhanced-analyze 200 in 120313ms
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 3 insights
+ ✓ Compiled middleware in 21ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 2484ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 381ms
+ ✓ Compiled middleware in 114ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 444ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 389ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-08',
+    label: '2024-10-01 to 2024-10-08'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 16,
+  targetDuration: 30,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Regional Performance Analysis',
+    'Market Penetration Assessment',
+    'Competitive Landscape',
+    'Growth Opportunity Mapping',
+    'Operational Efficiency',
+    'Risk & Regulatory Analysis',
+    'Strategic Expansion Recommendations'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+ ✓ Compiled middleware in 20ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 613ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 565ms
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+ ✓ Compiled middleware in 330ms
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+ ⚠ Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 404 in 661ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 3575ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 968ms
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+ ✓ Compiled in 723ms
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+ ✓ Compiled middleware in 120ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 404 in 1717ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 1050ms
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 12928ms
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 2 insights
+ POST /api/openai/enhanced-analyze 200 in 151915ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'rowCount', 'dataType' ],
+  contextKeys: [
+    'industry',
+    'targetAudience',
+    'businessContext',
+    'description',
+    'factors'
+  ],
+  timeFrameKeys: [
+    'start',
+    'end',
+    'dataFrequency',
+    'analysisType',
+    'comparisons',
+    'granularity',
+    'focusPeriods'
+  ],
+  requirementsKeys: [
+    'slidesCount',
+    'presentationDuration',
+    'focusAreas',
+    'style',
+    'includeCharts',
+    'includeExecutiveSummary',
+    'includeComparisons',
+    'comparisonTypes'
+  ]
+}
+🧠 Enhanced Analysis - All validations passed, initializing brain
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-10-01',
+    end: '2024-10-03',
+    label: '2024-10-01 to 2024-10-03'
+  },
+  analysisType: 'custom',
+  includeTrends: true,
+  includeSeasonality: false,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 20,
+  targetDuration: 45,
+  structure: 'ai_suggested',
+  keyPoints: [
+    'Executive Summary',
+    'Financial Performance',
+    'Operational Excellence',
+    'Customer Success Metrics',
+    'Strategic Initiative Progress',
+    'Risk Assessment',
+    'Forward-Looking Strategy',
+    'Resource Allocation Review'
+  ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'formal',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Processing file data array
+🧠 Enhanced Analysis - Flattened data length: 2
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
+ ✓ Compiled in 680ms
+🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+ ✓ Compiled in 658ms
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+ ✓ Compiled in 378ms
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+ ✓ Compiled in 270ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 934ms
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+ POST /api/openai/enhanced-analyze 200 in 180137ms
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 5.2s
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 2 insights
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 6.9s
+ ⚠ Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ POST /api/openai/enhanced-analyze 404 in 7000ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 6243ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 660ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 601ms
+ ⚠ Unsupported metadata viewport is configured in metadata export in /auth/login. Please move it to viewport export instead.
+Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+ GET /auth/login 200 in 617ms
+ ✓ Compiled middleware in 269ms
+ GET /favicon.ico 200 in 1311ms
+ ✓ Compiled middleware in 40ms
+ ✓ Compiled in 796ms
 [?25h

@@ -1,0 +1,31 @@
+Date,Region,Product,Sales_Rep,Revenue,Units_Sold,Customer_Acquisition_Cost,Customer_LTV,Lead_Source,Conversion_Rate,Deal_Size
+2024-10-01,North America,Enterprise SaaS,John Smith,125000,5,2500,45000,Website,12.5,25000
+2024-10-01,North America,Professional SaaS,Sarah Johnson,85000,17,1200,15000,Referral,18.3,5000
+2024-10-01,Europe,Enterprise SaaS,Pierre Dubois,95000,3,3200,52000,Webinar,8.7,31667
+2024-10-02,Asia Pacific,Professional SaaS,Yuki Tanaka,67000,22,950,12000,Social Media,22.1,3045
+2024-10-02,North America,Starter SaaS,Mike Davis,45000,150,300,2500,Google Ads,25.4,300
+2024-10-03,Europe,Professional SaaS,Anna Mueller,78000,15,1400,18000,Email Campaign,15.2,5200
+2024-10-03,North America,Enterprise SaaS,John Smith,89000,2,3100,48000,Direct Sales,9.8,44500
+2024-10-04,Asia Pacific,Enterprise SaaS,Chen Wei,156000,4,2800,55000,Partner Referral,11.2,39000
+2024-10-05,North America,Professional SaaS,Sarah Johnson,92000,18,1150,16500,Content Marketing,19.7,5111
+2024-10-05,Europe,Starter SaaS,Hans Larsson,32000,95,280,2800,Facebook Ads,28.3,337
+2024-10-08,North America,Enterprise SaaS,John Smith,134000,3,2700,49000,Trade Show,10.3,44667
+2024-10-08,Asia Pacific,Professional SaaS,Raj Patel,71000,19,1300,14000,LinkedIn,16.8,3737
+2024-10-09,Europe,Enterprise SaaS,Pierre Dubois,112000,2,3500,51000,Cold Calling,7.2,56000
+2024-10-10,North America,Professional SaaS,Sarah Johnson,88000,16,1250,17000,Website,17.9,5500
+2024-10-11,Asia Pacific,Starter SaaS,Yuki Tanaka,38000,125,320,2600,TikTok Ads,26.7,304
+2024-10-12,Europe,Professional SaaS,Anna Mueller,84000,14,1500,19000,Webinar,14.1,6000
+2024-10-15,North America,Enterprise SaaS,John Smith,178000,4,2400,47000,Referral,13.8,44500
+2024-10-16,Asia Pacific,Enterprise SaaS,Chen Wei,145000,3,3000,53000,Direct Sales,10.5,48333
+2024-10-17,Europe,Professional SaaS,Pierre Dubois,76000,13,1600,16000,Email Campaign,13.7,5846
+2024-10-18,North America,Starter SaaS,Mike Davis,41000,135,290,2700,Google Ads,27.1,304
+2024-10-19,Asia Pacific,Professional SaaS,Raj Patel,79000,17,1200,15500,Social Media,18.6,4647
+2024-10-22,Europe,Enterprise SaaS,Hans Larsson,98000,2,3400,50000,Partner Referral,8.9,49000
+2024-10-23,North America,Professional SaaS,Sarah Johnson,96000,19,1100,17500,Content Marketing,20.8,5053
+2024-10-24,Asia Pacific,Starter SaaS,Yuki Tanaka,44000,140,310,2750,Instagram Ads,28.9,314
+2024-10-25,Europe,Professional SaaS,Anna Mueller,87000,16,1350,18500,Website,16.4,5438
+2024-10-26,North America,Enterprise SaaS,John Smith,167000,4,2600,48500,Trade Show,12.1,41750
+2024-10-29,Asia Pacific,Enterprise SaaS,Chen Wei,189000,5,2500,54000,Referral,12.9,37800
+2024-10-30,Europe,Professional SaaS,Pierre Dubois,82000,15,1450,17500,Webinar,15.8,5467
+2024-10-31,North America,Professional SaaS,Sarah Johnson,101000,20,1050,18000,LinkedIn,21.3,5050
+EOF < /dev/null

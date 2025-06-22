@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
@@ -8,17 +8,20 @@ import { toast } from 'react-hot-toast'
 import { 
   Brain, Loader2, Plus, RefreshCw, Eye, Pause, Play,
   CheckCircle, AlertCircle, MessageSquare, Lightbulb,
-  BarChart3, Target, Zap, Save
+  BarChart3, Target, Zap, Save, Trash2, Download, Image, TrendingUp
 } from 'lucide-react'
 import { deckBrain, DeckInsight, DataPoint } from '@/lib/openai/deck-brain'
 import { InteractiveSlide } from './InteractiveSlide'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth/auth-context'
+import { DeckPersistence, DeckDraft, DeckSlide } from '@/lib/deck-persistence'
 
-interface DeckBuilderProps {
-  initialData: any[]
-  userRequirements: string
-  userGoals: string
-  onComplete: (deck: any) => void
-  onSave?: (deck: any) => void
+interface EnhancedDeckBuilderProps {
+  draftId?: string
+  initialData?: Partial<DeckDraft>
+  userRequirements?: string[]
+  userGoals?: string[]
+  onComplete?: (slides: any[]) => void
 }
 
 interface ProcessingState {
@@ -30,13 +33,16 @@ interface ProcessingState {
   isPaused: boolean
 }
 
-export function EnhancedDeckBuilder({ 
+export default function EnhancedDeckBuilder({ 
+  draftId, 
   initialData, 
-  userRequirements, 
-  userGoals,
-  onComplete,
-  onSave
-}: DeckBuilderProps) {
+  userRequirements = [], 
+  userGoals = [], 
+  onComplete 
+}: EnhancedDeckBuilderProps) {
+  const { user } = useAuth()
+  const router = useRouter()
+  
   const [processing, setProcessing] = useState<ProcessingState>({
     isActive: false,
     progress: 0,
@@ -53,6 +59,15 @@ export function EnhancedDeckBuilder({
   const [generatedSlides, setGeneratedSlides] = useState<any[]>([])
   const [showPreview, setShowPreview] = useState(false)
   const [processingLogs, setProcessingLogs] = useState<string[]>([])
+
+  const [draft, setDraft] = useState<DeckDraft | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState(0)
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true)
+  const [showChartGenerator, setShowChartGenerator] = useState(false)
+  const [chartGenerationData, setChartGenerationData] = useState<any>(null)
 
   // Add processing log
   const addLog = useCallback((message: string) => {
@@ -84,7 +99,7 @@ export function EnhancedDeckBuilder({
       updateProgress(5, '🧠 Brain initializing deep data analysis...')
       
       const brainInsights = await deckBrain.analyzeDataForInsights(
-        initialData,
+        initialData || [],
         userRequirements,
         userGoals,
         updateProgress
@@ -140,7 +155,7 @@ export function EnhancedDeckBuilder({
           createdAt: new Date(),
           userRequirements,
           userGoals,
-          dataPoints: initialData.length,
+          dataPoints: Array.isArray(initialData) ? initialData.length : 0,
           confidence: insights.confidence,
           title: `AI-Generated Presentation - ${new Date().toLocaleDateString()}`
         }
@@ -178,9 +193,9 @@ export function EnhancedDeckBuilder({
       title: 'Data-Driven Insights',
       content: {
         title: 'Strategic Analysis Results',
-        subtitle: `Generated from ${initialData.length} data points`,
+        subtitle: `Generated from ${Array.isArray(initialData) ? initialData.length : 0} data points`,
         description: insights.executiveSummary,
-        context: userRequirements.slice(0, 100) + '...',
+        context: userRequirements.length > 0 ? userRequirements.join(', ').slice(0, 100) + '...' : 'Strategic analysis',
         bulletPoints: [],
         narrative: [],
         insights: []
@@ -209,7 +224,7 @@ export function EnhancedDeckBuilder({
       // Ensure we have real data for the chart
       const chartData = dataPoint.chartConfig.data && dataPoint.chartConfig.data.length > 0 
         ? dataPoint.chartConfig.data 
-        : initialData.slice(0, 20) // Use original data if chart data is empty
+        : Array.isArray(initialData) ? initialData.slice(0, 20) : [] // Use original data if chart data is empty
       
       const slide = {
         id: `chart-slide-${index}`,
@@ -292,7 +307,7 @@ export function EnhancedDeckBuilder({
     updateProgress(20, '🔄 Using enhanced fallback analysis...')
     
     // Ensure we have some data to work with
-    const sampleData = initialData.length > 0 ? initialData : [
+    const sampleData = Array.isArray(initialData) && initialData.length > 0 ? initialData : [
       { Month: 'Jan', Revenue: 45000, Leads: 1200, Conversion: 12 },
       { Month: 'Feb', Revenue: 52000, Leads: 1350, Conversion: 15 },
       { Month: 'Mar', Revenue: 48000, Leads: 1180, Conversion: 14 },
@@ -310,8 +325,8 @@ export function EnhancedDeckBuilder({
         story: 'This visualization shows the main patterns in your dataset.',
         priority: 'high',
         chartConfig: {
-          index: Object.keys(sampleData[0] || {})[0] || 'Month',
-          categories: Object.keys(sampleData[0] || {}).slice(1, 4),
+          index: sampleData && sampleData[0] ? Object.keys(sampleData[0])[0] : 'Month',
+          categories: sampleData && sampleData[0] ? Object.keys(sampleData[0]).slice(1, 4) : ['Value'],
           colors: ['blue', 'emerald', 'violet'],
           data: sampleData
         }
@@ -323,7 +338,7 @@ export function EnhancedDeckBuilder({
         'Strategic focus areas clearly defined',
         'Actionable recommendations available'
       ],
-      executiveSummary: `Comprehensive analysis of your dataset reveals key strategic insights for ${userRequirements}.`,
+      executiveSummary: `Comprehensive analysis of your dataset reveals key strategic insights for ${userRequirements.join(', ') || 'business optimization'}.`,
       recommendedStructure: ['Overview', 'Key Metrics', 'Insights', 'Recommendations'],
       confidence: 75
     }
@@ -402,292 +417,515 @@ export function EnhancedDeckBuilder({
     )
   }
 
-  return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Brain className="w-8 h-8 text-blue-500 animate-pulse" />
-            <div>
-              <h1 className="text-2xl font-bold text-white">AI Deck Builder</h1>
-              <p className="text-gray-400">World-class presentations powered by advanced AI brain</p>
-            </div>
-          </div>
-          
-          {!processing.isActive && !insights && (
-            <Button onClick={startDeckBuilding} className="bg-blue-600 hover:bg-blue-700">
-              <Zap className="w-4 h-4 mr-2" />
-              Start AI Analysis
-            </Button>
-          )}
-        </div>
-        
-        {processing.isActive && renderPhaseIndicator()}
-      </Card>
+  // Load draft on mount
+  useEffect(() => {
+    loadDraft()
+  }, [draftId])
 
-      {/* Progress Section */}
-      {processing.isActive && (
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Loader2 className={`w-5 h-5 text-blue-500 ${processing.isPaused ? '' : 'animate-spin'}`} />
-              <span className="font-semibold">Brain Processing</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">{processing.progress}%</span>
-              {processing.canAddContext && (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={handleAddContext}
-                  disabled={showContextInput}
-                >
-                  <MessageSquare className="w-4 h-4 mr-1" />
-                  Add Context
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={togglePause}
-              >
-                {processing.isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-              </Button>
-            </div>
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-700 rounded-full h-3 mb-3">
-            <motion.div
-              className="bg-gradient-to-r from-blue-500 to-emerald-500 h-3 rounded-full"
-              style={{ width: `${processing.progress}%` }}
-              transition={{ duration: 0.5 }}
+  // Set up auto-save
+  useEffect(() => {
+    if (!autoSaveEnabled || !draft) return
+
+    const cleanup = DeckPersistence.setupAutoSave(draft.id, () => draft)
+    return cleanup
+  }, [draft, autoSaveEnabled])
+
+  const loadDraft = async () => {
+    try {
+      setLoading(true)
+      setError('')
+
+      if (draftId) {
+        // Load existing draft
+        const loadedDraft = await DeckPersistence.loadDraft(draftId)
+        if (loadedDraft) {
+          setDraft(loadedDraft)
+        } else {
+          setError('Draft not found')
+        }
+      } else if (initialData) {
+        // Create new draft from initial data
+        const newDraft = await DeckPersistence.saveDraft(initialData)
+        if (newDraft) {
+          setDraft(newDraft)
+          router.push(`/deck-builder/${newDraft.id}`)
+        } else {
+          setError('Failed to create draft')
+        }
+      } else {
+        // Create empty draft
+        const emptyDraft = await DeckPersistence.saveDraft({
+          title: 'Untitled Presentation',
+          slides: [
+            {
+              id: crypto.randomUUID(),
+              type: 'title',
+              title: 'Title Slide',
+              content: 'Your Presentation Title',
+              order: 0
+            }
+          ]
+        })
+        if (emptyDraft) {
+          setDraft(emptyDraft)
+          router.push(`/deck-builder/${emptyDraft.id}`)
+        } else {
+          setError('Failed to create draft')
+        }
+      }
+    } catch (error) {
+      console.error('Error loading draft:', error)
+      setError('Failed to load draft')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const saveDraft = async (draftData?: Partial<DeckDraft>) => {
+    if (!draft) return
+
+    try {
+      setSaving(true)
+      const dataToSave = draftData || draft
+      const savedDraft = await DeckPersistence.saveDraft({
+        ...dataToSave,
+        lastEditedAt: new Date()
+      })
+
+      if (savedDraft) {
+        setDraft(savedDraft)
+        // Track save activity
+        await DeckPersistence.trackUserActivity('draft_saved', {
+          draftId: savedDraft.id,
+          title: savedDraft.title
+        })
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error)
+      setError('Failed to save draft')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const addSlide = async (type: DeckSlide['type'] = 'content') => {
+    if (!draft) return
+
+    const newSlide: DeckSlide = {
+      id: crypto.randomUUID(),
+      type,
+      title: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Slide`,
+      content: '',
+      order: draft.slides.length
+    }
+
+    const updatedDraft = {
+      ...draft,
+      slides: [...draft.slides, newSlide]
+    }
+
+    setDraft(updatedDraft)
+    setSelectedSlideIndex(updatedDraft.slides.length - 1)
+    await saveDraft(updatedDraft)
+  }
+
+  const updateSlide = async (slideId: string, updates: Partial<DeckSlide>) => {
+    if (!draft) return
+
+    const updatedSlides = draft.slides.map(slide =>
+      slide.id === slideId ? { ...slide, ...updates } : slide
+    )
+
+    const updatedDraft = {
+      ...draft,
+      slides: updatedSlides
+    }
+
+    setDraft(updatedDraft)
+    await saveDraft(updatedDraft)
+  }
+
+  const deleteSlide = async (slideId: string) => {
+    if (!draft || draft.slides.length <= 1) return
+
+    const updatedSlides = draft.slides
+      .filter(slide => slide.id !== slideId)
+      .map((slide, index) => ({ ...slide, order: index }))
+
+    const updatedDraft = {
+      ...draft,
+      slides: updatedSlides
+    }
+
+    setDraft(updatedDraft)
+    if (selectedSlideIndex >= updatedSlides.length) {
+      setSelectedSlideIndex(updatedSlides.length - 1)
+    }
+    await saveDraft(updatedDraft)
+  }
+
+  const generateChart = async (slideId: string, chartData: any) => {
+    if (!draft || !user?.profile) return
+
+    try {
+      const response = await DeckPersistence.generateChart({
+        slideId,
+        dataType: chartData.dataType,
+        chartType: chartData.chartType,
+        data: chartData.data,
+        userPreferences: user.profile.dataPreferences || {
+          chartStyles: ['modern', 'clean'],
+          colorSchemes: ['blue', 'green'],
+          narrativeStyle: 'professional'
+        },
+        businessContext: user.profile.businessContext || ''
+      })
+
+      if (response.success && response.chartData) {
+        // Update the slide with generated chart
+        await updateSlide(slideId, {
+          chartData: response.chartData,
+          chartConfig: response.chartConfig,
+          content: response.narrative || '',
+          type: 'chart'
+        })
+
+        // Track chart generation
+        await DeckPersistence.trackUserActivity('chart_generated', {
+          slideId,
+          chartType: chartData.chartType,
+          success: true
+        })
+      } else {
+        setError(response.error || 'Failed to generate chart')
+      }
+    } catch (error) {
+      console.error('Error generating chart:', error)
+      setError('Failed to generate chart')
+    }
+  }
+
+  const getAIFeedback = async () => {
+    if (!draft) return
+
+    try {
+      const feedback = await DeckPersistence.getDeckFeedback(draft)
+      if (feedback.success) {
+        // Update draft with AI feedback
+        const updatedDraft = {
+          ...draft,
+          aiFeedback: feedback.feedback
+        }
+        setDraft(updatedDraft)
+        await saveDraft(updatedDraft)
+      }
+    } catch (error) {
+      console.error('Error getting AI feedback:', error)
+      setError('Failed to get AI feedback')
+    }
+  }
+
+  const exportDeck = async (format: 'pdf' | 'pptx' | 'html') => {
+    if (!draft) return
+
+    try {
+      const result = await DeckPersistence.exportDeck(draft.id, format)
+      if (result?.success && result.downloadUrl) {
+        window.open(result.downloadUrl, '_blank')
+      }
+    } catch (error) {
+      console.error(`Error exporting to ${format}:`, error)
+      setError(`Failed to export to ${format}`)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading deck builder...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!draft) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error || 'Failed to load draft'}</p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const selectedSlide = draft.slides[selectedSlideIndex]
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white">
+      {/* Header */}
+      <header className="border-b border-gray-700 bg-gray-900/50 backdrop-blur-sm">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-4">
+            <Brain className="w-8 h-8 text-blue-400" />
+            <input
+              type="text"
+              value={draft.title}
+              onChange={(e) => {
+                const updatedDraft = { ...draft, title: e.target.value }
+                setDraft(updatedDraft)
+                saveDraft(updatedDraft)
+              }}
+              className="bg-transparent text-xl font-bold border-none outline-none focus:ring-0"
+              placeholder="Untitled Presentation"
             />
           </div>
           
-          <p className="text-sm text-gray-300">{processing.status}</p>
-          
-          {/* Processing Logs */}
-          <details className="mt-4">
-            <summary className="cursor-pointer text-sm text-blue-400 hover:text-blue-300">
-              View processing details ({processingLogs.length} steps)
-            </summary>
-            <div className="mt-2 max-h-32 overflow-y-auto bg-gray-900 rounded p-3">
-              {processingLogs.map((log, idx) => (
-                <div key={idx} className="text-xs text-gray-400 mb-1">
-                  {log}
-                </div>
-              ))}
-            </div>
-          </details>
-        </Card>
-      )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setAutoSaveEnabled(!autoSaveEnabled)}
+              className={`px-3 py-1 rounded text-sm ${
+                autoSaveEnabled ? 'bg-green-600' : 'bg-gray-600'
+              }`}
+            >
+              {autoSaveEnabled ? 'Auto-save ON' : 'Auto-save OFF'}
+            </button>
+            
+            <button
+              onClick={() => saveDraft()}
+              disabled={saving}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {saving ? 'Saving...' : 'Save'}
+            </button>
 
-      {/* Key Points Preview */}
-      {showPreview && keyPoints.length > 0 && (
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-              <Target className="w-5 h-5 text-emerald-500" />
-              Key Insights Preview
-            </h2>
-            {insights && (
-              <div className="text-sm text-gray-400">
-                Confidence: {insights.confidence}%
-              </div>
-            )}
+            <button
+              onClick={() => getAIFeedback()}
+              className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Brain className="w-4 h-4" />
+              AI Feedback
+            </button>
+
+            <button
+              onClick={() => exportDeck('pdf')}
+              className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export
+            </button>
           </div>
-          
-          <div className="grid gap-3 mb-6">
-            {keyPoints.map((point, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="flex items-start gap-3 p-3 bg-gray-800/50 rounded-lg"
+        </div>
+      </header>
+
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Slide Navigator */}
+        <div className="w-64 bg-gray-900 border-r border-gray-700 p-4 overflow-y-auto">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Slides</h3>
+            <button
+              onClick={() => addSlide()}
+              className="bg-blue-600 hover:bg-blue-700 p-2 rounded"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {draft.slides.map((slide, index) => (
+              <div
+                key={slide.id}
+                onClick={() => setSelectedSlideIndex(index)}
+                className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                  index === selectedSlideIndex
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-800 hover:bg-gray-700'
+                }`}
               >
-                <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-200">{point}</span>
-              </motion.div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {slide.type === 'chart' && <BarChart3 className="w-4 h-4" />}
+                    {slide.type === 'content' && <Image className="w-4 h-4" />}
+                    {slide.type === 'title' && <Image className="w-4 h-4" />}
+                    <span className="text-sm font-medium">
+                      {slide.title || `Slide ${index + 1}`}
+                    </span>
+                  </div>
+                  {draft.slides.length > 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteSlide(slide.id)
+                      }}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
-          
-          {insights && (
-            <div className="mb-6 p-4 bg-blue-900/20 rounded-lg">
-              <h3 className="font-semibold text-blue-300 mb-2">Executive Summary</h3>
-              <p className="text-gray-300 text-sm">{insights.executiveSummary}</p>
+
+          {/* Quick Actions */}
+          <div className="mt-6 pt-4 border-t border-gray-700">
+            <h4 className="font-semibold mb-3">Quick Actions</h4>
+            <div className="space-y-2">
+              <button
+                onClick={() => addSlide('chart')}
+                className="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded text-sm flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Add Chart
+              </button>
+              <button
+                onClick={() => addSlide('content')}
+                className="w-full bg-green-600 hover:bg-green-700 p-2 rounded text-sm flex items-center gap-2"
+              >
+                <Image className="w-4 h-4" />
+                Add Content
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Editor */}
+        <div className="flex-1 flex flex-col">
+          {selectedSlide && (
+            <div className="flex-1 p-6">
+              <div className="max-w-4xl mx-auto">
+                {/* Slide Editor */}
+                <div className="bg-gray-800 rounded-lg p-6 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">
+                      {selectedSlide.type.charAt(0).toUpperCase() + selectedSlide.type.slice(1)} Slide
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowChartGenerator(!showChartGenerator)}
+                        className={`px-3 py-1 rounded text-sm ${
+                          showChartGenerator ? 'bg-purple-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        Chart Generator
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Title Input */}
+                  <input
+                    type="text"
+                    value={selectedSlide.title}
+                    onChange={(e) => updateSlide(selectedSlide.id, { title: e.target.value })}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 mb-4 text-white"
+                    placeholder="Slide title"
+                  />
+
+                  {/* Content Editor */}
+                  <textarea
+                    value={selectedSlide.content}
+                    onChange={(e) => updateSlide(selectedSlide.id, { content: e.target.value })}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 h-32 resize-none text-white"
+                    placeholder="Slide content..."
+                  />
+
+                  {/* Chart Generator */}
+                  {showChartGenerator && selectedSlide.type === 'chart' && (
+                    <div className="mt-4 p-4 bg-gray-700 rounded-lg">
+                      <h4 className="font-semibold mb-3">AI Chart Generator</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Chart Type</label>
+                          <select
+                            value={chartGenerationData?.chartType || 'bar'}
+                            onChange={(e) => setChartGenerationData({
+                              ...chartGenerationData,
+                              chartType: e.target.value
+                            })}
+                            className="w-full bg-gray-600 border border-gray-500 rounded p-2"
+                          >
+                            <option value="bar">Bar Chart</option>
+                            <option value="line">Line Chart</option>
+                            <option value="pie">Pie Chart</option>
+                            <option value="scatter">Scatter Plot</option>
+                            <option value="area">Area Chart</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Data Type</label>
+                          <select
+                            value={chartGenerationData?.dataType || 'sales'}
+                            onChange={(e) => setChartGenerationData({
+                              ...chartGenerationData,
+                              dataType: e.target.value
+                            })}
+                            className="w-full bg-gray-600 border border-gray-500 rounded p-2"
+                          >
+                            <option value="sales">Sales Data</option>
+                            <option value="marketing">Marketing Data</option>
+                            <option value="financial">Financial Data</option>
+                            <option value="user">User Data</option>
+                          </select>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => generateChart(selectedSlide.id, chartGenerationData)}
+                        className="mt-4 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded"
+                      >
+                        Generate Chart with AI
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Chart Display */}
+                  {selectedSlide.chartData && (
+                    <div className="mt-4 p-4 bg-gray-700 rounded-lg">
+                      <h4 className="font-semibold mb-3">Generated Chart</h4>
+                      <div className="bg-white rounded p-4 text-gray-900">
+                        <p className="text-sm text-gray-600">Chart visualization would appear here</p>
+                        <p className="text-xs mt-2">Chart Type: {selectedSlide.chartType}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* AI Feedback Display */}
+                {draft.aiFeedback && draft.aiFeedback.suggestions.length > 0 && (
+                  <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4">
+                    <h4 className="font-semibold text-blue-300 mb-2">AI Suggestions</h4>
+                    <ul className="space-y-1">
+                      {draft.aiFeedback.suggestions.map((suggestion, index) => (
+                        <li key={index} className="text-blue-200 text-sm">• {suggestion}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           )}
-          
-          <div className="flex gap-3">
-            <Button 
-              onClick={continueBuilding} 
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Looks Great - Build Deck
-            </Button>
-            <Button 
-              variant="secondary" 
-              onClick={() => {
-                setShowPreview(false)
-                startDeckBuilding()
-              }}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Regenerate Analysis
-            </Button>
-          </div>
-        </Card>
-      )}
+        </div>
+      </div>
 
-      {/* Generated Slides */}
-      <AnimatePresence>
-        {generatedSlides.length > 0 && (
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
-                Generated Slides ({generatedSlides.length})
-              </h2>
-              <div className="text-sm text-gray-400">
-                Ready for editing
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              {generatedSlides.map((slide, idx) => (
-                <motion.div
-                  key={slide.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: idx * 0.2 }}
-                >
-                  <InteractiveSlide 
-                    slide={slide} 
-                    onUpdate={(updatedSlide) => {
-                      const newSlides = [...generatedSlides]
-                      newSlides[idx] = updatedSlide
-                      setGeneratedSlides(newSlides)
-                    }}
-                  />
-                </motion.div>
-              ))}
-            </div>
-            
-            <div className="mt-6 p-4 bg-emerald-900/20 rounded-lg border border-emerald-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-300 font-medium">Deck Generation Complete!</span>
-              </div>
-              <p className="text-sm text-gray-300 mb-4">
-                Your AI-generated deck is ready. You can now edit individual slides, add more content, or export your presentation.
-              </p>
-              <div className="flex gap-3">
-                <Button 
-                  onClick={() => {
-                    const finalDeck = {
-                      insights,
-                      slides: generatedSlides,
-                      metadata: {
-                        createdAt: new Date(),
-                        userRequirements,
-                        userGoals,
-                        dataPoints: initialData.length,
-                        confidence: insights?.confidence || 85,
-                        title: `AI-Generated Presentation - ${new Date().toLocaleDateString()}`
-                      }
-                    }
-                    if (onComplete) {
-                      onComplete(finalDeck)
-                    }
-                  }}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Complete & Go to Editor
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    if (onSave) {
-                      const finalDeck = {
-                        insights,
-                        slides: generatedSlides,
-                        metadata: {
-                          createdAt: new Date(),
-                          userRequirements,
-                          userGoals,
-                          dataPoints: initialData.length,
-                          confidence: insights?.confidence || 85,
-                          title: `AI-Generated Presentation - ${new Date().toLocaleDateString()}`
-                        }
-                      }
-                      onSave(finalDeck)
-                    }
-                  }}
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Draft
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
-      </AnimatePresence>
-
-      {/* Context Input Modal */}
-      <AnimatePresence>
-        {showContextInput && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      {/* Error Display */}
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-900/90 border border-red-700 text-red-200 px-4 py-3 rounded-lg max-w-md">
+          <p>{error}</p>
+          <button
+            onClick={() => setError('')}
+            className="text-red-300 hover:text-red-100 text-sm mt-2"
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-            >
-              <Card className="w-full max-w-md p-6 m-4">
-                <h3 className="text-lg font-semibold text-white mb-4">Add Context to Brain</h3>
-                <p className="text-gray-400 text-sm mb-4">
-                  The brain can incorporate additional context to improve analysis.
-                </p>
-                <textarea
-                  placeholder="What else should the brain consider? (e.g., market conditions, goals, constraints...)"
-                  value={additionalContext}
-                  onChange={(e) => setAdditionalContext(e.target.value)}
-                  className="w-full h-24 p-3 bg-gray-800 text-white rounded border border-gray-600 resize-none"
-                />
-                <div className="flex gap-3 mt-4">
-                  <Button 
-                    onClick={submitAdditionalContext}
-                    disabled={!additionalContext.trim()}
-                    className="flex-1"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add & Continue
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setShowContextInput(false)
-                      setProcessing(prev => ({ ...prev, isPaused: false }))
-                    }}
-                  >
-                    Skip
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            Dismiss
+          </button>
+        </div>
+      )}
     </div>
   )
 }
