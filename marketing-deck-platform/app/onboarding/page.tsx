@@ -343,7 +343,6 @@ export default function OnboardingPage() {
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={formData.businessGoals.includes(goal)}
-                      readOnly
                     />
                     <span className="text-sm font-medium">{goal}</span>
                   </div>
@@ -368,7 +367,6 @@ export default function OnboardingPage() {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         checked={formData.keyQuestions.includes(question)}
-                        readOnly
                       />
                       <span className="text-sm">{question}</span>
                     </div>
@@ -405,7 +403,6 @@ export default function OnboardingPage() {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         checked={formData.keyMetrics.includes(metric)}
-                        readOnly
                       />
                       <span className="text-sm font-medium">{metric}</span>
                     </div>
@@ -431,7 +428,6 @@ export default function OnboardingPage() {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         checked={formData.datasetTypes.includes(type)}
-                        readOnly
                       />
                       <span className="text-sm font-medium">{type}</span>
                     </div>
