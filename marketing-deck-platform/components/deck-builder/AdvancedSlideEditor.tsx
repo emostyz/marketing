@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, Reorder, AnimatePresence } from 'framer-motion'
 import { 
   Type, Image, BarChart3, Table, Video, Mic, Square, Circle,
-  Triangle, Arrow, Star, Heart, Zap, Move, RotateCw, Copy,
+  Triangle, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Star, Heart, Zap, Move, RotateCw, Copy,
   Trash2, AlignLeft, AlignCenter, AlignRight, Bold, Italic,
   Underline, Palette, Link2, Settings, Lock, Unlock, Eye,
   EyeOff, ChevronUp, ChevronDown, MoreHorizontal
