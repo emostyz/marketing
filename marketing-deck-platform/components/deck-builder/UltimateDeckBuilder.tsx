@@ -22,6 +22,7 @@ import { UploadedFile } from '@/lib/types/upload'
 import WorldClassPresentationEditor from '@/components/editor/WorldClassPresentationEditor'
 import { useTierLimits } from '@/lib/hooks/useTierLimits'
 import UpgradePrompt from '@/components/ui/UpgradePrompt'
+import { useEnterpriseAccess } from '@/lib/hooks/useEnterpriseAccess'
 // import { Progress } from '@/components/ui/progress'
 
 // Helper function to convert file to base64
@@ -142,6 +143,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   const router = useRouter()
   const { user, loading } = useAuth()
   const { checkLimit, incrementUsage, rollbackUsage, upgradePlan, subscription } = useTierLimits()
+  const { isEnterprise, getAIEndpoint, getAIConfig } = useEnterpriseAccess()
 
   // Show loading while checking auth
   if (loading) {
@@ -392,7 +394,13 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
     { id: 7, title: 'Customize', icon: <Settings /> },
   ]
 
-  const nextStep = () => setCurrentStep(prev => prev + 1)
+  const nextStep = () => {
+    setCurrentStep(prev => {
+      const next = prev + 1;
+      console.log('[UltimateDeckBuilder] nextStep called, advancing from', prev, 'to', next);
+      return next;
+    });
+  }
   const prevStep = () => setCurrentStep(prev => prev - 1)
   
   const handleDataContextUpdate = async (newContext: any) => {
@@ -630,11 +638,59 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
         return baseData
       }
 
-      // Use the universal AI analysis endpoint for real data processing
-      const response = await fetch('/api/ai/universal-analyze', {
+      // Use the enhanced AI analysis endpoint with world-class features
+      // For enterprise users, use their configured endpoint
+      const aiEndpoint = getAIEndpoint()
+      const aiConfig = getAIConfig()
+      
+      console.log('🏢 Using AI endpoint:', isEnterprise ? 'Enterprise' : 'Standard', aiEndpoint)
+      
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      
+      // Add enterprise headers if configured
+      if (isEnterprise && aiConfig.headers) {
+        Object.assign(headers, aiConfig.headers)
+      }
+      
+      const response = await fetch(aiEndpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData)
+        headers,
+        body: JSON.stringify({
+          data: allData,
+          datasetIds: datasetIds,
+          context: {
+            industry: requestData.context.industry,
+            businessContext: requestData.context.businessContext,
+            targetAudience: requestData.context.targetAudience,
+            description: requestData.context.description,
+            audience: requestData.context.targetAudience,
+            goal: requestData.context.businessContext,
+            timeLimit: requestData.requirements.presentationDuration,
+            decision: requestData.context.factors?.join(', ') || 'optimize performance'
+          },
+          options: {
+            includeChartRecommendations: true,
+            includeExecutiveSummary: true,
+            includeNarrative: true,
+            includeDesignInnovation: true,
+            maxInsights: isEnterprise ? 15 : 10, // More insights for enterprise
+            confidenceThreshold: 0.7,
+            innovationLevel: isEnterprise ? 'revolutionary' : 'advanced', // Higher innovation for enterprise
+            visualStyle: 'futuristic',
+            chartComplexity: 'moderate',
+            narrativeTone: 'confident',
+            designComplexity: isEnterprise ? 'complex' : 'moderate', // More complex designs for enterprise
+            enableInteractivity: true,
+            enableAnimations: true,
+            // Enterprise-specific options
+            ...(isEnterprise && {
+              enterpriseMode: true,
+              maxTokens: aiConfig.maxTokens,
+              temperature: aiConfig.temperature,
+              model: aiConfig.model
+            })
+          }
+        })
       });
 
       if (!response.ok) {
@@ -643,21 +699,51 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
       }
 
       const result = await response.json();
-      console.log('🎉 Universal analysis complete!', {
-        insights: result.result?.insights?.length || 0,
-        slides: result.result?.slideStructure?.length || 0,
-        confidence: result.result?.metadata?.confidence || 0
+      console.log('🎉 Enhanced AI analysis complete!', {
+        insights: result.data?.insights?.insights?.length || 0,
+        slides: result.data?.slideStructure?.length || 0,
+        confidence: result.metadata?.confidence || 0,
+        narrative: result.data?.narrative?.story?.title || 'N/A',
+        designInnovation: result.data?.designInnovation?.slideDesigns?.length || 0
       });
       
-      if (result.success && result.result) {
-        // Use the universal analysis result format directly
-        const transformedResult = result.result;
+      if (result.success && result.data) {
+        // Transform enhanced AI analysis result to compatible format
+        const transformedResult = {
+          insights: result.data.insights?.insights || [],
+          slideStructure: result.data.slideStructure || [],
+          narrative: {
+            theme: result.data.narrative?.story?.theme || 'Data-driven insights',
+            keyMessages: result.data.narrative?.story?.keyMessages || [],
+            title: result.data.narrative?.story?.title || 'Data Analysis Presentation',
+            story: result.data.narrative?.story || {}
+          },
+          chartRecommendations: result.data.chartRecommendations?.recommendations || [],
+          executiveSummary: result.data.executiveSummary || {},
+          designInnovation: result.data.designInnovation || {},
+          visualExcellence: result.data.visualExcellence || {},
+          customizations: result.data.customizations || {},
+          metadata: {
+            confidence: result.metadata?.confidence || 85,
+            totalInsights: result.metadata?.totalInsights || 0,
+            innovationScore: result.metadata?.innovationScore || 0,
+            narrativeEngagement: result.metadata?.narrativeEngagement || 0
+          }
+        };
 
         setAnalysisResult(transformedResult);
         setAnalysisStatus('Analysis Complete!');
         setAnalysisProgress(100);
         
-        toast.success(`🎯 Analysis complete! Generated ${transformedResult.slideStructure?.length || 0} slides with ${transformedResult.insights?.length || 0} insights (${Math.round((transformedResult.metadata?.confidence || 0.85) * 100)}% confidence)`, { duration: 6000 });
+        // Show different success message for enterprise vs standard users
+        if (isEnterprise && getAIConfig().endpoint !== '/api/ai/analyze') {
+          toast.success(`🏢 Enterprise AI Analysis Complete! Generated ${transformedResult.slideStructure?.length || 0} slides with ${transformedResult.insights?.length || 0} insights using your on-premise LLM (${Math.round((transformedResult.metadata?.confidence || 0.85) * 100)}% confidence)`, { 
+            duration: 8000,
+            icon: '🧠'
+          });
+        } else {
+          toast.success(`🎯 Analysis complete! Generated ${transformedResult.slideStructure?.length || 0} slides with ${transformedResult.insights?.length || 0} insights (${Math.round((transformedResult.metadata?.confidence || 0.85) * 100)}% confidence)`, { duration: 6000 });
+        }
         
         setProgress(100)
         console.log('Universal analysis result:', transformedResult)
@@ -1136,6 +1222,9 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
         )
     }
   }
+
+  // Add a log to the main render
+  console.log('[UltimateDeckBuilder] Render, currentStep:', currentStep);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-950 text-white py-8 px-4">
