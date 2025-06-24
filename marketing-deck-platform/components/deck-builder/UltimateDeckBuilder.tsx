@@ -143,13 +143,6 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   const { user, loading } = useAuth()
   const { checkLimit, incrementUsage, rollbackUsage, upgradePlan, subscription } = useTierLimits()
 
-  // Auth guard - redirect to login if not authenticated
-  React.useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/login')
-    }
-  }, [user, loading, router])
-
   // Show loading while checking auth
   if (loading) {
     return (
@@ -163,9 +156,17 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
     )
   }
 
-  // Don't render if no user (will redirect)
+  // Don't render if no user (middleware will handle redirect)
   if (!user) {
-    return null
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <div className="text-center">
+          <Brain className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-pulse" />
+          <h2 className="text-2xl font-bold text-white mb-2">Authenticating...</h2>
+          <p className="text-gray-400">Please wait...</p>
+        </div>
+      </div>
+    )
   }
   
   const [currentStep, setCurrentStep] = useState(1)
