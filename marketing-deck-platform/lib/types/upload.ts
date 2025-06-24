@@ -8,8 +8,10 @@ export interface UploadedFile {
   fileObject?: FileWithPath;
   url?: string;
   storagePath?: string;
+  datasetId?: string; // ID of the stored dataset in database
   status: 'added' | 'uploading' | 'success' | 'error';
   parsedData?: {
+    data: any[]; // The actual row data  
     rows: any[];
     columns: Array<{ name: string; type: string }>;
     rowCount: number;
@@ -20,6 +22,7 @@ export interface UploadedFile {
       potentialDimensions: string[];
     };
     summary: any;
+    statistics?: any; // Column statistics
   };
   error?: string;
 }

@@ -207,6 +207,27 @@ export const dataImports = pgTable('data_imports', {
   processedAt: timestamp('processed_at', { withTimezone: true })
 });
 
+// Datasets table for processed data storage
+export const datasets = pgTable('datasets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => profiles.id),
+  name: text('name').notNull(),
+  originalFileUrl: text('original_file_url'),
+  processedData: jsonb('processed_data'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+// Data columns table for column metadata
+export const dataColumns = pgTable('data_columns', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  datasetId: uuid('dataset_id').notNull().references(() => datasets.id),
+  columnName: text('column_name').notNull(),
+  dataType: text('data_type').notNull(),
+  sampleValues: jsonb('sample_values'),
+  statistics: jsonb('statistics')
+});
+
 // Presentation Events table
 export const presentationEvents = pgTable('presentation_events', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -281,7 +302,23 @@ export const profilesRelations = relations(profiles, ({ many }) => ({
   presentations: many(presentations),
   templates: many(templates),
   events: many(presentationEvents),
-  subscriptions: many(subscriptions)
+  subscriptions: many(subscriptions),
+  datasets: many(datasets)
+}));
+
+export const datasetsRelations = relations(datasets, ({ one, many }) => ({
+  user: one(profiles, {
+    fields: [datasets.userId],
+    references: [profiles.id]
+  }),
+  columns: many(dataColumns)
+}));
+
+export const dataColumnsRelations = relations(dataColumns, ({ one }) => ({
+  dataset: one(datasets, {
+    fields: [dataColumns.datasetId],
+    references: [datasets.id]
+  })
 }));
 
 export const presentationsRelations = relations(presentations, ({ one, many }) => ({
@@ -320,6 +357,10 @@ export type Template = typeof templates.$inferSelect;
 export type NewTemplate = typeof templates.$inferInsert;
 export type DataImport = typeof dataImports.$inferSelect;
 export type NewDataImport = typeof dataImports.$inferInsert;
+export type Dataset = typeof datasets.$inferSelect;
+export type NewDataset = typeof datasets.$inferInsert;
+export type DataColumn = typeof dataColumns.$inferSelect;
+export type NewDataColumn = typeof dataColumns.$inferInsert;
 export type PresentationEvent = typeof presentationEvents.$inferSelect;
 export type NewPresentationEvent = typeof presentationEvents.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;

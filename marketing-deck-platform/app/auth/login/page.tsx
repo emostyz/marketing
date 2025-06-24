@@ -14,12 +14,21 @@ export default function LoginPage() {
   const router = useRouter()
   const { signIn, signInDemo, signInWithOAuth, user, loading: authLoading } = useAuth()
 
-  // Add redirect for authenticated users
+  // Add redirect for authenticated users - but only after auth is fully loaded
   useEffect(() => {
-    if (!authLoading && user) {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/dashboard'
-      } else {
+    // Only redirect if auth is fully loaded and user is authenticated
+    if (!authLoading && user && !user.demo) {
+      // Check if we're not already redirecting to avoid loops
+      const urlParams = new URLSearchParams(window.location.search)
+      const isRedirecting = urlParams.get('redirecting') === 'true'
+      
+      if (!isRedirecting) {
+        // Add redirecting flag to URL to prevent loops
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.set('redirecting', 'true')
+        window.history.replaceState({}, '', newUrl.toString())
+        
+        // Navigate to dashboard
         router.push('/dashboard')
       }
     }

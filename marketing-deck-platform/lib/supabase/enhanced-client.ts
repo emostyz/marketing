@@ -222,6 +222,8 @@ export interface Database {
         Args: { presentation_uuid: string }
         Returns: void
       }
+      // NOTE: track_api_usage function must exist in the database with the following signature:
+      //   user_uuid UUID, endpoint_path TEXT, request_method TEXT, tokens_consumed INTEGER, cost NUMERIC
       track_api_usage: {
         Args: {
           user_uuid: string

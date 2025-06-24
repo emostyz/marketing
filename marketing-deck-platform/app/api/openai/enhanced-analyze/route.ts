@@ -386,6 +386,7 @@ Return DETAILED JSON with:
         slideStructure: [
           {
             id: 'slide_1',
+            number: 1,
             type: 'executive_summary',
             title: 'Executive Summary: Strategic Insights Revealed',
             content: {
@@ -398,6 +399,7 @@ Return DETAILED JSON with:
           },
           {
             id: 'slide_2',
+            number: 2,
             type: 'data_overview',
             title: 'Data Foundation: Performance Baseline',
             content: {
@@ -417,6 +419,7 @@ Return DETAILED JSON with:
           },
           {
             id: 'slide_3',
+            number: 3,
             type: 'hidden_insight',
             title: 'Hidden Driver: Efficiency Threshold Effect',
             content: {
@@ -436,6 +439,7 @@ Return DETAILED JSON with:
           },
           {
             id: 'slide_4',
+            number: 4,
             type: 'strategic_analysis',
             title: 'Strategic Analysis: Market Timing Signals',
             content: {
@@ -455,6 +459,7 @@ Return DETAILED JSON with:
           },
           {
             id: 'slide_5',
+            number: 5,
             type: 'recommendations',
             title: 'Strategic Action Plan: Leverage Hidden Advantages',
             content: {

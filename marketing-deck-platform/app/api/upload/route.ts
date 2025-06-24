@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { processDataFile } from '@/lib/data/enhanced-file-processor'
+import { storeDataset } from '@/lib/data/dataset-storage'
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,84 +30,83 @@ export async function POST(request: NextRequest) {
     console.log('🔍 Upload request from:', isDemo ? 'Demo user' : 'Authenticated user', userId)
     console.log('📁 Files to process:', files.map(f => `${f.name} (${f.size} bytes)`).join(', '))
 
-    // Process each file
+    // Process each file using enhanced processor
     const processedFiles = []
     const savedDatasets = []
     
     for (const file of files) {
-      let processedFile: any = {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size
-      }
+      try {
+        // Use the enhanced file processor
+        const processedData = await processDataFile(file)
+        
+        // Store in database (for real users) or create session entry (for demo)
+        let datasetId: string
+        
+        if (!isDemo) {
+          // Store in Supabase for authenticated users
+          datasetId = await storeDataset(userId, processedData, projectName)
+        } else {
+          // For demo users, create a temporary ID
+          datasetId = `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        }
 
-      if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
-        const text = await file.text()
-        const lines = text.split('\n')
-        const headers = lines[0]?.split(',').map(h => h.trim()) || []
-        const data = lines.slice(1).filter(line => line.trim()).map(line => {
-          const values = line.split(',').map(v => v.trim())
-          const row: any = {}
-          headers.forEach((header, index) => {
-            row[header] = values[index] || ''
-          })
-          return row
-        })
-        const columns: Array<{ name: string; type: string }> = headers.map(h => ({ name: h, type: 'text' }))
-        processedFile = {
-          ...processedFile,
-          fileType: 'csv',
-          headers,
-          columns,
-          data,
-          rowCount: data.length
-        }
-      } else if (file.type.includes('spreadsheet') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        // For Excel files, we'll return basic info and suggest CSV conversion
-        processedFile = {
-          ...processedFile,
-          fileType: 'excel',
-          message: 'Excel files detected. For best results, please convert to CSV format.'
-        }
-      } else if (file.type === 'application/json' || file.name.endsWith('.json')) {
-        const text = await file.text()
-        const data = JSON.parse(text)
-        let columns: Array<{ name: string; type: string }> = []
-        if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
-          columns = Object.keys(data[0]).map(k => ({ name: k, type: typeof data[0][k] }))
-        }
-        processedFile = {
-          ...processedFile,
-          fileType: 'json',
-          columns,
-          data,
-          rowCount: Array.isArray(data) ? data.length : 1
-        }
-      } else {
-        processedFile = {
-          ...processedFile,
-          fileType: 'unsupported',
-          message: 'Unsupported file type. Please upload CSV, Excel, or JSON files.'
-        }
-      }
-
-      processedFiles.push(processedFile)
-
-      // For demo mode or any mode, create a dataset entry for session storage
-      if (processedFile.fileType !== 'unsupported') {
-        savedDatasets.push({
-          id: isDemo ? `demo-${Date.now()}` : `upload-${Date.now()}`,
+        // Create response object
+        const processedFile = {
+          id: datasetId,
           fileName: file.name,
-          fileType: processedFile.fileType,
+          fileType: processedData.fileType,
+          fileSize: file.size,
+          columns: processedData.columns.map(col => ({
+            name: col.name,
+            type: col.type
+          })),
+          rowCount: processedData.rowCount,
+          processingTime: processedData.metadata.processingTime,
+          sampleData: processedData.data.slice(0, 5), // First 5 rows for preview
+          statistics: {
+            totalColumns: processedData.columns.length,
+            totalRows: processedData.rowCount,
+            dataTypes: processedData.columns.reduce((acc: any, col) => {
+              acc[col.type] = (acc[col.type] || 0) + 1
+              return acc
+            }, {})
+          }
+        }
+
+        processedFiles.push(processedFile)
+
+        // Create dataset entry for session/presentation context
+        savedDatasets.push({
+          id: datasetId,
+          fileName: file.name,
+          fileType: processedData.fileType,
           fileSize: file.size,
           folder: projectName,
           status: 'completed',
           demo: isDemo,
-          data: processedFile.data || processedFile
+          data: processedData.data,
+          columns: processedData.columns
         })
-        console.log('✅ Processed file:', file.name, 'Type:', processedFile.fileType)
-      } else {
-        console.log('❌ Unsupported file:', file.name)
+
+        console.log('✅ Processed and stored file:', {
+          fileName: file.name,
+          fileType: processedData.fileType,
+          datasetId,
+          rowCount: processedData.rowCount,
+          columns: processedData.columns.length,
+          processingTime: `${processedData.metadata.processingTime}ms`
+        })
+
+      } catch (error) {
+        console.error('❌ Error processing file:', file.name, error)
+        
+        // Add error info to response
+        processedFiles.push({
+          fileName: file.name,
+          fileType: 'error',
+          fileSize: file.size,
+          error: error instanceof Error ? error.message : 'Unknown processing error'
+        })
       }
     }
 
@@ -130,7 +131,9 @@ export async function POST(request: NextRequest) {
       processedFiles: processedFiles.length,
       savedDatasets: savedDatasets.length,
       fileTypesProcessed: [...new Set(processedFiles.map(f => f.fileType))],
-      totalRowsProcessed: processedFiles.reduce((sum, f) => sum + (f.rowCount || 0), 0)
+      totalRowsProcessed: processedFiles.reduce((sum, f) => sum + (f.rowCount || 0), 0),
+      totalColumns: processedFiles.reduce((sum, f) => sum + (f.columns?.length || 0), 0),
+      errors: processedFiles.filter(f => f.fileType === 'error').length
     })
 
     return NextResponse.json({

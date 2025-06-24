@@ -103,9 +103,11 @@ export const SimpleFileUpload: React.FC<SimpleFileUploadProps> = ({
       const successFile: UploadedFile = {
         ...tempFile,
         id: uploadedFile.id || tempFile.id,
+        datasetId: uploadedFile.id, // Store dataset ID for database retrieval
         status: 'success',
         url: uploadedFile.url,
         parsedData: {
+          data: uploadedFile.sampleData || uploadedFile.data || [], // Use sampleData or data field
           rows: uploadedFile.data || [],
           columns: uploadedFile.columns || [],
           rowCount: uploadedFile.rowCount || 0,
@@ -115,7 +117,8 @@ export const SimpleFileUpload: React.FC<SimpleFileUploadProps> = ({
             potentialMetrics: uploadedFile.columns?.map((col: any) => col.name) || [],
             potentialDimensions: uploadedFile.columns?.map((col: any) => col.name) || []
           },
-          summary: `Uploaded ${uploadedFile.rowCount || 0} rows with ${uploadedFile.columns?.length || 0} columns`
+          summary: `Uploaded ${uploadedFile.rowCount || 0} rows with ${uploadedFile.columns?.length || 0} columns`,
+          statistics: uploadedFile.statistics
         }
       }
 

@@ -1,0 +1,67 @@
+
+[1m[36m
+🎯 USER UPLOAD & SLIDE GENERATION TEST REPORT
+=============================================[0m
+
+[1mTest Duration:[0m 39.99 seconds
+
+[1m📊 Test Results:[0m
+ℹ️ Starting browser...
+🧪 Navigating to upload page...
+❌ Browser console error: Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline'". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+ℹ️ API Call: POST http://localhost:3000/api/analytics/page-view
+❌ Browser console error: `legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
+
+npx @next/codemod@latest new-link .
+
+Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components
+ℹ️ API Call: GET http://localhost:3000/api/auth/check
+❌ API Error: 400 http://localhost:3000/api/analytics/page-view
+❌ Browser console error: Failed to load resource: the server responded with a status of 400 (Bad Request)
+❌ Browser console error: Failed to log page view
+ℹ️ Setting demo mode...
+❌ Browser console error: Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline'". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+❌ Browser console error: `legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
+
+npx @next/codemod@latest new-link .
+
+Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components
+ℹ️ API Call: POST http://localhost:3000/api/analytics/page-view
+ℹ️ API Call: GET http://localhost:3000/api/auth/check
+❌ API Error: 400 http://localhost:3000/api/analytics/page-view
+❌ Browser console error: Failed to load resource: the server responded with a status of 400 (Bad Request)
+❌ Browser console error: Failed to log page view
+ℹ️ Screenshot saved: screenshots/01-home-page-1750758901411.png
+ℹ️ Navigating directly to deck-builder page...
+❌ Browser console error: Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline'". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+ℹ️ API Call: POST http://localhost:3000/api/analytics/page-view
+ℹ️ API Call: GET http://localhost:3000/api/auth/check
+❌ API Error: 400 http://localhost:3000/api/analytics/page-view
+❌ Browser console error: Failed to load resource: the server responded with a status of 400 (Bad Request)
+❌ Browser console error: Failed to log page view
+ℹ️ Screenshot saved: screenshots/02-deck-builder-page-1750758919581.png
+✅ Successfully navigated to deck builder
+🧪 Testing file upload...
+❌ Upload error: Could not find file input element
+ℹ️ Screenshot saved: screenshots/upload-error-1750758934638.png
+❌ Critical test failure: Could not find file input element
+
+[1m🎨 Slide Quality Analysis:[0m
+- Total Slides: 0
+- Design Quality: Not analyzed
+- Has Charts: ❌ No
+- Has Text Content: ❌ No
+- Has Rich Layouts: ❌ No
+
+[1m📸 Screenshots Captured:[0m
+- screenshots/01-home-page-1750758901411.png
+- screenshots/02-deck-builder-page-1750758919581.png
+- screenshots/upload-error-1750758934638.png
+
+[1m⚠️  Errors Encountered:[0m
+Could not find file input element
+
+[1m🎯 Overall Result:[0m [41m[1m FAIL [0m

@@ -97,6 +97,7 @@ export class UserDataService {
         .from('presentations')
         .select('*')
         .eq('user_id', userId)
+        // NOTE: last_edited_at column must exist in the presentations table
         .order('last_edited_at', { ascending: false })
         .limit(limit)
 
@@ -148,6 +149,7 @@ export class UserDataService {
         .from('presentations')
         .update({
           ...presentationData,
+          // NOTE: last_edited_at column must exist in the presentations table
           last_edited_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -604,6 +606,8 @@ export class UserDataService {
 
   static async trackApiUsage(userId: string, endpoint: string, method: string, tokens = 0, cost = 0) {
     try {
+      // NOTE: track_api_usage function must exist in the database with the following signature:
+      //   user_uuid UUID, endpoint_path TEXT, request_method TEXT, tokens_consumed INTEGER, cost NUMERIC
       const { error } = await supabase.rpc('track_api_usage', {
         user_uuid: userId,
         endpoint_path: endpoint,

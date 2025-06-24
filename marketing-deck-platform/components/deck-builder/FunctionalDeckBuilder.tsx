@@ -162,14 +162,82 @@ export default function FunctionalDeckBuilder({
 
   const loadPresentation = async (id: string) => {
     try {
+      console.log('🔍 Loading presentation:', id)
       const response = await fetch(`/api/presentations/${id}`)
       const data = await response.json()
-      if (data.success) {
-        setPresentation(data.data)
+      
+      if (data.success && data.data) {
+        console.log('✅ Presentation loaded:', data.data)
+        
+        // Convert API response to FunctionalDeckBuilder format
+        const presentationData = data.data
+        const convertedPresentation: Presentation = {
+          id: presentationData.id,
+          title: presentationData.title || 'Untitled Presentation',
+          slides: presentationData.slides?.map((slide: any, index: number) => ({
+            id: slide.id || `slide-${index}`,
+            title: slide.title || `Slide ${index + 1}`,
+            content: slide.content?.map((element: any) => ({
+              id: element.id || `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              type: element.type || 'text',
+              position: {
+                x: element.position?.x || 0,
+                y: element.position?.y || 0,
+                width: element.position?.width || 200,
+                height: element.position?.height || 100,
+                rotation: element.position?.rotation || 0
+              },
+              style: element.style || {
+                fontSize: 16,
+                fontFamily: 'Inter',
+                color: '#1f2937'
+              },
+              content: element.content || { text: 'Default text' },
+              layer: element.layer || 1,
+              locked: element.locked || false,
+              hidden: element.hidden || false,
+              animations: element.animations || []
+            })) || [],
+            template: slide.template || 'blank',
+            notes: slide.notes || '',
+            duration: slide.duration || 5,
+            animations: slide.animations || [],
+            background: slide.background || { type: 'solid', color: '#ffffff' },
+            locked: slide.locked || false,
+            hidden: slide.hidden || false
+          })) || [createBlankSlide()],
+          theme: {
+            colors: {
+              primary: '#2563eb',
+              secondary: '#64748b',
+              accent: '#f59e0b',
+              background: '#ffffff',
+              text: '#1e293b'
+            },
+            fonts: {
+              heading: 'Inter',
+              body: 'Inter',
+              monospace: 'JetBrains Mono'
+            },
+            spacing: 'comfortable'
+          },
+          settings: {
+            aspectRatio: '16:9',
+            slideSize: 'standard',
+            defaultTransition: 'slide'
+          },
+          collaborators: [],
+          lastModified: new Date()
+        }
+        
+        console.log('📊 Converted presentation with', convertedPresentation.slides.length, 'slides')
+        setPresentation(convertedPresentation)
         undoRedoSystem.clear()
+      } else {
+        console.error('❌ Failed to load presentation:', data)
       }
     } catch (error) {
-      console.error('Error loading presentation:', error)
+      console.error('💥 Error loading presentation:', error)
     }
   }
 
@@ -324,6 +392,9 @@ export default function FunctionalDeckBuilder({
   }, [presentation, user])
 
   const handleCanvasClick = (e: React.MouseEvent) => {
+    // Only handle canvas clicks if clicking directly on canvas (not on elements)
+    if (e.target !== e.currentTarget) return
+    
     if (selectedTool === 'select') {
       setSelectedElements([])
       return
@@ -881,9 +952,9 @@ export default function FunctionalDeckBuilder({
               Share
             </Button>
             
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => onExport?.('pdf')}>
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => onExport?.('pptx')}>
               <Download className="w-4 h-4 mr-2" />
-              Export
+              Export PowerPoint
             </Button>
           </div>
         </div>

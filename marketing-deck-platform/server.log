@@ -16,584 +16,2320 @@
      ✓ clientSegmentCache
 
  ✓ Starting...
- ✓ Compiled middleware in 93ms
- ✓ Ready in 1061ms
- ○ Compiling /auth/login ...
- ✓ Compiled /auth/login in 1216ms
- HEAD /auth/login 200 in 1418ms
- ✓ Compiled /api/openai/enhanced-analyze in 370ms
-🧠 Enhanced Analysis - Starting request processing
-🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
-🧠 Enhanced Analysis - Extracted data: {
-  dataLength: 1,
-  isArray: true,
-  firstDataItem: [ 'Date', 'Revenue', 'Customers' ],
-  contextKeys: [
-    'description',
-    'factors',
-    'industry',
-    'businessContext',
-    'dataQuality',
-    'dataSource',
-    'collectionMethod',
-    'lastUpdated',
-    'confidence'
-  ],
-  timeFrameKeys: [ 'start', 'end', 'comparisons', 'dataFrequency' ],
-  requirementsKeys: [ 'slidesCount', 'presentationDuration', 'style', 'focusAreas' ]
-}
-🧠 Enhanced Analysis - All validations passed, getting user context
-🧠 Enhanced Analysis - User profile retrieved: No
-Error logging user event: {}
-🧠 Enhanced Analysis - Enhanced context prepared
-🧠 Enhanced Analysis - Transformed timeFrame: {
-  primaryPeriod: {
-    start: '2024-01-01',
-    end: '2024-01-01',
-    label: '2024-01-01 to 2024-01-01'
-  },
-  analysisType: 'm/m',
-  includeTrends: true,
-  includeSeasonality: true,
-  includeOutliers: true
-}
-🧠 Enhanced Analysis - Transformed requirements: {
-  slideCount: 3,
-  targetDuration: 5,
-  structure: 'ai_suggested',
-  keyPoints: [ 'Revenue' ],
-  slideDescriptions: [],
-  audienceType: 'executive',
-  presentationStyle: 'storytelling',
-  includeAppendix: true,
-  includeSources: true
-}
-🧠 Enhanced Analysis - Brain initialized, performing analysis...
-🧠 Enhanced Analysis - Checking dataset size for intelligent sampling...
-🧠 Dataset size: optimal (1 rows)
-🧠 User message: Perfect! Your dataset has 1 rows, which is ideal for comprehensive AI analysis. We'll analyze every data point to find the most nuanced insights.
-🧠 EnhancedBrainV2: Starting analysis...
-🧠 EnhancedBrainV2: Input validation passed
-🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
-🧠 EnhancedBrainV2: performInitialScan - Starting...
-🧠 EnhancedBrainV2: performInitialScan - Making Master Brain API call...
-🧠 EnhancedBrainV2: performInitialScan - Master Brain response received
-🧠 EnhancedBrainV2: Master Brain returned error, trying direct OpenAI fallback: No AI providers available for your tier
-🧠 EnhancedBrainV2: Using direct OpenAI fallback...
-🧠 EnhancedBrainV2: Direct OpenAI response received
-🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
-🧠 EnhancedBrainV2: performInitialScan - Completed successfully
-🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+ ✓ Compiled middleware in 62ms
+ ✓ Ready in 722ms
+ ✓ Compiled middleware in 0ms
  ✓ Compiled middleware in 1ms
- POST /api/openai/enhanced-analyze 200 in 30005ms
-🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
-🧠 Enhanced Analysis - Starting request processing
-🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
-🧠 Enhanced Analysis - Extracted data: {
-  dataLength: 1,
-  isArray: true,
-  firstDataItem: [ 'Revenue' ],
-  contextKeys: [
-    'description',
-    'factors',
-    'industry',
-    'businessContext',
-    'dataQuality',
-    'dataSource',
-    'collectionMethod',
-    'lastUpdated',
-    'confidence'
-  ],
-  timeFrameKeys: [ 'start', 'end', 'comparisons', 'dataFrequency' ],
-  requirementsKeys: [ 'slidesCount', 'presentationDuration', 'style', 'focusAreas' ]
-}
-🧠 Enhanced Analysis - All validations passed, getting user context
-🧠 Enhanced Analysis - User profile retrieved: No
-Error logging user event: {}
-🧠 Enhanced Analysis - Enhanced context prepared
-🧠 Enhanced Analysis - Transformed timeFrame: {
-  primaryPeriod: {
-    start: '2024-01-01',
-    end: '2024-01-01',
-    label: '2024-01-01 to 2024-01-01'
-  },
-  analysisType: 'm/m',
-  includeTrends: true,
-  includeSeasonality: true,
-  includeOutliers: true
-}
-🧠 Enhanced Analysis - Transformed requirements: {
-  slideCount: 2,
-  targetDuration: 3,
-  structure: 'ai_suggested',
-  keyPoints: [ 'Revenue' ],
-  slideDescriptions: [],
-  audienceType: 'executive',
-  presentationStyle: 'storytelling',
-  includeAppendix: true,
-  includeSources: true
-}
-🧠 Enhanced Analysis - Brain initialized, performing analysis...
-🧠 Enhanced Analysis - Checking dataset size for intelligent sampling...
-🧠 Dataset size: optimal (1 rows)
-🧠 User message: Perfect! Your dataset has 1 rows, which is ideal for comprehensive AI analysis. We'll analyze every data point to find the most nuanced insights.
-🧠 EnhancedBrainV2: Starting analysis...
-🧠 EnhancedBrainV2: Input validation passed
-🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
-🧠 EnhancedBrainV2: performInitialScan - Starting...
-🧠 EnhancedBrainV2: performInitialScan - Making Master Brain API call...
-🧠 EnhancedBrainV2: performInitialScan - Master Brain response received
-🧠 EnhancedBrainV2: Master Brain returned error, trying direct OpenAI fallback: No AI providers available for your tier
-🧠 EnhancedBrainV2: Using direct OpenAI fallback...
-🧠 EnhancedBrainV2: Direct OpenAI response received
-🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
-🧠 EnhancedBrainV2: performInitialScan - Completed successfully
-🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
-🧠 EnhancedBrainV2: Phase 4 - Narrative Development
-🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
-🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
- POST /api/openai/enhanced-analyze 200 in 60014ms
-🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+ ✓ Compiled in 2ms
  ○ Compiling /api/upload ...
- ✓ Compiled /api/upload in 557ms
- POST /api/upload 401 in 667ms
- ○ Compiling / ...
- ✓ Compiled / in 1268ms
- GET / 200 in 1649ms
- ○ Compiling /api/analytics/page-view ...
- GET /auth/login 200 in 1779ms
- GET /auth/login 200 in 1669ms
-🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
- ✓ Compiled /api/analytics/page-view in 1976ms
- POST /api/analytics/page-view 400 in 2123ms
- POST /api/analytics/page-view 400 in 2128ms
-Provider system_openai_gpt4 failed: SyntaxError: Unexpected token '`', "```json
-{
-"... is not valid JSON
-    at JSON.parse (<anonymous>)
-    at MasterBrain.processWithOpenAI (lib/ai/master-brain.ts:533:20)
-    at async MasterBrain.processWithProvider (lib/ai/master-brain.ts:463:19)
-    at async MasterBrain.processAnalysis (lib/ai/master-brain.ts:114:23)
-    at async EnhancedBrainV2.createSlideStructure (lib/ai/enhanced-brain-v2.ts:1025:21)
-    at async EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:369:29)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:182:19)
-  531 |
-  532 |     return {
-> 533 |       content: JSON.parse(response.choices[0].message.content || '{}'),
-      |                    ^
-  534 |       usage: response.usage
-  535 |     };
-  536 |   }
- GET /favicon.ico?favicon.45db1c09.ico 200 in 2337ms
- GET /favicon.ico 200 in 2353ms
- ○ Compiling /api/analytics/user-interaction ...
- ✓ Compiled /api/analytics/user-interaction in 779ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 981ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 1029ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 161ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 283ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 282ms
- GET / 200 in 284ms
- POST /api/analytics/page-view 400 in 114ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 196ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 193ms
- ○ Compiling /pricing ...
- ✓ Compiled /pricing in 948ms
-🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
- GET /pricing 200 in 1117ms
- POST /api/analytics/page-view 400 in 69ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 254ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 263ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 283ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 217ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 215ms
-Provider system_openai_gpt4 failed: SyntaxError: Unexpected token '`', "```json
-{
-"... is not valid JSON
-    at JSON.parse (<anonymous>)
-    at MasterBrain.processWithOpenAI (lib/ai/master-brain.ts:533:20)
-    at async MasterBrain.processWithProvider (lib/ai/master-brain.ts:463:19)
-    at async MasterBrain.processAnalysis (lib/ai/master-brain.ts:114:23)
-    at async EnhancedBrainV2.generateRecommendations (lib/ai/enhanced-brain-v2.ts:1135:21)
-    at async EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:380:30)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:182:19)
-  531 |
-  532 |     return {
-> 533 |       content: JSON.parse(response.choices[0].message.content || '{}'),
-      |                    ^
-  534 |       usage: response.usage
-  535 |     };
-  536 |   }
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 156ms
-🧠 EnhancedBrainV2: Analysis completed successfully
-🧠 Enhanced Analysis - Completed with 2 insights
-🔍 Enhanced Analysis - Performing deep insight analysis...
-🔍 Starting deep insight analysis for non-obvious patterns...
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 327ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 399ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 412ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 397ms
- ✓ Compiled in 171ms
-Provider system_openai_gpt4 failed: SyntaxError: Unexpected token '`', "```json
-{
-"... is not valid JSON
-    at JSON.parse (<anonymous>)
-    at MasterBrain.processWithOpenAI (lib/ai/master-brain.ts:533:20)
-    at async MasterBrain.processWithProvider (lib/ai/master-brain.ts:463:19)
-    at async MasterBrain.processAnalysis (lib/ai/master-brain.ts:114:23)
-    at async EnhancedBrainV2.createSlideStructure (lib/ai/enhanced-brain-v2.ts:1025:21)
-    at async EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:369:29)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:182:19)
-  531 |
-  532 |     return {
-> 533 |       content: JSON.parse(response.choices[0].message.content || '{}'),
-      |                    ^
-  534 |       usage: response.usage
-  535 |     };
-  536 |   }
-🎯 Deep analysis complete: 1 non-obvious insights found
-🔍 Deep insights found: 1 non-obvious patterns
-🔍 Hidden drivers: 1 primary drivers
-Error logging user event: {}
-🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
-Provider system_openai_gpt4 failed: SyntaxError: Unexpected token '`', "```json
-{
-"... is not valid JSON
-    at JSON.parse (<anonymous>)
-    at MasterBrain.processWithOpenAI (lib/ai/master-brain.ts:533:20)
-    at async MasterBrain.processWithProvider (lib/ai/master-brain.ts:463:19)
-    at async MasterBrain.processAnalysis (lib/ai/master-brain.ts:114:23)
-    at async EnhancedBrainV2.generateRecommendations (lib/ai/enhanced-brain-v2.ts:1135:21)
-    at async EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:380:30)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:182:19)
-  531 |
-  532 |     return {
-> 533 |       content: JSON.parse(response.choices[0].message.content || '{}'),
-      |                    ^
-  534 |       usage: response.usage
-  535 |     };
-  536 |   }
-🧠 EnhancedBrainV2: Analysis completed successfully
-🧠 Enhanced Analysis - Completed with 2 insights
-🔍 Enhanced Analysis - Performing deep insight analysis...
-🔍 Starting deep insight analysis for non-obvious patterns...
-🎯 Deep analysis complete: 1 non-obvious insights found
-🔍 Deep insights found: 1 non-obvious patterns
-🔍 Hidden drivers: 1 primary drivers
-Error logging user event: {}
- ✓ Compiled in 149ms
-   Reload env: .env.local
- GET /pricing 200 in 1971ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 403ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 556ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 593ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 624ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 603ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 576ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 635ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 549ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 463ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 518ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 472ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 499ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 479ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 480ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 461ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 461ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 440ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 476ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 469ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 513ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 507ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 516ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 512ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 507ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 516ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 348ms
-Error logging user event: {}
+ ✓ Compiled /api/upload in 585ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750760087504-wlj4q0317',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+ ✓ Compiled /api/presentations/session in 173ms
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 259ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 1057ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750760120037-nnv2ygwaa',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 62ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 146ms
+ ✓ Compiled /api/deck/generate in 169ms
+🎯 DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750760120037-nnv2ygwaa
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:22:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+📥 Fetching dataset from database...
+❌ Dataset fetch error: {
+  code: '22P02',
+  details: null,
+  hint: null,
+  message: 'invalid input syntax for type uuid: "demo-1750760120037-nnv2ygwaa"'
+}
+ POST /api/deck/generate 404 in 453ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled in 2ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750760177719-bq80i53zf',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 112ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 301ms
+🎯 DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750760177719-bq80i53zf
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:22:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💥 DECK GENERATION FAILED: TypeError: sample.includes is not a function
+    at <unknown> (app/api/deck/generate/route.ts:181:29)
+    at Array.filter (<anonymous>)
+    at analyzeRealData (app/api/deck/generate/route.ts:179:30)
+    at POST (app/api/deck/generate/route.ts:65:21)
+  179 |   const dateColumns = columns.filter(col => {
+  180 |     const sample = data[0][col]
+> 181 |     return sample && (sample.includes('/') || sample.includes('-') || sample.toLowerCase().includes('date'))
+      |                             ^
+  182 |   })
+  183 |
+  184 |   if (dateColumns.length > 0 && numericColumns.length > 0) {
+ POST /api/deck/generate 500 in 144ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750760188899-6a8fa2xp1',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 91ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 217ms
+🎯 DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750760188899-6a8fa2xp1
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:22:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 insights from real data
+💾 Creating deck in database...
+❌ Deck creation error: {
+  code: '22P02',
+  details: null,
+  hint: null,
+  message: 'invalid input syntax for type uuid: "demo-user"'
+}
+ POST /api/deck/generate 500 in 277ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750760215731-4oh2x7hbc',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 131ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 265ms
+🎯 DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750760215731-4oh2x7hbc
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:22:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 insights from real data
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750760216028-b1ec99eqn
+🎨 Generating slides from insights...
+📄 Generated slides: title, content, chart
+📄 Generated 3 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750760216028-b1ec99eqn
+ POST /api/deck/generate 200 in 156ms
+ ○ Compiling /auth/login ...
+ ✓ Compiled /auth/login in 1071ms
+ GET /auth/login 200 in 1378ms
+ ✓ Compiled middleware in 2ms
+ ○ Compiling /test-world-class ...
+ ✓ Compiled /test-world-class in 553ms
+ ⨯ ReferenceError: useEffect is not defined
+    at TestWorldClassPage (app/test-world-class/page.tsx:22:2)
+  20 |   const [loading, setLoading] = useState(true)
+  21 |
+> 22 |   useEffect(() => {
+     |  ^
+  23 |     loadTestData()
+  24 |   }, [])
+  25 | {
+  digest: '3109822287'
+}
+ GET /test-world-class 200 in 944ms
+ ✓ Compiled /api/analytics/page-view in 193ms
+ POST /api/analytics/page-view 400 in 394ms
+ POST /api/analytics/page-view 400 in 178ms
+ ✓ Compiled /api/analytics/user-interaction in 168ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2',
+  path: '/test-world-class',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
  POST /api/analytics/user-interaction 200 in 306ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 337ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 313ms
-Error logging user event: {}
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2',
+  path: '/test-world-class',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
  POST /api/analytics/user-interaction 200 in 139ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 141ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 174ms
- GET /auth/login 200 in 182ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 239ms
- POST /api/analytics/page-view 400 in 132ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 310ms
- POST /api/analytics/page-view 400 in 134ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 315ms
- POST /api/upload 401 in 280ms
- ✓ Compiled middleware in 6ms
- ✓ Compiled in 492ms
- GET /auth/login 200 in 265ms
- GET /auth/login 200 in 213ms
- ✓ Compiled middleware in 8ms
-🔍 Upload request from: Demo user demo-user
-Error logging user event: {}
- ○ Compiling /api/presentations/session ...
- ✓ Compiled /api/presentations/session in 1032ms
-Saving data-upload data for presentation: undefined
- POST /api/presentations/session 401 in 1187ms
-Error logging user event: {}
- POST /api/upload 200 in 1610ms
- ✓ Compiled in 117ms
-🔍 Upload request from: Demo user demo-user
-Error logging user event: {}
-Saving data-upload data for presentation: undefined
- POST /api/presentations/session 401 in 162ms
-Error logging user event: {}
- POST /api/upload 200 in 629ms
  ✓ Compiled in 107ms
- ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- GET /auth/login 200 in 2958ms
- GET /auth/login 200 in 2351ms
-Error creating page view: SyntaxError: Unexpected end of JSON input
-    at JSON.parse (<anonymous>)
-    at POST (app/api/analytics/page-view/route.ts:7:49)
-   5 | export async function POST(request: NextRequest) {
-   6 |   try {
->  7 |     const { pageUrl, pageTitle } = await request.json()
-     |                                                 ^
-   8 |     
-   9 |     if (!pageUrl) {
-  10 |       return NextResponse.json(
-Error creating page view: SyntaxError: Unexpected end of JSON input
-    at JSON.parse (<anonymous>)
-    at POST (app/api/analytics/page-view/route.ts:7:49)
-   5 | export async function POST(request: NextRequest) {
-   6 |   try {
->  7 |     const { pageUrl, pageTitle } = await request.json()
-     |                                                 ^
-   8 |     
-   9 |     if (!pageUrl) {
-  10 |       return NextResponse.json(
- POST /api/analytics/page-view 400 in 535ms
+ ○ Compiling /test-world-class-ui ...
+ ✓ Compiled /test-world-class-ui in 513ms
+ GET /test-world-class-ui 200 in 794ms
+ POST /api/analytics/page-view 400 in 295ms
+ POST /api/analytics/page-view 400 in 261ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-world-class-ui',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 277ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-world-class-ui',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 224ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-world-class-ui',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 429ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-world-class-ui',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 390ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-world-class-ui',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 372ms
+ ○ Compiling /test-editor ...
+ ✓ Compiled /test-editor in 538ms
+ GET /test-editor 200 in 677ms
+ POST /api/analytics/page-view 400 in 139ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: {},
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 155ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'text-lg font-medium hover:bg-gray-100 px-2 py-1 rounded transition-colors',
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 154ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'text-lg font-medium bg-transparent border-none outline-none focus:bg-gray-50 px-2 py-1 rounded',
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 141ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'text-lg font-medium hover:bg-gray-100 px-2 py-1 rounded transition-colors',
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 186ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full aspect-[16/9] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors',
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 154ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full aspect-[16/9] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors',
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 153ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: {},
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 167ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: {},
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 150ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: {},
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 151ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: {},
+  path: '/test-editor',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 156ms
+ ✓ Compiled in 150ms
+ POST /api/analytics/page-view 400 in 171ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 focus-visible:ring-blue-600 h-10 px-5 text-base gap-2',
+  path: '/test-world-class-ui',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 291ms
+ GET /test-editor 200 in 340ms
+ POST /api/analytics/page-view 400 in 178ms
+ POST /api/analytics/page-view 400 in 170ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus-visible:ring-blue-600 h-10 px-5 text-base gap-2',
+  path: '/test-world-class-ui',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 211ms
+ ○ Compiling /test-dashboard ...
+ ✓ Compiled /test-dashboard in 631ms
+ GET /test-dashboard 200 in 821ms
+ POST /api/analytics/page-view 400 in 156ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus-visible:ring-blue-600 h-8 px-3 text-sm gap-1.5',
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 281ms
+ GET /auth/login 200 in 325ms
+ POST /api/analytics/page-view 400 in 155ms
+ GET /auth/login 200 in 222ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 164ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 317ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 269ms
+ GET /auth/login 200 in 178ms
+ GET /auth/login 200 in 301ms
+ POST /api/analytics/page-view 400 in 553ms
  POST /api/analytics/page-view 400 in 537ms
+ GET /auth/login 200 in 516ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 159ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 347ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 420ms
+ GET /auth/login 200 in 287ms
+ GET /auth/login 200 in 185ms
+ GET /test-world-class 200 in 534ms
+ POST /api/analytics/page-view 400 in 870ms
+ POST /api/analytics/page-view 400 in 815ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-world-class',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 191ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-world-class',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 375ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-world-class',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 308ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'flex items-center gap-2',
+  path: '/test-world-class',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 181ms
+ ✓ Compiled /api/presentations/[id] in 335ms
+📥 Loading presentation: demo-deck-1750760216028-b1ec99eqn
+🎭 Loading demo deck...
+✅ Demo presentation created with 3 slides
+ GET /api/presentations/demo-deck-1750760216028-b1ec99eqn 200 in 818ms
+ ✓ Compiled in 121ms
+ ✓ Compiled in 89ms
+ ✓ Compiled in 114ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750773504398-6zlatboha',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '2ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 757ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 1143ms
+🎯 DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750773504398-6zlatboha
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:22:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 insights from real data
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750773505483-cv0d0xgpg
+🎨 Generating slides from insights...
+📄 Generated slides: title, content, chart
+📄 Generated 3 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750773505483-cv0d0xgpg
+ POST /api/deck/generate 200 in 260ms
+ ✓ Compiled middleware in 2ms
+ ○ Compiling /_not-found/page ...
+ GET /auth/login 200 in 1101ms
+ GET /auth/login 200 in 1194ms
+ GET /auth/login 200 in 1172ms
+ ✓ Compiled /_not-found/page in 1336ms
+ ○ Compiling /api/auth/check ...
+ GET /test-world-class 404 in 2209ms
+ ✓ Compiled /api/auth/check in 1317ms
+ GET /auth/login 200 in 1990ms
+ GET /auth/login 200 in 1925ms
+ POST /api/analytics/page-view 400 in 1736ms
+ GET /api/auth/check 200 in 1742ms
+ GET /test-world-class 404 in 1372ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1987ms
+ GET /test-world-class 404 in 284ms
+ POST /api/analytics/page-view 400 in 483ms
+ POST /api/analytics/page-view 400 in 434ms
+ GET /auth/login 200 in 409ms
+ POST /api/analytics/page-view 400 in 663ms
+ POST /api/analytics/page-view 400 in 622ms
+ GET /auth/login 200 in 1416ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 260ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 618ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 575ms
+ GET /auth/login 200 in 459ms
+ GET /auth/login 200 in 380ms
+ GET /auth/login 200 in 291ms
+ ✓ Compiled in 194ms
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ✓ Compiled in 369ms
- ✓ Compiled /auth/login in 157ms
- GET /auth/login 200 in 1210ms
- POST /api/analytics/page-view 400 in 407ms
- POST /api/analytics/page-view 400 in 371ms
- POST /api/analytics/page-view 400 in 448ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 693ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 693ms
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ✓ Compiled in 156ms
- GET /auth/login 200 in 609ms
- POST /api/analytics/page-view 400 in 443ms
- POST /api/analytics/page-view 400 in 1129ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 552ms
- ○ Compiling /api/auth/test ...
- ✓ Compiled /api/auth/test in 705ms
-Error logging system event: {}
- POST /api/auth/test 200 in 1143ms
- GET /auth/login 200 in 478ms
- GET /auth/login 200 in 579ms
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ✓ Compiled in 124ms
- GET /auth/login 200 in 596ms
- POST /api/analytics/page-view 400 in 482ms
- POST /api/analytics/page-view 400 in 449ms
- GET /auth/login 200 in 1052ms
- GET /favicon.ico 200 in 1123ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 1121ms
- GET /auth/login 200 in 1266ms
- ✓ Compiled middleware in 3ms
- ✓ Compiled in 470ms
- ✓ Compiled in 84ms
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- GET /auth/login 200 in 498ms
- GET /auth/login 200 in 945ms
- POST /api/analytics/page-view 400 in 739ms
- POST /api/analytics/page-view 400 in 630ms
- ✓ Compiled in 236ms
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- GET /auth/login 200 in 804ms
- POST /api/analytics/page-view 400 in 724ms
- POST /api/analytics/page-view 400 in 660ms
- ✓ Compiled in 109ms
- ✓ Compiled / in 86ms
-`legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
-
-npx @next/codemod@latest new-link .
-
-Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components
- GET / 200 in 951ms
- ✓ Compiled in 132ms
- ✓ Compiled middleware in 29ms
- ✓ Compiled in 209ms
- ✓ Compiled in 132ms
- ✓ Compiled in 103ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /test-world-class 404 in 1223ms
+ GET /auth/login 200 in 1294ms
+ GET /auth/login 200 in 1325ms
+ POST /api/analytics/page-view 400 in 2750ms
+ POST /api/analytics/page-view 400 in 2692ms
+ POST /api/analytics/page-view 400 in 2736ms
+ POST /api/analytics/page-view 400 in 2723ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 2948ms
+ GET /auth/login 200 in 2821ms
+ ✓ Compiled in 147ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1419ms
+ GET /auth/login 200 in 1569ms
+ POST /api/analytics/page-view 400 in 1585ms
+ POST /api/analytics/page-view 400 in 1654ms
+ GET /test-world-class 404 in 2362ms
+ GET /auth/login?redirecting=true 200 in 2612ms
+ POST /api/analytics/page-view 400 in 1689ms
+ POST /api/analytics/page-view 400 in 1619ms
+ GET /auth/login 200 in 2196ms
+ GET /auth/login 200 in 4958ms
+ POST /api/analytics/page-view 400 in 4885ms
+ POST /api/analytics/page-view 400 in 4900ms
+ POST /api/analytics/page-view 400 in 4851ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 4965ms
+ POST /api/analytics/page-view 400 in 4920ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1365ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1209ms
+ GET /auth/login 200 in 1045ms
  ✓ Compiled in 119ms
- ✓ Compiled middleware in 27ms
- ✓ Compiled in 199ms
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
  ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ✓ Compiled in 456ms
- ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ✓ Compiled in 17ms
+ ✓ Compiled in 91ms
+ GET /test-world-class 404 in 2000ms
+ GET /auth/login?redirecting=true 200 in 2048ms
+ GET /auth/login 200 in 2023ms
+ GET /auth/login 200 in 1242ms
+ POST /api/analytics/page-view 400 in 1925ms
+ POST /api/analytics/page-view 400 in 1884ms
+ POST /api/analytics/page-view 400 in 2059ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 2227ms
+ POST /api/analytics/page-view 400 in 2043ms
+ POST /api/analytics/page-view 400 in 1971ms
+ POST /api/analytics/page-view 400 in 1985ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1978ms
+ GET /auth/login 200 in 2053ms
+ POST /api/analytics/page-view 400 in 1391ms
+ POST /api/analytics/page-view 400 in 1399ms
+ GET /auth/login 200 in 559ms
+ ✓ Compiled middleware in 4ms
+ ✓ Compiled in 0ms
+ GET /auth/login 200 in 643ms
+ GET /auth/login 200 in 471ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 436ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1222ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1254ms
+ GET /auth/login 200 in 1162ms
+ GET /auth/login 200 in 460ms
+ ○ Compiling /deck-builder/[id] ...
+ ✓ Compiled /deck-builder/[id] in 1262ms
+ GET /deck-builder/demo-deck-1750773505483-cv0d0xgpg 200 in 2288ms
+ GET /auth/login 200 in 961ms
+ GET /auth/login 200 in 1976ms
+ POST /api/analytics/page-view 400 in 1759ms
+ POST /api/analytics/page-view 400 in 1751ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1509ms
+ GET /auth/login 200 in 884ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 457ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750773605522-cp8hxi04i',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '2ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 508ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 1200ms
+ ○ Compiling /api/auth/set-cookie ...
+ ✓ Compiled /api/auth/set-cookie in 1095ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1963ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1979ms
+🎯 WORLD-CLASS DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750773605522-cp8hxi04i
+🎯 Context received: undefined
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 raw insights from real data
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750773608338-byq9p5ntw
+🎨 Generating world-class slides from insights...
+📄 Generated slides: title, content, chart
+📄 Generated 3 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750773608338-byq9p5ntw
+ POST /api/deck/generate 200 in 2192ms
+ GET /auth/login 200 in 2267ms
+ POST /api/auth/set-cookie 200 in 2166ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 12.2s
+ GET /auth/login 200 in 19567ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 8588ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 7567ms
+ POST /api/auth/set-cookie 200 in 6523ms
+ GET /dashboard 200 in 19529ms
+ GET /deck-builder/demo-deck-1750773608338-byq9p5ntw 200 in 9856ms
+ GET /dashboard 200 in 2003ms
+ GET /auth/login?redirecting=true 200 in 3323ms
+ POST /api/analytics/page-view 400 in 3344ms
+ GET /api/auth/check 200 in 3255ms
+ POST /api/analytics/page-view 400 in 2641ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 3434ms
+ POST /api/analytics/page-view 400 in 2763ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 2429ms
+ GET /dashboard 200 in 3027ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1689ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1756ms
+ POST /api/analytics/page-view 400 in 1150ms
+ ✓ Compiled middleware in 33ms
+ ✓ Compiled in 173ms
+ GET /test-world-class 404 in 1889ms
+ GET /auth/login?redirecting=true 200 in 1967ms
+ GET /dashboard 200 in 2030ms
+ GET /test-world-class 404 in 1999ms
+ GET /auth/login?redirecting=true 200 in 2027ms
+ GET /dashboard 200 in 1819ms
+ ⚠ Server is approaching the used memory threshold, restarting...
+   ▲ Next.js 15.4.0-canary.88 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.207:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ ppr
+     ✓ nodeMiddleware
+     ✓ clientSegmentCache
+
+ ✓ Starting...
+ ✓ Compiled middleware in 58ms
+ ✓ Ready in 854ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled in 1ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 1161ms
+ GET /test-world-class 404 in 1395ms
+ ✓ Compiled /api/analytics/page-view in 197ms
+ POST /api/analytics/page-view 400 in 278ms
+ POST /api/analytics/page-view 400 in 271ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/supabase/client.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 79ms
+ GET /test-world-class 404 in 182ms
+ POST /api/analytics/page-view 400 in 99ms
+ POST /api/analytics/page-view 400 in 89ms
+ ✓ Compiled /favicon.ico in 164ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 436ms
+ ✓ Compiled / in 491ms
 `legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
 
 npx @next/codemod@latest new-link .
 
 Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components
- GET /auth/login 200 in 7663ms
- GET / 200 in 8790ms
- ✓ Compiled in 344ms
-Error creating page view: SyntaxError: Unexpected end of JSON input
+ GET / 200 in 625ms
+ POST /api/analytics/page-view 400 in 99ms
+ POST /api/analytics/page-view 400 in 83ms
+User interaction event (disabled): {
+  event_type: 'link_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 border bg-background h-10 px-4 py-2 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors',
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 266ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 border bg-background h-10 px-4 py-2 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors',
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 274ms
+ ○ Compiling /api/analytics/user-interaction ...
+ ✓ Compiled /api/analytics/user-interaction in 505ms
+ GET /settings 200 in 570ms
+ POST /api/analytics/page-view 400 in 57ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/settings',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 57ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-sm w-full',
+  path: '/settings',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 72ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/settings',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 64ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-sm mb-4',
+  path: '/settings',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 88ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 627ms
+ GET /dashboard 200 in 694ms
+ POST /api/analytics/page-view 400 in 62ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 border bg-background h-10 px-4 py-2 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors',
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 132ms
+User interaction event (disabled): {
+  event_type: 'link_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 border bg-background h-10 px-4 py-2 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors',
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 138ms
+ GET /settings 200 in 154ms
+ POST /api/analytics/page-view 400 in 58ms
+ POST /api/analytics/page-view 400 in 69ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 h-10 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white transition-colors',
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 113ms
+User interaction event (disabled): {
+  event_type: 'link_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 h-10 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white transition-colors',
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 116ms
+ ○ Compiling /profile ...
+ ✓ Compiled /profile in 501ms
+ GET /profile 200 in 586ms
+ POST /api/analytics/page-view 400 in 69ms
+ ✓ Compiled /api/user/subscription in 313ms
+Error: Route "/api/user/profile/settings" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Failed to parse cookie string: SyntaxError: Unexpected token 'e', "eyJhbGciOi"... is not valid JSON
     at JSON.parse (<anonymous>)
-    at POST (app/api/analytics/page-view/route.ts:7:49)
-   5 | export async function POST(request: NextRequest) {
-   6 |   try {
->  7 |     const { pageUrl, pageTitle } = await request.json()
-     |                                                 ^
-   8 |     
-   9 |     if (!pageUrl) {
-  10 |       return NextResponse.json(
-Error creating page view: SyntaxError: Unexpected end of JSON input
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/user/profile/settings" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._getUser (../../src/GoTrueClient.ts:1413:24)
+    at <unknown> (../../src/GoTrueClient.ts:1397:24)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+Failed to parse cookie string: SyntaxError: Unexpected token 'e', "eyJhbGciOi"... is not valid JSON
     at JSON.parse (<anonymous>)
-    at POST (app/api/analytics/page-view/route.ts:7:49)
-   5 | export async function POST(request: NextRequest) {
-   6 |   try {
->  7 |     const { pageUrl, pageTitle } = await request.json()
-     |                                                 ^
-   8 |     
-   9 |     if (!pageUrl) {
-  10 |       return NextResponse.json(
- GET /favicon.ico 200 in 5352ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 5365ms
- GET /auth/login 200 in 7416ms
- GET /auth/login 200 in 7485ms
- GET / 200 in 5675ms
- ✓ Compiled middleware in 193ms
- POST /api/analytics/page-view 400 in 2461ms
- POST /api/analytics/page-view 400 in 2655ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 3489ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 3263ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 3236ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 3302ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2731ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2524ms
- ○ Compiling /demo ...
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2805ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2672ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2725ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2643ms
- GET / 200 in 3062ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2217ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2059ms
- ✓ Compiled in 666ms
- ✓ Compiled /demo in 4.4s
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 3419ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 3485ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 3606ms
- GET /demo 200 in 5428ms
- GET /demo 200 in 7135ms
- GET /demo 200 in 6272ms
- ✓ Compiled in 228ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2941ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 2652ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 1967ms
- GET /demo 200 in 3045ms
- GET /demo 200 in 2041ms
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._getUser (../../src/GoTrueClient.ts:1413:24)
+    at <unknown> (../../src/GoTrueClient.ts:1397:24)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+ GET /api/user/profile/settings 401 in 433ms
+Error: Route "/api/user/profile/settings" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Failed to parse cookie string: SyntaxError: Unexpected token 'e', "eyJhbGciOi"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
+    at <unknown> (../../src/GoTrueClient.ts:1868:13)
+    at <unknown> (../../src/GoTrueClient.ts:1206:25)
+    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
+    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
+    at <unknown> (../../src/GoTrueClient.ts:1867:17)
+Error: Route "/api/user/profile/settings" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._getUser (../../src/GoTrueClient.ts:1413:24)
+    at <unknown> (../../src/GoTrueClient.ts:1397:24)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+Failed to parse cookie string: SyntaxError: Unexpected token 'e', "eyJhbGciOi"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getItemAsync (../../../src/lib/helpers.ts:129:30)
+    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
+    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
+    at SupabaseAuthClient._getUser (../../src/GoTrueClient.ts:1413:24)
+    at <unknown> (../../src/GoTrueClient.ts:1397:24)
+    at <unknown> (../../src/GoTrueClient.ts:1184:23)
+ GET /api/user/profile/settings 401 in 84ms
+ GET /api/user/subscription 401 in 535ms
+ GET /api/user/subscription 401 in 118ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/profile',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 56ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/profile',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 78ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/profile',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 67ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/profile',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 70ms
+ POST /api/analytics/page-view 400 in 67ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: {},
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 67ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 86ms
+ ○ Compiling /auth/login ...
+ ✓ Compiled /auth/login in 550ms
+ GET /auth/login 200 in 747ms
+ POST /api/analytics/page-view 400 in 317ms
+ POST /api/analytics/page-view 400 in 305ms
+ GET /auth/login 200 in 283ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 532ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 282ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 284ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 92ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 168ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 147ms
+ GET /auth/login 200 in 90ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 91ms
+ GET /auth/login 200 in 261ms
+ POST /api/analytics/page-view 400 in 344ms
+ POST /api/analytics/page-view 400 in 335ms
+ GET /auth/login 200 in 297ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 555ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 300ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 305ms
+ ✓ Compiled /api/upload in 352ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750773742908-f71vflrho',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+ ✓ Compiled /api/presentations/session in 200ms
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 367ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 946ms
+ ✓ Compiled /api/deck/generate in 240ms
+🎯 WORLD-CLASS DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750773742908-f71vflrho
+🎯 Context received: undefined
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 raw insights from real data
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750773743685-q1a1344z2
+🎨 Generating world-class slides from insights...
+📄 Generated slides: title, content, chart
+📄 Generated 3 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750773743685-q1a1344z2
+ POST /api/deck/generate 200 in 392ms
+ ○ Compiling /deck-builder/[id] ...
+ ✓ Compiled /deck-builder/[id] in 956ms
+ GET /deck-builder/demo-deck-1750773743685-q1a1344z2 200 in 1398ms
+ POST /api/analytics/page-view 400 in 260ms
+ ✓ Compiled /api/auth/check in 193ms
+ GET /api/auth/check 200 in 334ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 454ms
+ ✓ Compiled /api/presentations/[id] in 204ms
+📥 Loading presentation: demo-deck-1750773743685-q1a1344z2
+🎭 Loading demo deck...
+✅ Demo presentation created with 3 slides
+ GET /api/presentations/demo-deck-1750773743685-q1a1344z2 200 in 476ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750773781794-cdx7cf3so',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 140ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 309ms
+🎯 WORLD-CLASS DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750773781794-cdx7cf3so
+🎯 Context received: undefined
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 raw insights from real data
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750773782101-aibo8o32f
+🎨 Generating world-class slides from insights...
+📄 Generated slides: title, content, chart
+📄 Generated 3 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750773782101-aibo8o32f
+ POST /api/deck/generate 200 in 159ms
+ GET /deck-builder/demo-deck-1750773782101-aibo8o32f 200 in 456ms
+ POST /api/analytics/page-view 400 in 380ms
+ GET /api/auth/check 200 in 351ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 521ms
+ GET /deck-builder/demo-deck-1750773782101-aibo8o32f 200 in 226ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 135ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 258ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 217ms
+ GET /auth/login 200 in 160ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750773826521-nsxwryunw',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 233ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 456ms
+🎯 WORLD-CLASS DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750773826521-nsxwryunw
+🎯 Context received: undefined
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 raw insights from real data
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750773826947-j63eajwci
+🎨 Generating world-class slides from insights...
+📄 Generated slides: title, content, chart
+📄 Generated 3 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750773826947-j63eajwci
+ POST /api/deck/generate 200 in 176ms
+ GET /deck-builder/demo-deck-1750773826947-j63eajwci 200 in 438ms
+ POST /api/analytics/page-view 400 in 482ms
+ GET /api/auth/check 200 in 445ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 599ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2',
+  path: '/deck-builder/demo-deck-1750773826947-j63eajwci',
+  user_id: null
+}
+ POST /api/analytics/user-interaction 200 in 161ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2',
+  path: '/deck-builder/demo-deck-1750773826947-j63eajwci',
+  user_id: null
+}
+ POST /api/analytics/user-interaction 200 in 174ms
+ GET / 200 in 327ms
+ POST /api/analytics/page-view 400 in 431ms
+ GET /api/auth/check 200 in 405ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 635ms
+User interaction event (disabled): {
+  event_type: 'link_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/',
+  user_id: null
+}
+ POST /api/analytics/user-interaction 200 in 305ms
+ GET /auth/login 200 in 340ms
+ POST /api/analytics/page-view 400 in 315ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 518ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: null
+}
+ POST /api/analytics/user-interaction 200 in 181ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: null
+}
+ POST /api/analytics/user-interaction 200 in 918ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: null
+}
+ POST /api/analytics/user-interaction 200 in 927ms
+ ○ Compiling /api/auth/set-cookie ...
+ ✓ Compiled /api/auth/set-cookie in 550ms
+ GET /deck-builder/demo-deck-1750773826947-j63eajwci 200 in 1106ms
+ POST /api/analytics/page-view 400 in 1065ms
+ GET /auth/login 200 in 1034ms
+ POST /api/auth/set-cookie 200 in 919ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1298ms
+ GET /dashboard 200 in 445ms
+ POST /api/analytics/page-view 400 in 286ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 658ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 356ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 355ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 371ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 330ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 186ms
+ ○ Compiling /test-editor ...
+ ✓ Compiled /test-editor in 637ms
+ GET /test-editor?deck=1 200 in 823ms
+ POST /api/analytics/page-view 400 in 403ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 606ms
+ POST /api/analytics/page-view 400 in 365ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 506ms
+ GET /test-editor?deck=1 200 in 227ms
+ POST /api/analytics/page-view 400 in 628ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 749ms
+ POST /api/analytics/page-view 400 in 335ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 488ms
+ GET /test-editor?deck=2 200 in 199ms
+ POST /api/analytics/page-view 400 in 359ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 529ms
+ POST /api/analytics/page-view 400 in 379ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 518ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background transform-none hover:scale-100 text-primary-foreground h-10 px-4 py-2 w-full bg-blue-600 hover:bg-blue-700',
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 258ms
+ ○ Compiling /deck-builder/new ...
+ ✓ Compiled /deck-builder/new in 797ms
+ GET /deck-builder/new 200 in 988ms
+ POST /api/analytics/page-view 400 in 469ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 637ms
+ GET /api/user/subscription 401 in 483ms
+ GET /api/user/subscription 401 in 270ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/deck-builder/new',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 380ms
+ GET /auth/login 200 in 359ms
+ POST /api/analytics/page-view 400 in 544ms
+ GET /auth/login 200 in 501ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 743ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 395ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 399ms
+ ✓ Compiled middleware in 2ms
+ ✓ Compiled in 126ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 747ms
+ GET /auth/login 200 in 680ms
+ GET /auth/login 200 in 678ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1381ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1448ms
+ GET /auth/login 200 in 1665ms
+ GET /auth/login 200 in 1673ms
+ POST /api/auth/set-cookie 200 in 1257ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1533ms
+ GET /auth/login 200 in 1403ms
+ GET /dashboard 200 in 342ms
+ POST /api/analytics/page-view 400 in 451ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 621ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 310ms
+ ○ Compiling /test-dashboard ...
+ ✓ Compiled /test-dashboard in 617ms
+ GET /test-dashboard 200 in 913ms
+ POST /api/analytics/page-view 400 in 490ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 704ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750773895071-klj0ymiwo',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '1ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 316ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 763ms
+🎯 WORLD-CLASS DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750773895071-klj0ymiwo
+🎯 Context received: undefined
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 raw insights from real data
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750773895762-salp7rszb
+🎨 Generating world-class slides from insights...
+📄 Generated slides: title, content, chart
+📄 Generated 3 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750773895762-salp7rszb
+ POST /api/deck/generate 200 in 343ms
+ POST /api/analytics/page-view 400 in 492ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 640ms
+ POST /api/analytics/page-view 400 in 509ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 630ms
+ GET /deck-builder/demo-deck-1750773895762-salp7rszb 200 in 700ms
+ POST /api/analytics/page-view 400 in 847ms
+ GET /api/auth/check 200 in 715ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1034ms
+ POST /api/analytics/page-view 400 in 604ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 631ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 464ms
+ GET /test-dashboard 200 in 514ms
+ POST /api/analytics/page-view 400 in 473ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 632ms
+ POST /api/analytics/page-view 400 in 1189ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1329ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 332ms
+ ○ Compiling /datasets ...
+ ✓ Compiled /datasets in 684ms
+ GET /datasets 200 in 986ms
+ POST /api/analytics/page-view 400 in 565ms
+ ✓ Compiled /api/datasets in 260ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 804ms
+Error: Route "/api/datasets" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at GET (app/api/datasets/route.ts:13:52)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+ GET /api/datasets 401 in 590ms
+Error: Route "/api/datasets" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at GET (app/api/datasets/route.ts:13:52)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+ GET /api/datasets 401 in 279ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/datasets',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 322ms
+ ○ Compiling /templates ...
+ ✓ Compiled /templates in 582ms
+ GET /templates 200 in 891ms
+ POST /api/analytics/page-view 400 in 485ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 688ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/templates',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 472ms
+ GET /test-dashboard 200 in 526ms
+ POST /api/analytics/page-view 400 in 530ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 675ms
+ GET /test-dashboard 200 in 673ms
+ POST /api/analytics/page-view 400 in 983ms
+ POST /api/analytics/page-view 400 in 973ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1134ms
+ GET /test-dashboard 200 in 715ms
+ POST /api/analytics/page-view 400 in 2337ms
+ POST /api/analytics/page-view 400 in 2367ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 2427ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus-visible:ring-blue-600 h-8 px-3 text-sm gap-1.5',
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 709ms
+ GET /deck-builder/new 200 in 762ms
+ POST /api/analytics/page-view 400 in 648ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 947ms
+ GET /api/user/subscription 401 in 826ms
+ GET /api/user/subscription 401 in 415ms
  POST /api/analytics/page-view 400 in 578ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 721ms
-`legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
-
-npx @next/codemod@latest new-link .
-
-Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components
- GET / 200 in 1563ms
- POST /api/analytics/page-view 400 in 814ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 1726ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 1782ms
- ○ Compiling /auth/signup ...
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 3795ms
- GET /demo 200 in 4475ms
-Error logging user event: {}
- POST /api/analytics/user-interaction 200 in 4599ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 753ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'p-2 transition-colors text-gray-600 hover:text-gray-900',
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 294ms
+ POST /api/analytics/page-view 400 in 759ms
+ GET /templates 200 in 849ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 996ms
+ GET /favicon.ico 200 in 781ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 684ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/templates',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 322ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/templates',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 696ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/templates',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 613ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/templates',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 619ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/templates',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 527ms
+User interaction event (disabled): {
+  event_type: 'link_click',
+  element_id: 'text-2xl font-bold text-white',
+  path: '/templates',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 603ms
+ GET / 200 in 674ms
+ POST /api/analytics/page-view 400 in 612ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 841ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 976ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 931ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 944ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 763ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 477ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 325ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 309ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 2385ms
+ ✓ Compiled in 254ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 558ms
+ GET /test-dashboard 200 in 732ms
+ POST /api/analytics/page-view 400 in 621ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 815ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1295ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1299ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1290ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 1397ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 2111ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 2676ms
+User interaction event (disabled): {
+  event_type: 'scroll',
+  element_id: undefined,
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 2747ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'transition-colors hover:text-white text-gray-300',
+  path: '/test-dashboard',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 658ms
+ GET /auth/login 200 in 553ms
+ POST /api/analytics/page-view 400 in 756ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 988ms
+ GET /auth/login 200 in 615ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 596ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 544ms
+ ✓ Compiled middleware in 16ms
+ GET /auth/login 200 in 867ms
+ GET /auth/login 200 in 864ms
+ GET /auth/login 200 in 914ms
+ GET /auth/login 200 in 911ms
+ ✓ Compiled in 117ms
+ GET /auth/login 200 in 917ms
+ POST /api/analytics/page-view 400 in 12036ms
+ POST /api/analytics/page-view 400 in 12140ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 12376ms
+ GET /auth/login 200 in 13036ms
+User interaction event (disabled): {
+  event_type: 'form_interaction',
+  element_id: 'w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 12118ms
+User interaction event (disabled): {
+  event_type: 'button_click',
+  element_id: 'w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 8458ms
+User interaction event (disabled): {
+  event_type: 'form_submit',
+  element_id: '',
+  path: '/auth/login',
+  user_id: 'ea7cb812-a35b-474d-a2e7-47f56af6a068'
+}
+ POST /api/analytics/user-interaction 200 in 2192ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1305ms
+ GET /auth/login 200 in 1509ms
+ POST /api/analytics/page-view 400 in 1655ms
+ POST /api/analytics/page-view 400 in 1708ms
+ GET /auth/login 200 in 1474ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1715ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 577ms
+ ✓ Compiled middleware in 3ms
+ ✓ Compiled in 126ms
+ ✓ Compiled middleware in 17ms
+ ✓ Compiled in 142ms
+ ✓ Compiled in 242ms
+Error: Route "/api/upload" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/upload/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+🔍 Upload request from: Demo user demo-user
+📁 Files to process: demo_1000_row_dataset.csv (1330 bytes)
+✅ Processed and stored file: {
+  fileName: 'demo_1000_row_dataset.csv',
+  fileType: 'csv',
+  datasetId: 'demo-1750774331478-o7zdzwi4b',
+  rowCount: 10,
+  columns: 14,
+  processingTime: '2ms'
+}
+📝 Saving data-upload data for presentation: new
+Error: Route "/api/presentations/session" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/presentations/session/route.ts:11:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+💾 Session save request from: Demo user
+✅ Demo session data processed successfully
+ POST /api/presentations/session 200 in 542ms
+🎉 Upload completed successfully
+📊 Summary: {
+  processedFiles: 1,
+  savedDatasets: 1,
+  fileTypesProcessed: [ 'csv' ],
+  totalRowsProcessed: 10,
+  totalColumns: 14,
+  errors: 0
+}
+ POST /api/upload 200 in 1173ms
+🎯 WORLD-CLASS DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750774331478-o7zdzwi4b
+🎯 Context received: undefined
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 raw insights from real data
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750774332671-7gfzlkhhb
+🎨 Generating world-class slides from insights...
+🎨 Generating professional storytelling slides...
+📖 Data story identified: growth_story
+📄 Generated 5 professional storytelling slides
+📄 Generated 5 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750774332671-7gfzlkhhb
+ POST /api/deck/generate 200 in 605ms
+ GET /deck-builder/demo-deck-1750774332671-7gfzlkhhb 200 in 1256ms
+ POST /api/analytics/page-view 400 in 3786ms
+ GET /api/auth/check 200 in 5814ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 6851ms
+📥 Loading presentation: demo-deck-1750774332671-7gfzlkhhb
+🎭 Loading demo deck...
+✅ Demo presentation created with 3 slides
+ GET /api/presentations/demo-deck-1750774332671-7gfzlkhhb 200 in 613ms
+📥 Loading presentation: demo-deck-1750774332671-7gfzlkhhb
+🎭 Loading demo deck...
+✅ Demo presentation created with 3 slides
+ GET /api/presentations/demo-deck-1750774332671-7gfzlkhhb 200 in 492ms
+📥 Loading presentation: demo-deck-1750774332671-7gfzlkhhb
+🎭 Loading demo deck...
+✅ Demo presentation created with 3 slides
+ GET /api/presentations/demo-deck-1750774332671-7gfzlkhhb 200 in 499ms
+📥 Loading presentation: demo-deck-1750774332671-7gfzlkhhb
+🎭 Loading demo deck...
+✅ Demo presentation created with 3 slides
+ GET /api/presentations/demo-deck-1750774332671-7gfzlkhhb 200 in 434ms
+🎯 WORLD-CLASS DECK GENERATION: Starting...
+📊 Dataset ID received: demo-1750760087504-wlj4q0317
+🎯 Context received: Create a professional marketing deck
+Error: Route "/api/deck/generate" used `cookies().toString()` or implicit casting. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createServerSupabaseClient (lib/supabase/server-client.ts:34:30)
+    at getAuthenticatedUser (lib/auth/api-auth.ts:32:52)
+    at getAuthenticatedUserWithDemo (lib/auth/api-auth.ts:126:33)
+    at POST (app/api/deck/generate/route.ts:27:62)
+  32 |         headers: {
+  33 |           'X-Client-Info': 'supabase-js-nextjs',
+> 34 |           Cookie: cookieStore.toString(),
+     |                              ^
+  35 |         },
+  36 |       },
+  37 |     }
+👤 User: demo-user (Demo: true )
+🎭 Demo dataset detected, using demo data...
+✅ Demo dataset created: Demo Dataset - Rows: 10
+🔍 Analyzing 10 rows of real data...
+💡 Generated 3 raw insights from real data
+✨ Enhancing insights with world-class AI...
+ POST /api/deck/generate 200 in 120272ms
+🎯 Enhanced 3 insights to world-class level
+🎭 Creating demo deck (in-memory)...
+✅ Demo deck created with ID: demo-deck-1750774746226-le1o6cepz
+🎨 Generating professional storytelling slides from insights...
+🎨 Generating professional storytelling slides...
+📖 Data story identified: growth_story
+📄 Generated 5 professional storytelling slides
+✨ Applying contextual enhancements...
+📋 Selected template: Board Update
+✨ Applied visual excellence
+🔍 Starting deck quality assessment...
+📊 Quality assessment complete: Needs Improvement (37.5%)
+📊 Quality score: 37.5% (Needs Improvement)
+📄 Generated 5 slides
+🎭 Demo slides stored in memory
+🎉 DECK GENERATION COMPLETE!
+🔗 Deck ID for navigation: demo-deck-1750774746226-le1o6cepz
+ ✓ Compiled middleware in 5ms
+ GET /auth/login 200 in 652ms
+ GET /auth/login 200 in 633ms
 [?25h

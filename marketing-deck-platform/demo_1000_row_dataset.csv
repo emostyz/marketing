@@ -1,0 +1,11 @@
+Date,Region,Product_Category,Sales_Rep,Customer_ID,Revenue,Units_Sold,Profit_Margin,Customer_Acquisition_Cost,Customer_Lifetime_Value,Marketing_Spend,Conversion_Rate,Customer_Satisfaction,Churn_Risk_Score
+2024-01-01,North America,Software,Alice Johnson,CUST_001000,45230.50,180,22.5,4523.05,135691.50,6784.58,12.8,4.2,23.5
+2024-01-02,Europe,Hardware,Bob Chen,CUST_001001,38750.25,95,18.7,3875.03,116250.75,5812.54,9.4,4.1,45.2
+2024-01-03,Asia Pacific,Services,Carol Davis,CUST_001002,52100.75,210,28.3,5210.08,156302.25,7815.11,15.2,4.6,12.8
+2024-01-04,Latin America,Support,David Wilson,CUST_001003,29840.00,85,15.2,2984.00,89520.00,4476.00,8.7,3.9,67.3
+2024-01-05,Middle East,Training,Eva Martinez,CUST_001004,41850.30,125,24.1,4185.03,125509.90,6277.55,11.5,4.3,34.6
+2024-01-06,North America,Software,Frank Taylor,CUST_001005,48900.80,195,26.8,4890.08,146702.40,7335.12,13.9,4.5,18.9
+2024-01-07,Europe,Hardware,Grace Kim,CUST_001006,33250.60,78,19.4,3325.06,99751.80,4987.59,10.2,4.0,52.1
+2024-01-08,Asia Pacific,Services,Henry Brown,CUST_001007,59200.40,240,31.5,5920.04,177601.20,8880.06,16.8,4.7,8.3
+2024-01-09,Latin America,Support,Alice Johnson,CUST_001008,26780.90,92,14.8,2678.09,80342.70,4017.14,7.9,3.8,71.4
+2024-01-10,Middle East,Training,Bob Chen,CUST_001009,44320.15,142,25.2,4432.02,132960.45,6648.02,12.3,4.4,28.7

@@ -24,6 +24,7 @@ export default function PublicNavigation({
   // Navigation items for signed-in users (not demo)
   const userNavigationItems = [
     { name: 'Dashboard', href: '/dashboard' },
+    { name: 'My Files', href: '/files' },
     { name: 'Create Deck', href: '/deck-builder/new' },
     { name: 'Upload Data', href: '/upload' },
     { name: 'Datasets', href: '/datasets' },
@@ -156,9 +157,9 @@ export default function PublicNavigation({
             {/* Render nav items */}
             {user ? (
               navigationItems.map((item) => (
-                <button
+                <Link
                   key={item.name}
-                  onClick={() => handleNavClick(item.href)}
+                  href={item.href}
                   className={`transition-colors hover:text-white ${
                     isActivePage(item.href)
                       ? 'text-blue-400 font-medium'
@@ -166,7 +167,7 @@ export default function PublicNavigation({
                   }`}
                 >
                   {item.name}
-                </button>
+                </Link>
               ))
             ) : (
               <>
@@ -236,9 +237,10 @@ export default function PublicNavigation({
           <div className="lg:hidden absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 shadow-xl">
             <div className="px-6 py-4 space-y-4">
               {navigationItems.map((item) => (
-                <button
+                <Link
                   key={item.name}
-                  onClick={() => handleNavClick(item.href)}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`block w-full text-left py-2 transition-colors hover:text-white ${
                     isActivePage(item.href)
                       ? 'text-blue-400 font-medium'
@@ -246,7 +248,7 @@ export default function PublicNavigation({
                   }`}
                 >
                   {item.name}
-                </button>
+                </Link>
               ))}
               
               <div className="border-t border-gray-800 pt-4 space-y-3">

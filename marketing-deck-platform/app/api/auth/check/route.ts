@@ -8,10 +8,15 @@ export async function GET(request: NextRequest) {
     const projectRef = supabaseUrl.split('//')[1]?.split('.')[0] || 'waddrfstpqkvdfwbxvfw'
     const cookieName = `sb-${projectRef}-auth-token`
 
+    // Log all cookies for debugging
+    console.log('🔍 Cookies received:', request.cookies.getAll())
+
     // Get the auth token from cookies
     const authToken = request.cookies.get(cookieName)?.value
+    console.log('🔍 Auth token from cookie:', authToken)
 
     if (!authToken) {
+      console.log('❌ No auth token found in cookies')
       return NextResponse.json({ user: null, session: null })
     }
 

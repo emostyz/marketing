@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateEnhancedSlideContent, analyzeDataForTremorCharts } from '@/lib/ai/enhancedSlideGenerator'
 import { PresentationManager, DataFlowManager } from '@/lib/presentations/presentation-helpers'
+import { getDatasetForPresentation, getDatasetsForPresentation, extractDatasetIdsFromSession } from '@/lib/data/dataset-retrieval'
+import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,27 +13,115 @@ export async function POST(request: NextRequest) {
       step = 'generate', 
       title = 'AI-Generated Presentation',
       data = [],
+      datasetIds = [],
+      sessionData = null,
       qaResponses = null,
       generateWithAI = false,
       userId = null
     } = requestData
 
-    console.log(`Request: ${title}, DataPoints: ${data.length}, AI: ${generateWithAI}`)
+    console.log(`📊 Generation request: ${title}, DataPoints: ${data.length}, DatasetIDs: ${datasetIds.length}, AI: ${generateWithAI}`)
+
+    // Get authenticated user info
+    const { user, isDemo } = await getAuthenticatedUserWithDemo()
+    const actualUserId = userId || user.id
+
+    let actualData: any[] = []
+    let datasetInfo: any = null
+
+    // Priority 1: Use real datasets from database
+    if (datasetIds.length > 0 && !isDemo) {
+      try {
+        console.log('🔍 Fetching real datasets from database:', datasetIds)
+        const datasetsResult = await getDatasetsForPresentation(datasetIds)
+        actualData = datasetsResult.combinedData
+        datasetInfo = {
+          datasets: datasetsResult.datasets,
+          totalRows: datasetsResult.totalRows,
+          datasetCount: datasetsResult.datasetCount,
+          source: 'database'
+        }
+        console.log(`✅ Retrieved ${actualData.length} rows from ${datasetsResult.datasetCount} datasets`)
+      } catch (error) {
+        console.warn('⚠️ Failed to fetch datasets from database, falling back:', error)
+      }
+    }
+
+    // Priority 2: Extract dataset IDs from session data  
+    if (actualData.length === 0 && sessionData) {
+      const extractedIds = extractDatasetIdsFromSession(sessionData)
+      if (extractedIds.length > 0 && !isDemo) {
+        try {
+          console.log('🔍 Using dataset IDs from session:', extractedIds)
+          const datasetsResult = await getDatasetsForPresentation(extractedIds)
+          actualData = datasetsResult.combinedData
+          datasetInfo = {
+            datasets: datasetsResult.datasets,
+            totalRows: datasetsResult.totalRows,
+            datasetCount: datasetsResult.datasetCount,
+            source: 'session'
+          }
+          console.log(`✅ Retrieved ${actualData.length} rows from session datasets`)
+        } catch (error) {
+          console.warn('⚠️ Failed to fetch session datasets, falling back:', error)
+        }
+      }
+    }
+
+    // Priority 3: Use provided data array
+    if (actualData.length === 0 && data.length > 0) {
+      actualData = data
+      datasetInfo = {
+        totalRows: data.length,
+        source: 'provided'
+      }
+      console.log(`📊 Using provided data: ${data.length} rows`)
+    }
+
+    // Priority 4: Use demo/session data for demo users
+    if (actualData.length === 0 && sessionData?.files) {
+      const sessionFiles = sessionData.files
+      actualData = sessionFiles.reduce((acc: any[], file: any) => {
+        if (file.data && Array.isArray(file.data)) {
+          return acc.concat(file.data)
+        }
+        return acc
+      }, [])
+      datasetInfo = {
+        totalRows: actualData.length,
+        source: 'session_files'
+      }
+      console.log(`📊 Using session file data: ${actualData.length} rows`)
+    }
+
+    // Priority 5: Generate sample data only as last resort
+    if (actualData.length === 0) {
+      console.log('⚠️ No real data available, generating sample data as fallback')
+      actualData = generateSampleData(qaResponses?.dataType || 'business')
+      datasetInfo = {
+        totalRows: actualData.length,
+        source: 'sample',
+        warning: 'No real data was available for analysis'
+      }
+    }
+
+    console.log(`🔢 Final data summary:`, {
+      rows: actualData.length,
+      source: datasetInfo?.source,
+      hasRealData: datasetInfo?.source !== 'sample'
+    })
 
     // Process the upload data
     const processedData = DataFlowManager.processUploadData({
       title,
-      data,
+      data: actualData,
       qaResponses,
       metadata: {
         generateWithAI,
-        processedAt: new Date().toISOString()
+        processedAt: new Date().toISOString(),
+        datasetInfo
       }
     })
-
-    // Use provided data or intelligent sample data based on context
-    const actualData = data.length > 0 ? data : generateSampleData(qaResponses?.dataType || 'business')
-    console.log(`Using ${actualData.length} data points for analysis`)
 
     // Generate AI-powered slides using the uploaded data and Q&A context
     const aiSlides = await generateEnhancedSlideContent(actualData, title, qaResponses)
@@ -89,7 +179,9 @@ export async function POST(request: NextRequest) {
       insights: analysis.insights,
       qaAnalysis: qaResponses ? true : false,
       tremorEnabled: true,
-      presentationId: presentation.id
+      presentationId: presentation.id,
+      datasetInfo,
+      usingRealData: datasetInfo?.source !== 'sample'
     })
   } catch (error) {
     console.error('Generate API error:', error)

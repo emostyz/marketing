@@ -313,46 +313,238 @@ export function FunctionalSlideElement({
     ]
 
     const chartType = element.content?.type || 'bar'
-    const colors = element.content?.colors || ['#3b82f6', '#ef4444', '#10b981', '#f59e0b']
+    const colors = element.content?.colors || ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16']
+    const title = element.content?.title || 'Chart'
+    const theme = element.content?.theme || 'professional'
+    const showGrid = element.content?.showGrid !== false
+    const showLegend = element.content?.showLegend !== false
+    const showTooltip = element.content?.showTooltip !== false
+    const gradient = element.content?.gradient !== false
 
+    // Professional Tableau-style chart container
     return (
-      <div className="w-full h-full bg-white p-2">
-        <ResponsiveContainer width="100%" height="100%">
-          {chartType === 'bar' ? (
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill={colors[0]} />
-            </BarChart>
-          ) : chartType === 'line' ? (
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="value" stroke={colors[0]} strokeWidth={3} />
-            </LineChart>
-          ) : (
-            <PieChart>
-              <Pie
+      <div className="w-full h-full bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 shadow-lg overflow-hidden">
+        {/* Chart Header */}
+        <div className="bg-white px-4 py-3 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 truncate">{title}</h3>
+        </div>
+        
+        {/* Chart Content */}
+        <div className="p-4 h-[calc(100%-60px)]">
+          <ResponsiveContainer width="100%" height="100%">
+            {chartType === 'bar' ? (
+              <BarChart 
                 data={chartData}
-                cx="50%"
-                cy="50%"
-                outerRadius={Math.min(element.position.width, element.position.height) / 4}
-                fill="#8884d8"
-                dataKey="value"
-                label
+                margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
               >
-                {chartData.map((entry: any, index: number) => (
-                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          )}
-        </ResponsiveContainer>
+                {showGrid && (
+                  <CartesianGrid 
+                    strokeDasharray="2 4" 
+                    stroke="#e5e7eb" 
+                    strokeOpacity={0.6}
+                    vertical={false}
+                  />
+                )}
+                <XAxis 
+                  dataKey={element.content?.xAxis || "name"} 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
+                    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`
+                    return value.toString()
+                  }}
+                />
+                {showTooltip && (
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                      color: 'white'
+                    }}
+                    cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                  />
+                )}
+                {showLegend && <Legend />}
+                <Bar 
+                  dataKey={element.content?.yAxis || "value"} 
+                  radius={[4, 4, 0, 0]}
+                  fill={gradient ? "url(#barGradient)" : colors[0]}
+                >
+                  {gradient && (
+                    <defs>
+                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={colors[0]} stopOpacity={1} />
+                        <stop offset="100%" stopColor={colors[0]} stopOpacity={0.7} />
+                      </linearGradient>
+                    </defs>
+                  )}
+                </Bar>
+              </BarChart>
+            ) : chartType === 'line' ? (
+              <LineChart 
+                data={chartData}
+                margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
+              >
+                {showGrid && (
+                  <CartesianGrid 
+                    strokeDasharray="2 4" 
+                    stroke="#e5e7eb" 
+                    strokeOpacity={0.6}
+                  />
+                )}
+                <XAxis 
+                  dataKey={element.content?.xAxis || "name"} 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
+                    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`
+                    return value.toString()
+                  }}
+                />
+                {showTooltip && (
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                      color: 'white'
+                    }}
+                  />
+                )}
+                {showLegend && <Legend />}
+                <Line 
+                  type={element.content?.smooth ? "monotone" : "linear"}
+                  dataKey={element.content?.yAxis || "value"} 
+                  stroke={colors[0]}
+                  strokeWidth={3}
+                  dot={{ fill: colors[0], strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: colors[0], strokeWidth: 2, stroke: '#fff' }}
+                />
+              </LineChart>
+            ) : chartType === 'area' ? (
+              <LineChart 
+                data={chartData}
+                margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
+              >
+                {showGrid && (
+                  <CartesianGrid 
+                    strokeDasharray="2 4" 
+                    stroke="#e5e7eb" 
+                    strokeOpacity={0.6}
+                  />
+                )}
+                <XAxis 
+                  dataKey={element.content?.xAxis || "name"} 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                />
+                {showTooltip && (
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                      color: 'white'
+                    }}
+                  />
+                )}
+                <defs>
+                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={colors[0]} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={colors[0]} stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <Line 
+                  type="monotone"
+                  dataKey={element.content?.yAxis || "value"} 
+                  stroke={colors[0]}
+                  strokeWidth={3}
+                  fill="url(#colorValue)"
+                  fillOpacity={0.6}
+                  dot={{ fill: colors[0], strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
+            ) : (
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={Math.min(element.position.width, element.position.height) / 6}
+                  innerRadius={Math.min(element.position.width, element.position.height) / 12}
+                  fill="#8884d8"
+                  dataKey={element.content?.yAxis || "value"}
+                  paddingAngle={2}
+                >
+                  {chartData.map((entry: any, index: number) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={colors[index % colors.length]}
+                      stroke="#fff"
+                      strokeWidth={2}
+                    />
+                  ))}
+                </Pie>
+                {showTooltip && (
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                      color: 'white'
+                    }}
+                  />
+                )}
+                {showLegend && (
+                  <Legend 
+                    verticalAlign="bottom"
+                    height={36}
+                    iconType="circle"
+                  />
+                )}
+              </PieChart>
+            )}
+          </ResponsiveContainer>
+        </div>
+        
+        {/* Professional chart footer with data source indicator */}
+        <div className="bg-gray-50 px-4 py-2 border-t border-gray-100">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-500">
+              {chartData.length} data points
+            </span>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-xs text-gray-500">Live Data</span>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -479,8 +671,18 @@ export function FunctionalSlideElement({
         backgroundColor: element.type !== 'text' ? element.style.backgroundColor : 'transparent',
         boxShadow: element.style.shadow ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
       }}
-      onClick={onSelect}
-      onMouseDown={(e) => !isSelected && handleMouseDown(e, 'drag')}
+      onClick={(e) => {
+        e.stopPropagation()
+        onSelect()
+      }}
+      onMouseDown={(e) => {
+        e.stopPropagation()
+        if (!isSelected) {
+          onSelect()
+        } else {
+          handleMouseDown(e, 'drag')
+        }
+      }}
       whileHover={!element.locked ? { scale: 1.01 } : {}}
       whileTap={!element.locked ? { scale: 0.99 } : {}}
     >

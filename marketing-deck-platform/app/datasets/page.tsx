@@ -275,6 +275,14 @@ export default function DatasetsPage() {
                     {folder}
                   </Button>
                 ))}
+                <Button
+                  variant="outline"
+                  onClick={() => router.push('/files')}
+                  className="ml-auto bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  View All My Files
+                </Button>
               </div>
 
               {/* Create New Folder */}

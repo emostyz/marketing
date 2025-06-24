@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  console.log('🔍 Middleware processing:', request.nextUrl.pathname)
-  
   // Skip middleware for static files and API routes
   if (
     request.nextUrl.pathname.startsWith('/_next') ||
@@ -25,16 +23,26 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/enterprise') ||
     request.nextUrl.pathname.startsWith('/upload') ||
     request.nextUrl.pathname.startsWith('/demo') ||
-    request.nextUrl.pathname.startsWith('/templates')
+    request.nextUrl.pathname.startsWith('/templates') ||
+    request.nextUrl.pathname.startsWith('/internal-test') ||
+    request.nextUrl.pathname.startsWith('/test-editor') ||
+    request.nextUrl.pathname.startsWith('/files') ||
+    request.nextUrl.pathname.startsWith('/test-world-class') ||
+    request.nextUrl.pathname.startsWith('/test-final-qa')
   ) {
-    console.log('✅ Allowing access to public page:', request.nextUrl.pathname)
+    return NextResponse.next();
+  }
+
+  // Allow access to demo deck URLs
+  if (request.nextUrl.pathname.includes('/deck-builder/demo-deck-')) {
     return NextResponse.next();
   }
 
   // Check for demo session first
   const demoSession = request.cookies.get('demo-session')?.value;
-  if (demoSession) {
-    console.log('🎭 Demo session found, allowing access')
+  const demoAuthToken = request.cookies.get('sb-demo-auth-token')?.value;
+  
+  if (demoSession === 'active' || demoAuthToken === 'demo-token') {
     return NextResponse.next();
   }
 
@@ -53,20 +61,16 @@ export async function middleware(request: NextRequest) {
   
   const hasAuthCookie = cookieNames.some(name => {
     const cookie = request.cookies.get(name)?.value
-    if (cookie) {
-      console.log('🔑 Found auth cookie:', name)
-      return true
-    }
-    return false
+    // More robust cookie validation - check it's not empty and looks like a JWT
+    return cookie && cookie.length > 20 && cookie.includes('.')
   })
   
   if (hasAuthCookie) {
-    console.log('✅ Auth cookies exist, allowing access')
+    console.log('✅ Valid auth cookie found, allowing access')
     return NextResponse.next();
   }
 
   // No valid session, redirect to login
-  console.log('🚫 No valid session, redirecting to login')
   return NextResponse.redirect(new URL('/auth/login', request.url));
 }
 

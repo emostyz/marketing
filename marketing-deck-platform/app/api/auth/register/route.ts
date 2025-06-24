@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
         errorMessage = 'Password must be at least 6 characters long'
       } else if (error.message.includes('Too many requests')) {
         errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.'
+      } else if (error.message.includes('Email not confirmed')) {
+        errorMessage = 'Please confirm your email before signing in.'
       }
 
       return NextResponse.json(

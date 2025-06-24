@@ -166,11 +166,12 @@ export const UploadStep: React.FC<UploadStepProps> = ({ files, setFiles, nextSte
         </Button>
         <Button 
           onClick={() => {
-            console.log('🔘 Continue to Analysis button clicked!')
-            console.log('📊 canProceed:', canProceed)
-            console.log('📁 successfulFiles:', successfulFiles)
-            toast.success('Analysis started! Moving to analysis step...')
-            nextStep()
+            if (canProceed && nextStep) {
+              console.log('✅ Continue to Analysis clicked, starting analysis...')
+              nextStep()
+            } else {
+              console.log('❌ Cannot proceed:', { canProceed, nextStep })
+            }
           }} 
           size="lg" 
           disabled={!canProceed}

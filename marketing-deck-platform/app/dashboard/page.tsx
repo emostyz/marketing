@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import PublicNavigation from '@/components/navigation/PublicNavigation'
 import PublicFooter from '@/components/navigation/PublicFooter'
+import { FileBrowserModule } from '@/components/dashboard/FileBrowserModule'
 import Link from 'next/link'
 
 export default function DashboardPage() {
@@ -129,35 +130,6 @@ export default function DashboardPage() {
         </div>
       </div>
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
-        {/* Header */}
-        <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Brain className="w-8 h-8 text-blue-400" />
-                <div>
-                  <h1 className="text-2xl font-bold text-white">AEDRIN</h1>
-                  <p className="text-gray-400">AI-Powered Marketing Deck Platform</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                {user.demo && (
-                  <div className="px-3 py-1 bg-green-900 text-green-300 rounded-full text-sm font-medium">
-                    Demo Mode
-                  </div>
-                )}
-                <div className="px-3 py-1 bg-blue-900 text-blue-300 rounded-full text-sm font-medium capitalize">
-                  {(user.subscription || 'Free')}
-                </div>
-                <Button variant="outline" onClick={handleSignOut}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Welcome Section */}
           <div className="mb-8">
@@ -343,6 +315,11 @@ export default function DashboardPage() {
               </div>
             </div>
           </Card>
+
+          {/* File Browser Module */}
+          <div className="mt-8">
+            <FileBrowserModule />
+          </div>
         </div>
       </div>
       <PublicFooter />

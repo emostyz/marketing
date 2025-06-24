@@ -65,12 +65,22 @@ export async function POST(
 ) {
   const { id } = await params
   try {
-    const user = await AuthSystem.getCurrentUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Handle demo decks without authentication
+    const isDemo = id.startsWith('demo-deck-')
+    let user = null
+    
+    if (!isDemo) {
+      user = await AuthSystem.getCurrentUser()
+      if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    } else {
+      // For demo users, create a mock user
+      user = { name: 'Demo User', email: 'demo@aedrin.com', id: 'demo' }
     }
 
-    const { format, size, theme }: ExportRequest = await request.json()
+    const body = await request.json()
+    const { format, size, theme, slides }: ExportRequest & { slides?: any[] } = body
     const presentationId = id
 
     // Validate inputs
@@ -82,8 +92,16 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid size. Must be 16:9, 4:3, or A4' }, { status: 400 })
     }
 
-    // Get presentation data (in real app, fetch from database)
-    const presentation = await getPresentationData(presentationId, user.id)
+    // Get presentation data (use provided slides or fetch from database/memory)
+    let presentation
+    if (slides) {
+      presentation = await createPresentationFromSlides(slides, presentationId, user)
+    } else if (isDemo) {
+      presentation = await getDemoPresentationData(presentationId)
+    } else {
+      presentation = await getPresentationData(presentationId, user.id)
+    }
+    
     if (!presentation) {
       return NextResponse.json({ error: 'Presentation not found' }, { status: 404 })
     }
@@ -131,6 +149,33 @@ export async function POST(
       { error: 'Failed to export presentation' },
       { status: 500 }
     )
+  }
+}
+
+async function createPresentationFromSlides(slides: any[], presentationId: string, user: any) {
+  // Convert provided slides to presentation format
+  return {
+    id: presentationId,
+    title: `Presentation ${presentationId}`,
+    author: user.name || user.email || 'AEDRIN User',
+    company: 'AEDRIN Analytics',
+    subject: 'Generated presentation',
+    slides: slides.map((slide, index) => ({
+      id: slide.id || `slide-${index + 1}`,
+      title: slide.title || `Slide ${index + 1}`,
+      layout: slide.layout || 'content',
+      backgroundColor: slide.backgroundColor || '#FFFFFF',
+      elements: slide.elements || [],
+      notes: slide.notes || '',
+      slideNumber: index + 1
+    })),
+    theme: {
+      primaryColor: '#1E40AF',
+      secondaryColor: '#7C3AED', 
+      backgroundColor: '#FFFFFF',
+      headingFont: 'Arial',
+      bodyFont: 'Arial'
+    }
   }
 }
 
@@ -247,6 +292,82 @@ async function getPresentationData(id: string, userId: number) {
   }
 
   return mockPresentation
+}
+
+async function getDemoPresentationData(id: string) {
+  // Try to get from global storage first
+  global.demoDeckStorage = global.demoDeckStorage || new Map()
+  const storedDeck = global.demoDeckStorage.get(id)
+  
+  if (storedDeck) {
+    console.log('📊 Found demo deck in storage for export:', id)
+    // Convert stored deck format to export format
+    return {
+      id: storedDeck.id,
+      title: storedDeck.title,
+      author: 'Demo User',
+      company: 'AEDRIN Analytics',
+      subject: 'AI-Generated Demo Presentation',
+      slides: storedDeck.slides.map((slide: any, index: number) => ({
+        id: slide.id,
+        title: slide.title || `Slide ${index + 1}`,
+        layout: mapSlideTypeToLayout(slide.type),
+        backgroundColor: slide.background?.color || '#FFFFFF',
+        elements: slide.elements?.map((element: any) => ({
+          id: element.id,
+          type: element.type,
+          x: element.position.x,
+          y: element.position.y,
+          width: element.position.width,
+          height: element.position.height,
+          content: element.content?.text || element.content?.html || '',
+          fontSize: element.style?.fontSize,
+          fontFamily: element.style?.fontFamily,
+          fontWeight: element.style?.fontWeight,
+          color: element.style?.color,
+          textAlign: element.style?.textAlign,
+          chartConfig: element.content?.type ? {
+            type: element.content.type,
+            data: element.content.data,
+            title: element.content.title,
+            colors: element.content.colors,
+            showLegend: element.content.showLegend
+          } : undefined,
+          backgroundColor: element.style?.backgroundColor,
+          borderColor: element.style?.borderColor,
+          borderWidth: element.style?.borderWidth
+        })) || [],
+        notes: slide.notes || '',
+        slideNumber: index + 1
+      })),
+      theme: storedDeck.theme || {
+        primaryColor: '#2563eb',
+        secondaryColor: '#64748b',
+        backgroundColor: '#ffffff',
+        headingFont: 'Inter',
+        bodyFont: 'Inter'
+      }
+    }
+  }
+  
+  // Fallback if not found in storage
+  return null
+}
+
+function mapSlideTypeToLayout(slideType: string) {
+  switch (slideType) {
+    case 'executive_summary':
+    case 'title':
+      return 'title'
+    case 'key_insights':
+    case 'recommendations':
+      return 'content'
+    case 'detailed_analysis':
+    case 'trends_analysis':
+      return 'chart'
+    default:
+      return 'content'
+  }
 }
 
 function adjustPresentationForSize(presentation: any, size: keyof typeof PRESENTATION_SIZES) {

@@ -34,7 +34,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Cache key for auth state
-const AUTH_CACHE_KEY = 'aedrin-auth-state'
+const USER_CACHE_KEY = 'aedrin-auth-state'
 const DEMO_CACHE_KEY = 'aedrin-demo-session'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -51,10 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           user: userData,
           timestamp: Date.now()
         }
-        localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(cacheData))
+        localStorage.setItem(USER_CACHE_KEY, JSON.stringify(cacheData))
         console.log('💾 Cached user state for:', userData.email)
       } else {
-        localStorage.removeItem(AUTH_CACHE_KEY)
+        localStorage.removeItem(USER_CACHE_KEY)
         console.log('🗑️ Cleared cached user state')
       }
     } catch (error) {
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Restore user state from cache
   const restoreUserState = (): User | null => {
     try {
-      const cached = localStorage.getItem(AUTH_CACHE_KEY)
+      const cached = localStorage.getItem(USER_CACHE_KEY)
       if (cached) {
         const data = JSON.parse(cached)
         // Cache is valid for 10 minutes
@@ -74,12 +74,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return data.user
         } else {
           console.log('⏰ Cached user state expired, clearing...')
-          localStorage.removeItem(AUTH_CACHE_KEY)
+          localStorage.removeItem(USER_CACHE_KEY)
         }
       }
     } catch (error) {
       console.error('❌ Error restoring cached user state:', error)
-      localStorage.removeItem(AUTH_CACHE_KEY)
+      localStorage.removeItem(USER_CACHE_KEY)
     }
     return null
   }
@@ -140,6 +140,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           console.log('✅ Active session found for user:', session.user.email)
+          
+          // Sync session with server-side cookie
+          try {
+            await fetch('/api/auth/set-cookie', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ access_token: session.access_token })
+            })
+            console.log('🍪 Session synced with server cookie')
+          } catch (syncError) {
+            console.warn('⚠️ Failed to sync session with server:', syncError)
+          }
+          
           await fetchAndSetUserProfile(session.user)
           setLoading(false)
           setInitialized(true)
@@ -147,16 +160,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Fallback: check /api/auth/check for SSR cookie session
-        const resp = await fetch('/api/auth/check')
-        if (resp.ok) {
-          const { user: apiUser } = await resp.json()
-          if (apiUser) {
-            setUser(apiUser)
-            cacheUserState(apiUser)
-            setLoading(false)
-            setInitialized(true)
-            return
+        try {
+          const resp = await fetch('/api/auth/check')
+          if (resp.ok) {
+            const { user: apiUser } = await resp.json()
+            if (apiUser) {
+              setUser(apiUser)
+              cacheUserState(apiUser)
+              setLoading(false)
+              setInitialized(true)
+              return
+            }
           }
+        } catch (fetchError) {
+          console.log('⚠️ Could not check auth API:', fetchError)
         }
         setLoading(false)
         setInitialized(true)
@@ -177,7 +194,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('✅ User signed in via auth state change')
+          
+          // Set the auth cookie for SSR/middleware FIRST
+          try {
+            const cookieResponse = await fetch('/api/auth/set-cookie', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ access_token: session.access_token })
+            })
+            
+            if (cookieResponse.ok) {
+              console.log('🍪 Auth cookie set for SSR/middleware')
+            }
+          } catch (cookieError) {
+            console.error('❌ Failed to set auth cookie:', cookieError)
+          }
+          
+          // Then set user profile
           await fetchAndSetUserProfile(session.user)
+          
+          // Navigate to dashboard
+          console.log('🚀 Redirecting to dashboard...')
+          router.push('/dashboard')
         } else if (event === 'SIGNED_OUT') {
           console.log('🚪 User signed out, clearing state...')
           setUser(null)
@@ -310,30 +348,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user && data.session) {
         console.log('✅ Sign in successful for user:', data.user.email)
-        
-        // Set user state immediately and cache it
-        await fetchAndSetUserProfile(data.user)
-
-        // Set the auth cookie for SSR/middleware
-        try {
-          await fetch('/api/auth/set-cookie', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ access_token: data.session.access_token })
-          })
-          console.log('🍪 Auth cookie set for SSR/middleware')
-        } catch (cookieError) {
-          console.error('❌ Failed to set auth cookie:', cookieError)
-        }
-        
-        // Use window.location.href for immediate redirect to avoid race conditions
-        console.log('🚀 Redirecting to dashboard...')
-        if (typeof window !== 'undefined') {
-          window.location.href = '/dashboard'
-        } else {
-          router.push('/dashboard')
-        }
-        
+        // The auth state change listener will handle the rest
         return {}
       }
 
@@ -350,12 +365,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
       
+      console.log('🚀 Starting demo sign-in...')
+      
       const response = await fetch('/api/auth/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ demo: true })
+        body: JSON.stringify({ demo: true }),
+        credentials: 'include' // Ensure cookies are sent/received
       })
 
       if (!response.ok) {
@@ -371,7 +389,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: data.error || 'Failed to start demo session. Please try again.' }
       }
 
-      // Store demo session
+      console.log('✅ Demo API response:', data)
+
+      // Store demo session in localStorage as backup
       const demoSession = {
         active: true,
         expiresAt: data.demo.expiresAt,
@@ -393,12 +413,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cacheUserState(demoUser)
       setLoading(false)
 
-      // Use window.location.href for immediate redirect to avoid race conditions
-      if (typeof window !== 'undefined') {
-        window.location.href = '/dashboard'
-      } else {
-        router.push('/dashboard')
-      }
+      console.log('🎭 Demo user set, redirecting to dashboard...')
+
+      // Use Next.js router for proper navigation
+      router.push('/dashboard')
       return {}
     } catch (error) {
       console.error('Demo sign in error:', error)
@@ -480,19 +498,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Clear demo session if exists
-      localStorage.removeItem(DEMO_CACHE_KEY)
+      setLoading(true)
       
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('Sign out error:', error)
+      // Clear demo session if it exists
+      const demoSession = localStorage.getItem(DEMO_CACHE_KEY)
+      if (demoSession) {
+        console.log('🧹 Clearing demo session...')
+        localStorage.removeItem(DEMO_CACHE_KEY)
+        
+        // Clear demo cookies by calling the API
+        try {
+          await fetch('/api/auth/test', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ clear: true }),
+            credentials: 'include'
+          })
+        } catch (error) {
+          console.warn('Failed to clear demo cookies:', error)
+        }
       }
-      
+
+      // Clear server-side auth cookie
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        })
+        console.log('🧹 Server-side auth cookie cleared')
+      } catch (error) {
+        console.warn('Failed to clear server-side cookie:', error)
+      }
+
+      // Clear Supabase session
+      if (supabase) {
+        await supabase.auth.signOut()
+      }
+
+      // Clear local state
       setUser(null)
-      cacheUserState(null)
+      localStorage.removeItem(USER_CACHE_KEY)
+      setLoading(false)
+
+      // Redirect to home page
       router.push('/')
     } catch (error) {
       console.error('Sign out error:', error)
+      setLoading(false)
+      
+      // Force clear state even if there's an error
+      setUser(null)
+      localStorage.removeItem(USER_CACHE_KEY)
+      localStorage.removeItem(DEMO_CACHE_KEY)
+      router.push('/')
     }
   }
 

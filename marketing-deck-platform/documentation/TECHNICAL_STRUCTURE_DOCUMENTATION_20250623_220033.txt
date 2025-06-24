@@ -1,0 +1,613 @@
+AEDRIN - TECHNICAL STRUCTURE DOCUMENTATION
+============================================
+
+PROJECT OVERVIEW
+----------------
+AEDRIN is an AI-powered marketing deck platform built with Next.js 15, TypeScript, and Supabase. The platform transforms business data into professional presentations using advanced AI analysis and automated slide generation.
+
+TECHNOLOGY STACK
+----------------
+- Frontend: Next.js 15 with App Router, TypeScript, Tailwind CSS
+- Backend: Next.js API Routes, Supabase (PostgreSQL)
+- Authentication: Supabase Auth with custom middleware
+- AI: OpenAI GPT-4, Claude, and local LLM support
+- UI: Shadcn/ui components, Framer Motion, Lucide icons
+- State Management: React hooks, Context API
+- Database: Supabase PostgreSQL with Drizzle ORM
+- File Storage: Supabase Storage
+- Real-time: Supabase real-time subscriptions
+
+PROJECT STRUCTURE
+=================
+
+ROOT DIRECTORY
+--------------
+├── app/                          # Next.js App Router pages
+├── components/                   # React components
+├── lib/                         # Utility libraries and services
+├── public/                      # Static assets
+├── types/                       # TypeScript type definitions
+├── hooks/                       # Custom React hooks
+├── supabase/                    # Database migrations
+├── drizzle.config.ts           # Drizzle ORM configuration
+├── components.json             # Shadcn/ui configuration
+├── package.json                # Dependencies and scripts
+└── next.config.js              # Next.js configuration
+
+APP DIRECTORY (Next.js App Router)
+==================================
+
+AUTHENTICATION PAGES
+-------------------
+app/auth/
+├── callback/page.tsx           # OAuth callback handler
+├── login/
+│   ├── actions.ts             # Login form actions
+│   ├── layout.tsx             # Auth layout wrapper
+│   └── page.tsx               # Login page
+└── signup/
+    ├── layout.tsx             # Signup layout
+    └── page.tsx               # Registration page
+
+ADMIN SYSTEM
+------------
+app/admin/
+├── analytics/page.tsx          # Admin analytics dashboard
+├── login/page.tsx             # Admin login
+├── page.tsx                   # Main admin dashboard
+├── settings/page.tsx          # Platform settings
+├── templates/
+│   ├── new/page.tsx           # Create new template
+│   └── page.tsx               # Template management
+└── users/
+    ├── invite/page.tsx        # User invitation
+    └── page.tsx               # User management
+
+API ROUTES
+----------
+app/api/
+├── admin/                     # Admin-only API endpoints
+│   ├── activity/recent/route.ts
+│   ├── ai-provider/route.ts
+│   ├── analytics/route.ts
+│   ├── auth/check/route.ts
+│   ├── auth/login/route.ts
+│   ├── brain/configure/route.ts
+│   ├── brain/providers/route.ts
+│   ├── brain/reload/route.ts
+│   ├── brain/status/route.ts
+│   ├── brain/test/route.ts
+│   ├── platform/rebuild/route.ts
+│   ├── settings/route.ts
+│   ├── stats/route.ts
+│   ├── subscription/route.ts
+│   ├── team/route.ts
+│   ├── templates/[id]/edit/route.ts
+│   ├── templates/[id]/route.ts
+│   ├── templates/[id]/toggle/route.ts
+│   ├── templates/route.ts
+│   ├── users/[id]/route.ts
+│   ├── users/bulk/route.ts
+│   ├── users/demote/route.ts
+│   ├── users/export/route.ts
+│   ├── users/invite/route.ts
+│   ├── users/promote/route.ts
+│   └── users/route.ts
+├── ai/universal-analyze/route.ts
+├── analytics/
+│   ├── page-view/route.ts
+│   └── user-interaction/route.ts
+├── analyze/route.ts
+├── auth/
+│   ├── check/route.ts
+│   ├── login/route.ts
+│   ├── logout/route.ts
+│   ├── register/route.ts
+│   ├── set-cookie/route.ts
+│   ├── test/route.ts
+│   └── verify/route.ts
+├── brain/analyze/route.ts
+├── data-imports/route.ts
+├── datasets/route.ts
+├── debug/env/route.ts
+├── demo/route.ts
+├── export/
+│   ├── gslides/route.ts
+│   └── pdf/route.ts
+├── generate/route.ts
+├── leads/route.ts
+├── openai/
+│   ├── analyze/route.ts
+│   ├── chart-command/route.ts
+│   ├── chart-qa/route.ts
+│   ├── content-check/route.ts
+│   ├── deck-structure/route.ts
+│   ├── enhanced-analyze/route.ts
+│   ├── insight-qa/route.ts
+│   ├── simple-test/route.ts
+│   ├── slide-qa/route.ts
+│   └── slide-sequence/route.ts
+├── presentations/
+│   ├── [id]/export/route.ts
+│   ├── [id]/route.ts
+│   ├── route.ts
+│   └── session/route.ts
+├── stripe/
+│   ├── checkout/route.ts
+│   ├── create-checkout/route.ts
+│   ├── create-checkout-session/route.ts
+│   └── webhook/route.ts
+├── team/route.ts
+├── test-env/route.ts
+├── upload/[id]/route.ts
+├── upload/route.ts
+├── user/
+│   ├── ai-settings/route.ts
+│   ├── dashboard/route.ts
+│   ├── profile/route.ts
+│   ├── profile/settings/route.ts
+│   ├── profile/update/route.ts
+│   ├── route.ts
+│   ├── subscription/route.ts
+│   ├── usage-check/route.ts
+│   └── usage-rollback/route.ts
+└── templates/
+
+MAIN PAGES
+----------
+app/
+├── about/page.tsx              # About page
+├── contact/page.tsx            # Contact page
+├── dashboard/page.tsx          # Main user dashboard
+├── datasets/page.tsx           # Data management
+├── deck-builder/
+│   ├── [id]/page.tsx          # Edit existing deck
+│   └── new/page.tsx           # Create new deck
+├── demo/page.tsx               # Demo page
+├── editor/
+│   ├── [id]/page.tsx          # Presentation editor
+│   ├── new/page.tsx           # New presentation
+│   └── page.tsx               # Editor landing
+├── enterprise/page.tsx         # Enterprise features
+├── error.tsx                   # Global error boundary
+├── favicon.ico
+├── globals.css                 # Global styles
+├── layout.tsx                  # Root layout
+├── onboarding/page.tsx         # User onboarding
+├── presentation/[id]/preview/page.tsx
+├── presentations/page.tsx      # Presentations list
+├── pricing/page.tsx            # Pricing page
+├── profile/page.tsx            # User profile
+├── settings/
+│   ├── local-llm/page.tsx     # Local LLM configuration
+│   └── page.tsx               # Settings page
+├── simple-dashboard/page.tsx   # Simplified dashboard
+├── simple-editor/page.tsx      # Basic editor
+├── templates/page.tsx          # Template library
+├── test/page.tsx               # Testing page
+├── test-auth/page.tsx          # Auth testing
+├── test-upload/page.tsx        # Upload testing
+└── welcome/page.tsx            # Welcome page
+
+COMPONENTS DIRECTORY
+===================
+
+ADMIN COMPONENTS
+---------------
+components/admin/
+├── AdminDashboard.tsx          # Main admin interface
+├── AnalyticsDashboard.tsx      # Analytics visualization
+└── BrainConfigurationPanel.tsx # AI brain configuration
+
+ANALYTICS COMPONENTS
+-------------------
+components/analytics/
+└── EventTracker.tsx            # User interaction tracking
+
+AUTHENTICATION COMPONENTS
+------------------------
+components/auth/
+├── AuthError.tsx               # Authentication error display
+└── ForgotPasswordModal.tsx     # Password reset modal
+
+CHART COMPONENTS
+---------------
+components/charts/
+├── AdvancedTremorChartStudio.tsx
+├── ChartBuilder.tsx
+├── EnhancedWorldClassChart.tsx
+├── InteractiveChartVisualizationSystem.tsx
+├── ProfessionalChart.tsx
+├── RealTimeChart.tsx
+├── SimpleChart.tsx
+├── SmartChart.tsx
+├── TremorChart.tsx
+├── WorldClassChart.tsx
+└── [Additional chart components]
+
+DASHBOARD COMPONENTS
+-------------------
+components/dashboard/
+├── AedrinDashboard.tsx         # Main dashboard component
+├── DashboardClient.tsx         # Dashboard client logic
+└── [Additional dashboard components]
+
+DECK BUILDER COMPONENTS
+----------------------
+components/deck-builder/
+├── AdvancedChartEditor.tsx
+├── AdvancedSlideEditor.tsx
+├── AIFeedbackPanel.tsx
+├── DeckBuilderWrapper.tsx
+├── EnhancedCanvas.tsx
+├── EnhancedDataIntake.tsx
+├── EnhancedToolbar.tsx
+├── IntelligentLayoutAssistant.tsx
+├── PostCreationEditor.tsx
+├── RealtimeCollaboration.tsx
+├── SimpleDataIntake.tsx
+├── TemplateStep.tsx
+├── TimePeriodAnalysisStep.tsx
+├── UltimateDeckBuilder.tsx
+├── UploadStep.tsx
+├── WorldClassSlideBuilder.tsx
+└── [Additional builder components]
+
+EDITOR COMPONENTS
+-----------------
+components/editor/
+├── AdvancedPresentationEditor.tsx
+├── AdvancedPresentationStudio.tsx
+├── EditableChart.tsx
+├── ModernSlideStudio.tsx
+├── WorldClassPresentationEditor.tsx
+├── WorldClassSlideEditor.tsx
+└── [Additional editor components]
+
+EXPORT COMPONENTS
+-----------------
+components/export/
+└── ExportModal.tsx             # Export functionality
+
+NAVIGATION COMPONENTS
+--------------------
+components/navigation/
+├── PublicFooter.tsx            # Site footer
+└── PublicNavigation.tsx        # Main navigation
+
+REAL-TIME COMPONENTS
+-------------------
+components/real-time/
+├── CollaborationProvider.tsx
+├── CommentSystem.tsx
+├── RealTimeFeedback.tsx
+└── [Additional real-time components]
+
+SLIDE COMPONENTS
+---------------
+components/slides/
+├── AdvancedEditableSlide.tsx
+├── AdvancedFormatPanel.tsx
+├── ChartSlide.tsx
+├── ContentSlide.tsx
+├── SlideCanvas.tsx
+├── SlideEditor.tsx
+├── SlidePreview.tsx
+└── [Additional slide components]
+
+TEMPLATE COMPONENTS
+------------------
+components/templates/
+└── TemplateLibrary.tsx         # Template management
+
+THEME COMPONENTS
+---------------
+components/themes/
+├── AdvancedThemeStudio.tsx
+└── ThemeSelector.tsx
+
+UI COMPONENTS (Shadcn/ui)
+-------------------------
+components/ui/
+├── avatar.tsx
+├── badge.tsx
+├── button.tsx
+├── card.tsx
+├── checkbox.tsx
+├── dialog.tsx
+├── dropdown-menu.tsx
+├── input.tsx
+├── label.tsx
+├── modal.tsx
+├── progress.tsx
+├── select.tsx
+├── skeleton.tsx
+├── textarea.tsx
+├── toast.tsx
+├── toggle.tsx
+└── [Additional UI components]
+
+UPLOAD COMPONENTS
+-----------------
+components/upload/
+├── AdvancedDataUploadModal.tsx
+├── DataUploadModal.tsx
+├── SimpleDataUploadModal.tsx
+└── [Additional upload components]
+
+LIB DIRECTORY
+=============
+
+AI SERVICES
+-----------
+lib/ai/
+├── advanced-analytics-engine.ts
+├── aedrin-brain.ts
+├── brain-config.ts
+├── brain-controller.ts
+├── deep-insight-engine.ts
+├── enhanced-brain-v2.ts
+├── master-brain.ts
+├── universal-brain.ts
+└── [Additional AI services]
+
+ANALYTICS
+---------
+lib/analytics/
+└── client-tracker.ts           # Client-side analytics
+
+AUTHENTICATION
+--------------
+lib/auth/
+├── admin-auth.ts               # Admin authentication
+├── api-auth.ts                 # API authentication
+├── auth-context.tsx            # Auth context provider
+├── auth-utils.ts               # Auth utilities
+├── error-handler.ts            # Auth error handling
+└── [Additional auth services]
+
+AUTO-SAVE
+---------
+lib/auto-save/
+└── enhanced-auto-save.ts       # Auto-save functionality
+
+BRAIN SYSTEM
+------------
+lib/brain/
+└── advanced-brain.ts           # Advanced AI brain
+
+CHARTS
+------
+lib/charts/
+├── ai-chart-engine.ts
+├── chart-config.ts
+├── chart-generator.ts
+└── [Additional chart services]
+
+CONSTANTS
+---------
+lib/constants/
+└── tier-limits.ts              # Subscription limits
+
+DATA PROCESSING
+---------------
+lib/data/
+├── analyzer.ts
+├── enhanced-data-processor.ts
+├── file-parser.ts
+├── intelligent-data-sampler.ts
+└── [Additional data services]
+
+DATABASE
+--------
+lib/db/
+├── drizzle.ts                  # Database connection
+├── migrations/                 # Database migrations
+├── queries.ts                  # Database queries
+├── schema.ts                   # Database schema
+└── [Additional database files]
+
+EXPORT SERVICES
+--------------
+lib/export/
+├── export-validator.ts
+└── powerpoint-exporter.ts
+
+HOOKS
+-----
+lib/hooks/
+├── use-toast.ts
+├── useOpenAIQA.ts
+└── useTierLimits.ts
+
+OPENAI INTEGRATION
+-----------------
+lib/openai/
+├── ai-deck-architect.ts
+├── deck-brain.ts
+├── enhanced-brain.ts
+└── [Additional OpenAI services]
+
+PAYMENTS
+--------
+lib/payments/
+├── actions.ts
+└── stripe.ts
+
+PRESENTATIONS
+-------------
+lib/presentations/
+└── presentation-helpers.ts
+
+QA SYSTEM
+---------
+lib/qa/
+└── slide-qa-system.ts
+
+SECURITY
+--------
+lib/security/
+├── data-validator.ts
+├── file-security.ts
+├── payment-security.ts
+└── rate-limiter.ts
+
+SERVICES
+--------
+lib/services/
+├── ai-provider-manager.ts
+├── data-export.ts
+├── demo-user-manager.ts
+├── profile-service.ts
+├── subscription-manager.ts
+├── team-management.ts
+├── usage-analytics.ts
+└── user-profile.ts
+
+SUPABASE
+--------
+lib/supabase/
+├── client.ts
+├── database-helpers.ts
+├── enhanced-client.ts
+└── [Additional Supabase files]
+
+TYPES
+-----
+lib/types/
+└── upload.ts                   # Upload type definitions
+
+UTILITIES
+---------
+lib/utils/
+└── [Utility functions]
+
+VALIDATION
+----------
+lib/validation/
+└── deck-builder-validation.ts
+
+DATABASE SCHEMA
+===============
+
+SUPABASE MIGRATIONS
+------------------
+supabase/migrations/
+├── create_presentations_table.sql
+└── [Additional migrations]
+
+DRIZZLE MIGRATIONS
+------------------
+lib/db/migrations/
+├── 0000_soft_the_anarchist.sql
+└── meta/
+    ├── _journal.json
+    └── 0000_snapshot.json
+
+KEY TECHNICAL FEATURES
+======================
+
+AUTHENTICATION SYSTEM
+--------------------
+- Supabase Auth with custom middleware
+- Role-based access control (User, Admin)
+- Session management with cookies
+- OAuth integration (Google, GitHub)
+- Demo mode for testing
+
+AI INTEGRATION
+--------------
+- OpenAI GPT-4 for content generation
+- Claude for advanced analysis
+- Local LLM support (Ollama)
+- Multi-provider AI system
+- Intelligent data analysis
+
+REAL-TIME FEATURES
+------------------
+- Live collaboration
+- Real-time comments
+- Auto-save functionality
+- Live notifications
+- WebSocket connections
+
+DATA PROCESSING
+---------------
+- CSV/Excel/JSON file parsing
+- Intelligent data analysis
+- Chart generation
+- Data validation
+- Quality assessment
+
+PRESENTATION ENGINE
+-------------------
+- Slide generation
+- Template system
+- Chart integration
+- Export functionality (PDF, PowerPoint)
+- Real-time editing
+
+ADMIN SYSTEM
+------------
+- User management
+- Analytics dashboard
+- Template management
+- System configuration
+- Usage monitoring
+
+SECURITY FEATURES
+-----------------
+- Rate limiting
+- Data validation
+- File security
+- Payment security
+- Authentication middleware
+
+DEPLOYMENT & CONFIGURATION
+==========================
+
+ENVIRONMENT VARIABLES
+--------------------
+- SUPABASE_URL
+- SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+- OPENAI_API_KEY
+- STRIPE_SECRET_KEY
+- NEXTAUTH_SECRET
+- [Additional environment variables]
+
+BUILD CONFIGURATION
+-------------------
+- Next.js 15 with Turbopack
+- TypeScript strict mode
+- Tailwind CSS
+- ESLint and Prettier
+- Husky pre-commit hooks
+
+DEPLOYMENT
+----------
+- Vercel deployment ready
+- Supabase hosting
+- Environment variable management
+- Database migration system
+- Static asset optimization
+
+MONITORING & ANALYTICS
+======================
+
+ERROR TRACKING
+--------------
+- Error boundaries
+- Logging system
+- Performance monitoring
+- User interaction tracking
+
+ANALYTICS
+---------
+- Page view tracking
+- User interaction events
+- Performance metrics
+- Usage analytics
+- Conversion tracking
+
+This technical structure provides a comprehensive foundation for an AI-powered presentation platform with real-time collaboration, advanced data processing, and scalable architecture.

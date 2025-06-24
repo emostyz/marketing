@@ -39,7 +39,33 @@ export async function POST(request: NextRequest) {
       body = {}
     }
     
-    const { demo = false } = body as { demo?: boolean }
+    const { demo = false, clear = false } = body as { demo?: boolean, clear?: boolean }
+    
+    if (clear) {
+      // Clear demo cookies
+      const response = NextResponse.json({ 
+        success: true, 
+        message: 'Demo session cleared'
+      })
+      
+      response.cookies.set('demo-session', '', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        expires: new Date(0), // Set to epoch time to expire immediately
+        path: '/'
+      })
+      
+      response.cookies.set('sb-demo-auth-token', '', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        expires: new Date(0), // Set to epoch time to expire immediately
+        path: '/'
+      })
+      
+      return response
+    }
     
     if (!demo) {
       return NextResponse.json(
@@ -48,7 +74,8 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    return NextResponse.json({ 
+    // Create response with demo data
+    const response = NextResponse.json({ 
       success: true, 
       message: 'Demo mode activated',
       demo: {
@@ -57,6 +84,26 @@ export async function POST(request: NextRequest) {
         features: ['unlimited_presentations', 'ai_insights', 'templates']
       }
     })
+    
+    // Set demo session cookies (non-HttpOnly for better browser compatibility)
+    response.cookies.set('demo-session', 'active', {
+      httpOnly: false, // Allow JavaScript access
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60, // 24 hours
+      path: '/'
+    })
+    
+    // Also set a Supabase-like cookie for compatibility
+    response.cookies.set('sb-demo-auth-token', 'demo-token', {
+      httpOnly: false, // Allow JavaScript access
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60, // 24 hours
+      path: '/'
+    })
+    
+    return response
   } catch (error) {
     console.error('Demo route error:', error)
     
