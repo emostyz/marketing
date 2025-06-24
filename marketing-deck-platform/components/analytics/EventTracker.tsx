@@ -22,10 +22,8 @@ export function EventTracker({ children }: EventTrackerProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          path: pathname,
-          search: searchParams.toString(),
-          user_id: user?.id || null,
-          timestamp: new Date().toISOString(),
+          pageUrl: typeof window !== 'undefined' ? window.location.href : pathname,
+          pageTitle: typeof document !== 'undefined' ? document.title : undefined,
         }),
       });
 
@@ -35,7 +33,7 @@ export function EventTracker({ children }: EventTrackerProps) {
     } catch (error) {
       console.error('Error logging page view:', error);
     }
-  }, [pathname, searchParams, user?.id]);
+  }, [pathname]);
 
   // Log user interaction
   const logUserInteraction = useCallback(async (

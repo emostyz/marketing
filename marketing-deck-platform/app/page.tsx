@@ -165,7 +165,7 @@ export default function HomePage() {
                   <span className="px-2 bg-gray-950 text-gray-400">or</span>
                 </div>
               </div>
-              <Link href="/demo" passHref legacyBehavior>
+              <Link href="/demo">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white">
                   🚀 Try Demo (No Account Required)
                 </Button>
