@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { Brain, Zap, Shield, Users, BarChart3, CheckCircle, ArrowRight, Star, Play, Globe, Award, TrendingUp, Mail, User, Building, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Brain, Zap, Shield, Users, BarChart3, CheckCircle, ArrowRight, Star, Play, Globe, Award, TrendingUp, Mail, User, Building } from 'lucide-react'
+import PublicPageLayout from '@/components/layout/PublicPageLayout'
 
 export default function HomePage() {
   const [email, setEmail] = useState('')
@@ -12,7 +13,6 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
-  const [showComingSoonBar, setShowComingSoonBar] = useState(true)
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,76 +52,36 @@ export default function HomePage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center p-8">
-          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-400" />
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-4">Thank You!</h1>
-          <p className="text-gray-300 mb-8">
-            We've received your information and will be in touch soon with early access to AEDRIN.
-          </p>
-          <div className="space-y-4">
-            <Link href="/">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                Return to Homepage
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button variant="outline" className="w-full border-gray-600 text-white hover:bg-gray-700">
-                View Pricing
-              </Button>
-            </Link>
+      <PublicPageLayout className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+        <div className="flex items-center justify-center min-h-screen py-20">
+          <div className="max-w-md mx-auto text-center p-8">
+            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-green-400" />
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-4">Thank You!</h1>
+            <p className="text-gray-300 mb-8">
+              We've received your information and will be in touch soon with early access to AEDRIN.
+            </p>
+            <div className="space-y-4">
+              <Link href="/">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  Return to Homepage
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button variant="outline" className="w-full border-gray-600 text-white hover:bg-gray-700">
+                  View Pricing
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </PublicPageLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
-      {/* Coming Soon Bar */}
-      {showComingSoonBar && (
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 relative">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Star className="w-5 h-5 text-yellow-300" />
-              <span className="font-medium">
-                🚀 AEDRIN is launching soon! Join our early access program and be among the first to experience AI-powered presentations.
-              </span>
-            </div>
-            <button
-              onClick={() => setShowComingSoonBar(false)}
-              className="p-1 hover:bg-white/20 rounded transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-      
-      {/* Navigation */}
-      <nav className="relative z-50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Brain className="w-8 h-8 text-blue-500" />
-            <span className="text-2xl font-bold text-white">AEDRIN</span>
-          </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/#features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
-            <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link>
-            <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
-            <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
-            <Link href="/demo" className="text-gray-300 hover:text-white transition-colors">Demo</Link>
-            <Link href="/auth/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
-            <Link href="/auth/signup">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+    <PublicPageLayout showComingSoonBar={true}>
 
       {/* Hero Section */}
       <section className="relative px-6 py-20">
@@ -186,7 +146,8 @@ export default function HomePage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-4 text-xl font-semibold rounded-xl"
+                size="lg"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white h-12 px-8 py-3 text-lg font-semibold rounded-xl transition-colors"
               >
                 {loading ? 'Submitting...' : 'Get Early Access'}
               </Button>
@@ -204,8 +165,8 @@ export default function HomePage() {
                   <span className="px-2 bg-gray-950 text-gray-400">or</span>
                 </div>
               </div>
-              <Link href="/demo">
-                <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3">
+              <Link href="/demo" passHref legacyBehavior>
+                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white">
                   🚀 Try Demo (No Account Required)
                 </Button>
               </Link>
@@ -374,69 +335,36 @@ export default function HomePage() {
           <p className="text-xl text-blue-100 mb-8">
             Join thousands of professionals who are already creating stunning presentations with AEDRIN
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/auth/signup">
-              <Button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold">
-                Start Free Trial
+              <Button className="bg-white hover:bg-gray-100 text-blue-600 px-8 py-3 text-lg font-semibold transition-colors">
+                🚀 Get Started
               </Button>
             </Link>
             <Link href="/demo">
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-semibold">
-                🚀 Try Demo
+              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-semibold transition-colors">
+                🎯 Try Demo
               </Button>
             </Link>
-            <Link href="#pricing">
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-semibold">
-                View Pricing
+            <Link href="/pricing">
+              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-semibold transition-colors">
+                💰 View Pricing
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="px-6 py-12 bg-gray-900">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Brain className="w-6 h-6 text-blue-500" />
-                <span className="text-xl font-bold text-white">AEDRIN</span>
-              </div>
-              <p className="text-gray-400">
-                AI-powered presentation platform for modern businesses.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><Link href="/templates" className="hover:text-white transition-colors">Templates</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#about" className="hover:text-white transition-colors">About</a></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="/docs" className="hover:text-white transition-colors">Documentation</Link></li>
-                <li><Link href="/status" className="hover:text-white transition-colors">Status</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 AEDRIN. All rights reserved.</p>
-          </div>
+      {/* Footer Admin Link */}
+      <footer className="px-6 py-4 border-t border-gray-800 bg-gray-900/30">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-gray-500 text-sm">
+            © 2024 AEDRIN. All rights reserved. | 
+            <Link href="/admin/login" className="text-gray-400 hover:text-gray-300 ml-2">Admin</Link>
+          </p>
         </div>
       </footer>
-    </div>
+
+    </PublicPageLayout>
   )
 }

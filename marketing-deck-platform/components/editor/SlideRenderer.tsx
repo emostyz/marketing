@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { Card } from '../ui/Card'
+import { Card } from '../ui/card'
 import EditableChart from './EditableChart'
 import EditableTable from './EditableTable'
 

@@ -4,8 +4,8 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { SlideEditor } from './SlideEditor'
 import { DataUploadModal } from '@/components/upload/SimpleDataUploadModal'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Save, Download, ChevronLeft, ChevronRight, Plus, Brain } from 'lucide-react'
 
 interface PresentationEditorProps {

@@ -9,7 +9,7 @@ import {
   ScatterChart,
   Card
 } from '@tremor/react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { 
   Settings, 
   Palette, 

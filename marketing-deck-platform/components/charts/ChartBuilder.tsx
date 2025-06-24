@@ -4,8 +4,8 @@ import { useState, useMemo } from 'react';
 import { Line, Bar, Pie, Doughnut, Scatter, Radar } from 'react-chartjs-2';
 import { ChartData, ChartOptions } from 'chart.js';
 import { CHART_CONFIGS, CHART_THEMES, ChartType, ChartTheme } from '@/lib/charts/chart-config';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface ChartBuilderProps {
   data: any[];

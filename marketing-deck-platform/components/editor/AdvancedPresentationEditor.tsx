@@ -6,9 +6,9 @@ import { ComprehensiveSlideRenderer } from '@/components/slides/ComprehensiveSli
 import { ThemeSelector } from '@/components/themes/ThemeSelector'
 import { savePresentation } from '@/lib/storage/presentation-storage'
 import { AdvancedDataUploadModal } from '@/components/upload/AdvancedDataUploadModal'
-import EnhancedDeckBuilder from '@/components/deck-builder/EnhancedDeckBuilder'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import FunctionalDeckBuilder from '@/components/deck-builder/FunctionalDeckBuilder'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Toaster, toast } from 'react-hot-toast'
 import { 
   Save, Download, ChevronLeft, ChevronRight, Plus, Brain, 
@@ -356,7 +356,7 @@ export function AdvancedPresentationEditor({
 
         {/* Enhanced Deck Builder */}
         <div className="flex-1 overflow-auto">
-          <EnhancedDeckBuilder
+          <FunctionalDeckBuilder
             initialData={enhancedBuilderData.data}
             userRequirements={enhancedBuilderData.userRequirements}
             userGoals={enhancedBuilderData.userGoals}

@@ -81,7 +81,7 @@ const TIER_INFO = {
 }
 
 export default function UserProfile() {
-  const { user, updateProfile, signOut } = useAuth()
+  const { user, updateProfile, signOut, signIn } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -115,25 +115,25 @@ export default function UserProfile() {
     fetchSubscriptionInfo()
     fetchUserSettings()
     
-    if (user?.profile) {
+    if (user) {
       setFormData({
-        name: user.profile.name || '',
+        name: (user as any).profile?.name || user.name || '',
         email: user.email || '',
-        bio: user.profile.bio || '',
-        phone: user.profile.phone || '',
-        companyName: user.profile.companyName || '',
-        jobTitle: user.profile.jobTitle || '',
-        industry: user.profile.industry || '',
-        targetAudience: user.profile.targetAudience || '',
-        businessContext: user.profile.businessContext || '',
-        keyMetrics: user.profile.keyMetrics || [],
-        logoUrl: user.profile.logoUrl || '',
-        profilePictureUrl: user.profile.profilePictureUrl || '',
-        brandColors: user.profile.brandColors || {
+        bio: (user as any).profile?.bio || '',
+        phone: (user as any).profile?.phone || '',
+        companyName: (user as any).profile?.companyName || '',
+        jobTitle: (user as any).profile?.jobTitle || '',
+        industry: (user as any).profile?.industry || '',
+        targetAudience: (user as any).profile?.targetAudience || '',
+        businessContext: (user as any).profile?.businessContext || '',
+        keyMetrics: (user as any).profile?.keyMetrics || [],
+        logoUrl: (user as any).profile?.logoUrl || '',
+        profilePictureUrl: (user as any).profile?.profilePictureUrl || '',
+        brandColors: (user as any).profile?.brandColors || {
           primary: '#3b82f6',
           secondary: '#10b981'
         },
-        masterSystemPrompt: user.profile.masterSystemPrompt || 'You are an expert business analyst and presentation designer. Create compelling, data-driven presentations that tell a clear story and drive decision-making. Focus on key insights and actionable recommendations.'
+        masterSystemPrompt: (user as any).profile?.masterSystemPrompt || 'You are an expert business analyst and presentation designer. Create compelling, data-driven presentations that tell a clear story and drive decision-making. Focus on key insights and actionable recommendations.'
       })
     }
   }, [user])
@@ -915,8 +915,14 @@ export default function UserProfile() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading profile...</div>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-8">
+        <Brain className="w-16 h-16 text-blue-500 mb-4" />
+        <h2 className="text-3xl font-bold mb-2 text-white">Get Started with AEDRIN</h2>
+        <p className="text-gray-400 mb-6 max-w-xl">Sign up or log in to create your profile, save your decks, and unlock powerful AI-driven marketing presentations.</p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <a href="/auth/signup" className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-3 font-semibold transition-colors">🚀 Get Started</a>
+          <a href="/auth/login" className="bg-gray-800 hover:bg-gray-700 text-white rounded-lg px-6 py-3 font-semibold transition-colors">🔑 Login</a>
+        </div>
       </div>
     )
   }

@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { PowerPointSlideEditor } from '@/components/slides/PowerPointSlideEditor'
 import { ExcelLevelChart } from '@/components/charts/ExcelLevelChart'
 import { AdvancedFormatPanel } from '@/components/slides/AdvancedFormatPanel'

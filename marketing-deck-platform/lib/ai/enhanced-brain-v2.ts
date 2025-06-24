@@ -1,6 +1,6 @@
-import OpenAI from 'openai'
 import { AdvancedAnalyticsEngine, StatisticalAnalysis, BusinessIntelligence } from './advanced-analytics-engine'
 import { ParsedDataset } from '@/lib/data/file-parser'
+import MasterBrain, { BrainRequest, BrainResponse } from './master-brain'
 
 export interface DataInsight {
   id: string
@@ -119,12 +119,16 @@ export interface BrainAnalysisResult {
 }
 
 export class EnhancedBrainV2 {
-  private openai: OpenAI
+  private masterBrain: MasterBrain
   private maxIterations: number = 5
   private analysisDepth: number = 0
 
-  constructor(apiKey: string) {
-    this.openai = new OpenAI({ apiKey })
+  constructor(private apiKey: string, organizationId?: string) {
+    this.masterBrain = new MasterBrain()
+    // Initialize asynchronously but continue if it fails
+    this.masterBrain.initialize(organizationId).catch(error => {
+      console.warn('Master brain initialization failed, falling back to direct OpenAI:', error.message)
+    })
   }
 
   // Simple method to get a safe, small data sample  
@@ -305,7 +309,10 @@ export class EnhancedBrainV2 {
     context: DataContext,
     timeFrame: TimeFrameAnalysis,
     requirements: PresentationRequirements,
-    userFeedback?: string[]
+    userFeedback?: string[],
+    userId?: string,
+    organizationId?: string,
+    userTier: 'demo' | 'starter' | 'professional' | 'enterprise' = 'professional'
   ): Promise<BrainAnalysisResult> {
     try {
       console.log('🧠 EnhancedBrainV2: Starting analysis...');
@@ -465,26 +472,40 @@ Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON) c
   "nextSteps": ["recommended analysis steps"]
 }`
 
-      console.log('🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...');
+      console.log('🧠 EnhancedBrainV2: performInitialScan - Making Master Brain API call...');
       
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
-        max_tokens: 2000,
-        response_format: { type: "json_object" }
-      })
-
-      console.log('🧠 EnhancedBrainV2: performInitialScan - OpenAI response received');
+      const brainRequest: BrainRequest = {
+        userId: 'system',
+        data: this.prepareDataForAnalysis(data),
+        context: {
+          industry: context.industry,
+          targetAudience: 'analysts',
+          businessContext: context.businessContext,
+          description: context.description,
+          factors: context.factors
+        },
+        timeFrame,
+        requirements: { prompt },
+        userTier: 'professional'
+      }
       
-      const content = response.choices[0].message.content;
-      if (!content) {
-        throw new Error('OpenAI returned empty response');
+      let response
+      try {
+        response = await this.masterBrain.processAnalysis(brainRequest)
+        console.log('🧠 EnhancedBrainV2: performInitialScan - Master Brain response received');
+      } catch (masterBrainError) {
+        console.warn('🧠 EnhancedBrainV2: Master Brain failed, using direct OpenAI fallback:', masterBrainError);
+        response = await this.processWithDirectOpenAI(brainRequest, prompt)
+      }
+      
+      if (!response.success) {
+        console.warn('🧠 EnhancedBrainV2: Master Brain returned error, trying direct OpenAI fallback:', response.error);
+        response = await this.processWithDirectOpenAI(brainRequest, prompt)
       }
 
       console.log('🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...');
       
-      const parsedResponse = this.parseJsonResponse(content);
+      const parsedResponse = typeof response.result === 'string' ? this.parseJsonResponse(response.result) : response.result;
 
       console.log('🧠 EnhancedBrainV2: performInitialScan - Completed successfully');
       return parsedResponse;
@@ -628,15 +649,28 @@ Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON) c
   }
 }`
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.4,
-      max_tokens: 3000,
-      response_format: { type: "json_object" }
-    })
+    const brainRequest: BrainRequest = {
+      userId: 'system',
+      data: this.prepareDataForAnalysis(data),
+      context: {
+        industry: context.industry,
+        targetAudience: 'analysts', 
+        businessContext: context.businessContext,
+        description: context.description,
+        factors: context.factors
+      },
+      timeFrame,
+      requirements: { prompt },
+      userTier: 'professional'
+    }
+    
+    const response = await this.masterBrain.processAnalysis(brainRequest)
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Master Brain analysis failed')
+    }
 
-    return this.parseJsonResponse(response.choices[0].message.content || '{}')
+    return typeof response.result === 'string' ? this.parseJsonResponse(response.result) : response.result
   }
 
   private async generateNovelInsights(
@@ -745,15 +779,28 @@ DELIVER INSIGHTS THAT WOULD MAKE A FORTUNE 500 CEO SAY "THIS IS EXACTLY WHAT WE 
 
 Focus on breakthrough thinking that transforms ${context.industry} businesses. Think bigger than incremental improvements - identify game-changing opportunities.`
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 4000,
-      response_format: { type: "json_object" }
-    })
+    const brainRequest: BrainRequest = {
+      userId: 'system',
+      data: this.prepareDataForAnalysis(data),
+      context: {
+        industry: context.industry,
+        targetAudience: 'executives',
+        businessContext: context.businessContext,
+        description: context.description,
+        factors: context.factors
+      },
+      timeFrame,
+      requirements: { prompt },
+      userTier: 'professional'
+    }
+    
+    const response = await this.masterBrain.processAnalysis(brainRequest)
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Master Brain insight generation failed')
+    }
 
-    const parsedResponse = this.parseJsonResponse(response.choices[0].message.content || '{"insights": []}', { insights: [] })
+    const parsedResponse = typeof response.result === 'string' ? this.parseJsonResponse(response.result, { insights: [] }) : response.result
     const insights = parsedResponse.insights || []
     const aiGeneratedInsights = insights.map((insight: any) => ({
       ...insight,
@@ -827,15 +874,27 @@ Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON):
   "audienceEngagement": ["ways to engage this specific audience"]
 }`
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.6,
-      max_tokens: 3000,
-      response_format: { type: "json_object" }
-    })
+    const brainRequest: BrainRequest = {
+      userId: 'system',
+      data: insights,
+      context: {
+        industry: context.industry,
+        targetAudience: requirements.audienceType,
+        businessContext: context.businessContext,
+        description: context.description
+      },
+      timeFrame: { primaryPeriod: { start: '', end: '', label: '' }, analysisType: 'custom', includeTrends: true, includeSeasonality: false, includeOutliers: false },
+      requirements: { prompt },
+      userTier: 'professional'
+    }
+    
+    const response = await this.masterBrain.processAnalysis(brainRequest)
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Master Brain narrative development failed')
+    }
 
-    const narrative = this.parseJsonResponse(response.choices[0].message.content || '{}')
+    const narrative = typeof response.result === 'string' ? this.parseJsonResponse(response.result) : response.result
     return {
       ...narrative,
       id: narrative.id || 'narrative_' + Date.now() + '_' + Math.random()
@@ -949,15 +1008,27 @@ Respond ONLY with a valid JSON object (no markdown, no explanation, just JSON) c
 
 DESIGN EACH SLIDE TO BE PRESENTATION-READY FOR A FORTUNE 500 BOARDROOM. Every element should drive toward clear business decisions and actions.`
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.5,
-      max_tokens: 4000,
-      response_format: { type: "json_object" }
-    })
+    const brainRequest: BrainRequest = {
+      userId: 'system',
+      data: { narrative, insights },
+      context: {
+        industry: 'presentation',
+        targetAudience: requirements.audienceType,
+        businessContext: 'slide structure creation',
+        description: 'Creating professional slide structure'
+      },
+      timeFrame: { primaryPeriod: { start: '', end: '', label: '' }, analysisType: 'custom', includeTrends: false, includeSeasonality: false, includeOutliers: false },
+      requirements: { prompt },
+      userTier: 'professional'
+    }
+    
+    const response = await this.masterBrain.processAnalysis(brainRequest)
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Master Brain slide structure creation failed')
+    }
 
-    const parsedResponse = this.parseJsonResponse(response.choices[0].message.content || '{"slides": []}', { slides: [] })
+    const parsedResponse = typeof response.result === 'string' ? this.parseJsonResponse(response.result, { slides: [] }) : response.result
     const slides = parsedResponse.slides || []
     return slides.map((slide: any) => ({
       ...slide,
@@ -996,15 +1067,27 @@ CONTEXT:
       '6. Ensure all feedback is addressed\n\n' +
       'Respond with the refined JSON object containing insights, narrative, and slideStructure.'
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.4,
-      max_tokens: 4000,
-      response_format: { type: "json_object" }
-    })
+    const brainRequest: BrainRequest = {
+      userId: 'system',
+      data: result,
+      context: {
+        industry: context.industry,
+        targetAudience: requirements.audienceType,
+        businessContext: context.businessContext,
+        description: 'Integrating user feedback'
+      },
+      timeFrame: { primaryPeriod: { start: '', end: '', label: '' }, analysisType: 'custom', includeTrends: false, includeSeasonality: false, includeOutliers: false },
+      requirements: { prompt },
+      userTier: 'professional'
+    }
+    
+    const response = await this.masterBrain.processAnalysis(brainRequest)
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Master Brain feedback integration failed')
+    }
 
-    return this.parseJsonResponse(response.choices[0].message.content || '{}')
+    return typeof response.result === 'string' ? this.parseJsonResponse(response.result) : response.result
   }
 
   private async generateRecommendations(
@@ -1035,15 +1118,27 @@ CONTEXT:
       '  "audience": ["audience engagement recommendations"]\n' +
       '}'
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.5,
-      max_tokens: 2000,
-      response_format: { type: "json_object" }
-    })
+    const brainRequest: BrainRequest = {
+      userId: 'system',
+      data: result,
+      context: {
+        industry: context.industry,
+        targetAudience: requirements.audienceType,
+        businessContext: context.businessContext,
+        description: 'Generating strategic recommendations'
+      },
+      timeFrame: { primaryPeriod: { start: '', end: '', label: '' }, analysisType: 'custom', includeTrends: false, includeSeasonality: false, includeOutliers: false },
+      requirements: { prompt },
+      userTier: 'professional'
+    }
+    
+    const response = await this.masterBrain.processAnalysis(brainRequest)
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Master Brain recommendations failed')
+    }
 
-    return this.parseJsonResponse(response.choices[0].message.content || '{}')
+    return typeof response.result === 'string' ? this.parseJsonResponse(response.result) : response.result
   }
 
   private calculateConfidence(result: any): number {
@@ -1088,5 +1183,65 @@ CONTEXT:
     }
     
     return qualityScores[context.dataQuality] || 50
+  }
+
+  private async processWithDirectOpenAI(brainRequest: BrainRequest, prompt: string): Promise<any> {
+    console.log('🧠 EnhancedBrainV2: Using direct OpenAI fallback...');
+    
+    try {
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({
+        apiKey: this.apiKey
+      });
+
+      const systemPrompt = `You are an expert business analyst and presentation designer. Your task is to analyze data and create compelling business presentations with actionable insights.
+
+Always respond with valid JSON in this exact format:
+{
+  "insights": [{"title": "string", "description": "string", "impact": "high|medium|low"}],
+  "narrative": {"theme": "string", "storyline": "string"},
+  "slideStructure": [{"title": "string", "type": "string", "content": {"summary": "string"}}],
+  "keyMetrics": [{"name": "string", "value": "string", "trend": "string"}]
+}
+
+Focus on finding non-obvious insights and creating a compelling narrative that drives business decisions.`;
+
+      const userPrompt = `Analyze this business data and provide insights:
+
+DATA: ${JSON.stringify(brainRequest.data.slice(0, 10))}
+
+CONTEXT: ${JSON.stringify(brainRequest.context)}
+
+${prompt}`;
+
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4-turbo-preview',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        max_tokens: 4096,
+        temperature: 0.7,
+      });
+
+      const result = response.choices[0].message.content;
+      console.log('🧠 EnhancedBrainV2: Direct OpenAI response received');
+
+      return {
+        success: true,
+        result: JSON.parse(result || '{}'),
+        metadata: {
+          provider: 'openai_direct',
+          model: 'gpt-4-turbo-preview',
+          tokensUsed: response.usage?.total_tokens || 0,
+          cost: 0,
+          processingTime: 0
+        }
+      };
+
+    } catch (error) {
+      console.error('❌ EnhancedBrainV2: Direct OpenAI fallback failed:', error);
+      throw error;
+    }
   }
 } 

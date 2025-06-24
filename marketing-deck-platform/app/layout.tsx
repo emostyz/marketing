@@ -1,7 +1,7 @@
 import './globals.css';
 import { Metadata, Viewport } from 'next';
 import { AuthProvider } from '@/lib/auth/auth-context';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { EventTracker } from '@/components/analytics/EventTracker';
 
 export const metadata: Metadata = {

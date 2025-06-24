@@ -5,8 +5,8 @@ import { X, Upload, FileSpreadsheet, Database, Check } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import Papa from 'papaparse'
 import Modal from '../ui/Modal'
-import { Button } from '../ui/Button'
-import { Card } from '../ui/Card'
+import { Button } from '../ui/button'
+import { Card } from '../ui/card'
 import Skeleton from '../ui/Skeleton'
 import Toast from '../ui/Toast'
 import { parseCSV } from '../../lib/data/parser'
@@ -215,7 +215,7 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
                 </div>
                 <div className="mt-4">
                   <Button 
-                    variant="secondary" 
+                    variant="outline" 
                     onClick={() => {
                       // Use sample data for demo
                       const sampleData = [
@@ -278,7 +278,7 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
                   <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white border-none shadow-none" onClick={() => setShowTemplateModal(true)}>
                     Choose Template
                   </Button>
-                  <Button variant="secondary" className="flex-1" onClick={() => {
+                  <Button variant="outline" className="flex-1" onClick={() => {
                     setSelectedTemplate('default')
                     setStep(2)
                   }}>

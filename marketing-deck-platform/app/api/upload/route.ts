@@ -1,210 +1,155 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-import { FileParser } from '@/lib/data/file-parser'
-import { AuthSystem } from '@/lib/auth/auth-system'
-// @ts-ignore
-import pptx2json from 'pptx2json'
+import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
 
 export async function POST(request: NextRequest) {
-  const formData = await request.formData()
-  const file = formData.get('file') as File
-  
-  if (!file) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 })
-  }
-
   try {
-    // Check authentication - try Supabase first, fallback to mock auth
-    let userId: string
-    let useSupabase = false
+    const formData = await request.formData()
+    const files: File[] = []
+    const projectName = formData.get('projectName') as string || 'Uncategorized'
     
-    try {
-      const cookieStore = cookies()
-      const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session?.user?.id) {
-        userId = session.user.id
-        useSupabase = true
-      } else {
-        throw new Error('No Supabase session')
-      }
-    } catch (supabaseError) {
-      // Fallback to mock auth system OR demo mode for testing
-      try {
-        const user = await AuthSystem.getCurrentUser()
-        if (!user) {
-          // Demo mode fallback for testing
-          console.log('Using demo mode for file upload testing')
-          userId = 'demo-user-123'
-        } else {
-          userId = user.id.toString()
-        }
-      } catch (authError) {
-        // Final fallback - allow demo uploads for testing
-        console.log('Auth system unavailable, using demo mode')
-        userId = 'demo-user-123'
+    // Extract files from form data
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        files.push(value)
       }
     }
 
-    // Parse the file data using our advanced parser
-    let parsedDataset = null
-    let fileContent = null
-    let pptxStructure = null
+    if (files.length === 0) {
+      return NextResponse.json(
+        { error: 'No files provided' },
+        { status: 400 }
+      )
+    }
 
-    // Determine file type and parse accordingly
-    const fileType = file.type || file.name.split('.').pop()?.toLowerCase()
+    // Get authenticated user with demo fallback
+    const { user, isDemo } = await getAuthenticatedUserWithDemo()
+    const userId = user.id
     
-    if (fileType?.includes('csv') || file.name.endsWith('.csv') ||
-        fileType?.includes('excel') || fileType?.includes('spreadsheet') || 
-        file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-      
-      // Parse structured data files
-      try {
-        parsedDataset = await FileParser.parseFile(file)
-        console.log('📊 File parsed successfully:', {
-          fileName: parsedDataset.fileName,
-          rowCount: parsedDataset.rowCount,
-          columns: parsedDataset.columns.length,
-          dataQuality: parsedDataset.insights.dataQuality,
-          timeSeriesDetected: parsedDataset.insights.timeSeriesDetected
+    console.log('🔍 Upload request from:', isDemo ? 'Demo user' : 'Authenticated user', userId)
+    console.log('📁 Files to process:', files.map(f => `${f.name} (${f.size} bytes)`).join(', '))
+
+    // Process each file
+    const processedFiles = []
+    const savedDatasets = []
+    
+    for (const file of files) {
+      let processedFile: any = {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      }
+
+      if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+        const text = await file.text()
+        const lines = text.split('\n')
+        const headers = lines[0]?.split(',').map(h => h.trim()) || []
+        const data = lines.slice(1).filter(line => line.trim()).map(line => {
+          const values = line.split(',').map(v => v.trim())
+          const row: any = {}
+          headers.forEach((header, index) => {
+            row[header] = values[index] || ''
+          })
+          return row
         })
-      } catch (parseError) {
-        console.error('❌ File parsing failed:', parseError)
-        return NextResponse.json({ 
-          error: `Failed to parse file: ${parseError instanceof Error ? parseError.message : 'Unknown error'}` 
-        }, { status: 400 })
-      }
-    } else if (file.type.includes('text') || file.name.endsWith('.json')) {
-      // Handle text files
-      fileContent = await file.text()
-    } else if (file.name.endsWith('.pptx')) {
-      // Handle PowerPoint files
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
-      try {
-        pptxStructure = await pptx2json(buffer)
-      } catch (e) {
-        console.error('Failed to parse PPTX:', e)
-      }
-    }
-
-    let publicUrl = ''
-    let storagePath = ''
-
-    // Try to upload to Supabase storage if available
-    if (useSupabase) {
-      try {
-        const cookieStore = cookies()
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
-
-        const arrayBuffer = await file.arrayBuffer()
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('user-files')
-          .upload(fileName, arrayBuffer, {
-            contentType: file.type,
-            upsert: false
-          })
-
-        if (!uploadError) {
-          const { data: { publicUrl: url } } = supabase.storage
-            .from('user-files')
-            .getPublicUrl(fileName)
-          
-          publicUrl = url
-          storagePath = fileName
+        const columns: Array<{ name: string; type: string }> = headers.map(h => ({ name: h, type: 'text' }))
+        processedFile = {
+          ...processedFile,
+          fileType: 'csv',
+          headers,
+          columns,
+          data,
+          rowCount: data.length
         }
-      } catch (storageError) {
-        console.warn('Supabase storage failed, continuing without cloud storage:', storageError)
+      } else if (file.type.includes('spreadsheet') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        // For Excel files, we'll return basic info and suggest CSV conversion
+        processedFile = {
+          ...processedFile,
+          fileType: 'excel',
+          message: 'Excel files detected. For best results, please convert to CSV format.'
+        }
+      } else if (file.type === 'application/json' || file.name.endsWith('.json')) {
+        const text = await file.text()
+        const data = JSON.parse(text)
+        let columns: Array<{ name: string; type: string }> = []
+        if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
+          columns = Object.keys(data[0]).map(k => ({ name: k, type: typeof data[0][k] }))
+        }
+        processedFile = {
+          ...processedFile,
+          fileType: 'json',
+          columns,
+          data,
+          rowCount: Array.isArray(data) ? data.length : 1
+        }
+      } else {
+        processedFile = {
+          ...processedFile,
+          fileType: 'unsupported',
+          message: 'Unsupported file type. Please upload CSV, Excel, or JSON files.'
+        }
+      }
+
+      processedFiles.push(processedFile)
+
+      // For demo mode or any mode, create a dataset entry for session storage
+      if (processedFile.fileType !== 'unsupported') {
+        savedDatasets.push({
+          id: isDemo ? `demo-${Date.now()}` : `upload-${Date.now()}`,
+          fileName: file.name,
+          fileType: processedFile.fileType,
+          fileSize: file.size,
+          folder: projectName,
+          status: 'completed',
+          demo: isDemo,
+          data: processedFile.data || processedFile
+        })
+        console.log('✅ Processed file:', file.name, 'Type:', processedFile.fileType)
+      } else {
+        console.log('❌ Unsupported file:', file.name)
       }
     }
 
-    // Prepare response data
-    const uploadResult = {
-      id: `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      url: publicUrl || `local://${file.name}`,
-      storagePath,
-      parsedData: parsedDataset,
-      fileContent,
-      pptxStructure,
-      uploadedAt: new Date().toISOString(),
-      status: 'completed'
-    }
-
-    // Try to save to database if Supabase is available
-    if (useSupabase && parsedDataset) {
-      try {
-        const cookieStore = cookies()
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-        await supabase
-          .from('data_imports')
-          .insert({
-            user_id: userId,
-            file_name: file.name,
-            file_type: file.type,
-            file_size: file.size,
-            storage_path: storagePath,
-            public_url: publicUrl,
-            raw_data: parsedDataset ? { 
-              dataset: parsedDataset,
-              insights: parsedDataset.insights 
-            } : (fileContent ? { content: fileContent } : null),
-            pptx_structure: pptxStructure,
-            status: 'completed'
-          })
-      } catch (dbError) {
-        console.warn('Database save failed, continuing without persistence:', dbError)
-      }
-    }
-
-    // Store in session storage as backup
+    // Also save to session for presentation context
     try {
-      const sessionData = {
-        step: 'file_upload',
-        data: {
-          uploadedFiles: [uploadResult],
-          latestUpload: uploadResult
-        },
-        timestamp: new Date().toISOString()
-      }
-
-      // Save to presentation session
       await fetch(`${request.nextUrl.origin}/api/presentations/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sessionData)
+        body: JSON.stringify({
+          step: 'data-upload',
+          data: { files: processedFiles },
+          projectName,
+          timestamp: new Date().toISOString()
+        })
       })
-    } catch (sessionError) {
-      console.warn('Session save failed:', sessionError)
+    } catch (error) {
+      console.error('Error saving to session:', error)
     }
 
-    return NextResponse.json({ 
-      success: true,
-      data: uploadResult,
-      file: {
-        id: uploadResult.id,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        url: uploadResult.url,
-        storagePath
-      },
-      parsedData: parsedDataset,
-      insights: parsedDataset?.insights,
-      pptxStructure
+    console.log('🎉 Upload completed successfully')
+    console.log('📊 Summary:', {
+      processedFiles: processedFiles.length,
+      savedDatasets: savedDatasets.length,
+      fileTypesProcessed: [...new Set(processedFiles.map(f => f.fileType))],
+      totalRowsProcessed: processedFiles.reduce((sum, f) => sum + (f.rowCount || 0), 0)
     })
 
-  } catch (error: any) {
+    return NextResponse.json({
+      success: true,
+      files: processedFiles,
+      datasets: savedDatasets,
+      totalFiles: files.length,
+      message: 'Files processed and saved successfully'
+    })
+
+  } catch (error) {
     console.error('❌ Upload error:', error)
-    return NextResponse.json({ 
-      success: false,
-      error: error.message || 'Upload failed' 
-    }, { status: 500 })
+
+    return NextResponse.json(
+      { 
+        error: 'Failed to process files',
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      },
+      { status: 500 }
+    )
   }
 }

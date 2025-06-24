@@ -91,15 +91,41 @@ export const SimpleFileUpload: React.FC<SimpleFileUploadProps> = ({
         throw new Error(result.error || 'Upload failed')
       }
 
-      console.log('✅ Upload successful:', result.file?.id)
+      console.log('✅ Upload successful:', result.files?.[0]?.fileName)
 
+      // The backend returns result.files[0] with the parsed data
+      const uploadedFile = result.files?.[0]
+      if (!uploadedFile) {
+        throw new Error('No file data returned from server')
+      }
+
+      // Map the backend response to the expected frontend format
       const successFile: UploadedFile = {
         ...tempFile,
-        id: result.file?.id || tempFile.id,
+        id: uploadedFile.id || tempFile.id,
         status: 'success',
-        url: result.file?.url,
-        parsedData: result.parsedData
+        url: uploadedFile.url,
+        parsedData: {
+          rows: uploadedFile.data || [],
+          columns: uploadedFile.columns || [],
+          rowCount: uploadedFile.rowCount || 0,
+          insights: {
+            timeSeriesDetected: false,
+            dataQuality: 'Good',
+            potentialMetrics: uploadedFile.columns?.map((col: any) => col.name) || [],
+            potentialDimensions: uploadedFile.columns?.map((col: any) => col.name) || []
+          },
+          summary: `Uploaded ${uploadedFile.rowCount || 0} rows with ${uploadedFile.columns?.length || 0} columns`
+        }
       }
+
+      console.log('🔍 SimpleFileUpload: Mapped file data:', {
+        originalUploadedFile: uploadedFile,
+        mappedSuccessFile: successFile,
+        parsedData: successFile.parsedData,
+        rowCount: successFile.parsedData?.rowCount,
+        columnsLength: successFile.parsedData?.columns?.length
+      })
 
       updateFile(tempFile.id, successFile)
       return successFile

@@ -18,8 +18,9 @@ import {
   Target,
   Brain
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import PublicPageLayout from '@/components/layout/PublicPageLayout'
 
 export default function EnterprisePage() {
   const [contactForm, setContactForm] = useState({
@@ -119,7 +120,7 @@ export default function EnterprisePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
+    <PublicPageLayout className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
       {/* Hero Section */}
       <div className="container mx-auto px-6 pt-20 pb-16">
         <motion.div
@@ -404,9 +405,9 @@ export default function EnterprisePage() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg py-3"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg py-3 transition-colors"
                 >
-                  Request Enterprise Demo
+                  🚀 Request Enterprise Demo
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </form>
@@ -414,6 +415,6 @@ export default function EnterprisePage() {
           </div>
         </div>
       </div>
-    </div>
+    </PublicPageLayout>
   )
 }

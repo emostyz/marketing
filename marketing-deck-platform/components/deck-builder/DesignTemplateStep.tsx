@@ -3,8 +3,8 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Palette, Check, Sparkles, Zap, Globe, Layers, ArrowRight, ArrowLeft, Eye, Star } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 interface DesignTemplate {
   id: string

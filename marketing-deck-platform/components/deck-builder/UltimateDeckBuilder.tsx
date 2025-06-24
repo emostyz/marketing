@@ -11,8 +11,8 @@ import { TimePeriodAnalysisStep } from './TimePeriodAnalysisStep'
 import { FactorsStep } from './FactorsStep'
 import { UploadStep } from './UploadStep'
 import { useAuth } from '@/lib/auth/auth-context'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
 import { TemplateStep, Template } from './TemplateStep'
 import { EnhancedBrainV2 } from '@/lib/ai/enhanced-brain-v2'
@@ -20,6 +20,8 @@ import { UploadedFile } from '@/lib/types/upload'
 import { WorldClassPresentationEditor } from '@/components/editor/WorldClassPresentationEditor'
 import { useTierLimits } from '@/lib/hooks/useTierLimits'
 import UpgradePrompt from '@/components/ui/UpgradePrompt'
+import PublicNavigation from '@/components/navigation/PublicNavigation'
+import PublicFooter from '@/components/navigation/PublicFooter'
 // import { Progress } from '@/components/ui/progress'
 
 // Helper function to convert file to base64
@@ -121,6 +123,73 @@ export function UltimateDeckBuilder({ className = '' }) {
   const [analysisProgress, setAnalysisProgress] = useState(0)
   const [analysisStatus, setAnalysisStatus] = useState('Initializing Analysis...')
   const [error, setError] = useState<string | null>(null)
+  const [parsedData, setParsedData] = useState<any[]>([])
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
+
+  // Check for uploaded data from previous step
+  React.useEffect(() => {
+    const uploadResult = localStorage.getItem('upload-result')
+    if (uploadResult) {
+      try {
+        const data = JSON.parse(uploadResult)
+        console.log('📂 Found upload data:', data)
+        
+        if (data.success && data.files && data.files.length > 0) {
+          // Convert upload result to the format expected by deck builder
+          const processedFiles = data.files.map((file: any, index: number) => ({
+            id: `uploaded-${index}`,
+            name: file.fileName,
+            type: file.fileType,
+            size: file.fileSize,
+            status: 'success',
+            parsedData: (file.columns && file.data) ? {
+              rows: file.data,
+              columns: file.columns,
+              rowCount: file.rowCount || (file.data ? file.data.length : 0),
+              insights: {
+                timeSeriesDetected: file.columns.some((col: any) =>
+                  ['date', 'time', 'month', 'year', 'day'].some(t =>
+                    (col.name || '').toLowerCase().includes(t)
+                  )
+                ) || false,
+                dataQuality: 'Good',
+                potentialMetrics: [],
+                potentialDimensions: []
+              },
+              summary: `Uploaded ${file.fileType} file with ${file.rowCount || (file.data ? file.data.length : 0)} rows`
+            } : null,
+            url: '#' // Mock URL for demo
+          }))
+          
+          console.log('✅ Processed uploaded files:', processedFiles)
+          
+          // Update intake data with uploaded files
+          setIntakeData(prev => ({
+            ...prev,
+            files: processedFiles
+          }))
+          
+          // If we have data, skip to step 5 (AI Analysis) or show success message
+          if (processedFiles.length > 0) {
+            console.log('🚀 Data loaded, ready for analysis')
+            // Show a brief notification and automatically proceed to analysis
+            toast.success(`${processedFiles.length} file(s) loaded successfully! Proceeding to analysis...`)
+            
+            // Small delay then proceed to analysis
+            setTimeout(() => {
+              setCurrentStep(5) // Go directly to AI Analysis
+            }, 1000)
+          }
+        }
+        
+        // Clear the upload result to avoid reprocessing
+        localStorage.removeItem('upload-result')
+      } catch (error) {
+        console.error('❌ Error processing upload data:', error)
+        toast.error('Failed to load uploaded data')
+      }
+    }
+  }, [])
 
   const steps = [
     { id: 1, title: 'Data Context', icon: <FileText /> },
@@ -173,6 +242,10 @@ export function UltimateDeckBuilder({ className = '' }) {
   }
 
   const performAnalysis = async () => {
+    console.log('🚀 performAnalysis called!')
+    console.log('📊 Current intakeData:', intakeData)
+    console.log('📁 Files:', intakeData.files)
+    
     // Prevent multiple simultaneous analyses
     if (isAnalyzing) {
       console.warn('Analysis already in progress')
@@ -199,6 +272,7 @@ export function UltimateDeckBuilder({ className = '' }) {
       return
     }
 
+    console.log('✅ Starting analysis...')
     setIsLoading(true)
     setProgress(10)
     
@@ -207,7 +281,7 @@ export function UltimateDeckBuilder({ className = '' }) {
     setAnalysisProgress(10)
     
     // Move to the analysis step visually
-    setCurrentStep(5) 
+    setCurrentStep(5)
 
     // Simulate progress updates for a better UX
     const progressUpdates = [
@@ -226,9 +300,12 @@ export function UltimateDeckBuilder({ className = '' }) {
     try {
       // Process uploaded files from cloud storage
       const processedFiles = intakeData.files.filter(f => f.status === 'success')
+      
+      // Store uploaded files in state
+      setUploadedFiles(processedFiles)
 
       // Use real parsed data from uploaded files
-      const parsedData = processedFiles.map(file => {
+      const processedData = processedFiles.map(file => {
         if (file.parsedData) {
           // Use the real parsed dataset
           const dataset = file.parsedData
@@ -268,8 +345,11 @@ export function UltimateDeckBuilder({ className = '' }) {
         }
       })
 
+      // Store parsed data in state for later use
+      setParsedData(processedData)
+
       const requestData = {
-        data: parsedData,
+        data: processedData,
         context: {
           industry: intakeData.context.industry || 'Technology',
           targetAudience: intakeData.context.targetAudience || 'Executives',
@@ -331,7 +411,22 @@ export function UltimateDeckBuilder({ className = '' }) {
         setAnalysisResult(result.result);
         setAnalysisStatus('Analysis Complete!');
         setAnalysisProgress(100);
-        toast.success('AI analysis complete!');
+        
+        // Show data sampling message if applicable
+        if (result.metadata?.dataSampling) {
+          const sampling = result.metadata.dataSampling
+          toast.success(sampling.userMessage, { duration: 6000 })
+          console.log(`📊 Data sampling applied: ${sampling.originalRows} → ${sampling.sampledRows} rows`)
+          console.log(`📊 Sampling method: ${sampling.samplingMethod}, Quality: ${sampling.dataQuality}`)
+        } else {
+          toast.success('AI analysis complete - full dataset analyzed!');
+        }
+        
+        // Show deep insights message if found
+        if (result.metadata?.deepInsights && result.metadata.deepInsights.deepInsightsCount > 0) {
+          toast.success(`🔍 Found ${result.metadata.deepInsights.deepInsightsCount} non-obvious insights and ${result.metadata.deepInsights.hiddenDriversCount} hidden drivers!`, { duration: 5000 })
+        }
+        
         setProgress(100)
         console.log('Final analysis result:', result.result)
         console.log('Insights count:', result.result.insights?.length || 0)
@@ -454,36 +549,61 @@ export function UltimateDeckBuilder({ className = '' }) {
           const convertedSlides = analysisResult.slideStructure?.map((slideData: any, index: number) => ({
             id: slideData.id || `slide_${Date.now()}_${index}`,
             number: index + 1,
-            type: slideData.type || 'mckinsey_summary',
+            type: slideData.type === 'hidden_insight' || slideData.type === 'strategic_analysis' ? 'chart' : slideData.type || 'content',
             title: slideData.title || slideData.headline || `Slide ${index + 1}`,
-            content: slideData.content?.summary || slideData.narrative || slideData.description || 'Edit this content to add your insights...',
+            content: {
+              summary: slideData.content?.summary || slideData.narrative || slideData.description || 'Edit this content to add your insights...',
+              title: slideData.title,
+              subtitle: slideData.content?.subtitle,
+              bulletPoints: slideData.content?.bulletPoints || [],
+              hiddenInsight: slideData.content?.hiddenInsight,
+              strategicImplication: slideData.content?.strategicImplication,
+              hiddenDrivers: slideData.content?.hiddenDrivers,
+              strategicValue: slideData.content?.strategicValue,
+              hiddenPattern: slideData.charts?.[0]?.hiddenPattern,
+              dataStory: slideData.charts?.[0]?.dataStory,
+              chartTitle: slideData.charts?.[0]?.title || slideData.charts?.[0]?.message,
+              confidence: slideData.confidence || 85
+            },
+            data: parsedData[0]?.data || [],
+            chartType: slideData.charts?.[0]?.type || 'area',
+            categories: parsedData[0]?.columns?.slice(1) || ['Revenue'],
+            index: parsedData[0]?.columns?.[0] || 'Date',
+            subtitle: slideData.content?.hiddenInsight ? `Hidden Insight: ${slideData.content.hiddenInsight}` : undefined,
             charts: slideData.charts?.map((chart: any, chartIndex: number) => ({
               id: `chart_${Date.now()}_${chartIndex}`,
               type: chart.type || 'area',
               title: chart.message || chart.title || 'Data Visualization',
               data: parsedData[0]?.data || [],
               config: {
-                xAxisKey: parsedData[0]?.columns?.[0] || 'date',
-                yAxisKey: parsedData[0]?.columns?.[1] || 'value',
+                xAxisKey: parsedData[0]?.columns?.[0] || 'Date',
+                yAxisKey: parsedData[0]?.columns?.[1] || 'Revenue',
                 showAnimation: true,
                 showLegend: true,
                 showGridLines: true,
                 colors: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'],
                 valueFormatter: (value: number) => new Intl.NumberFormat('en-US', {
                   notation: 'compact',
-                  maximumFractionDigits: 1
+                  maximumFractionDigits: 1,
+                  style: 'currency',
+                  currency: 'USD'
                 }).format(value)
               },
-              insights: [chart.callout || 'Key insight from data visualization'],
-              source: chart.dataSource || 'Analysis data'
+              insights: [chart.hiddenPattern || chart.callout || 'Strategic insight from data visualization'],
+              source: chart.dataSource || 'Strategic Analysis Data',
+              hiddenPattern: chart.hiddenPattern,
+              dataStory: chart.dataStory
             })) || [],
             keyTakeaways: slideData.content?.bulletPoints || slideData.keyTakeaways || [],
             aiInsights: {
               keyFindings: slideData.content?.bulletPoints || [],
               recommendations: slideData.executiveAction?.nextSteps || [],
-              dataStory: slideData.content?.dataStory || slideData.narrative || 'Professional data insights and analysis.',
-              businessImpact: slideData.soWhat || 'Strategic business value creation',
-              confidence: slideData.confidence || 85
+              dataStory: slideData.content?.dataStory || slideData.narrative || 'Strategic data insights and analysis.',
+              businessImpact: slideData.content?.strategicImplication || slideData.soWhat || 'Strategic business value creation',
+              confidence: slideData.confidence || 85,
+              hiddenDrivers: slideData.content?.hiddenInsight,
+              strategicValue: slideData.content?.strategicImplication,
+              insightLevel: slideData.insightLevel || 'basic'
             },
             elements: [],
             background: { 
@@ -543,9 +663,7 @@ export function UltimateDeckBuilder({ className = '' }) {
                 insights: analysisResult.insights || [],
                 narrative: analysisResult.narrative || {},
                 chartData: parsedData || [],
-                keyMetrics: analysisResult.keyMetrics || [],
-                uploadedFiles: uploadedFiles,
-                rawData: parsedData[0]?.data || []
+                keyMetrics: analysisResult.keyMetrics || []
               }}
               onSave={async (slides) => {
                 try {
@@ -557,7 +675,7 @@ export function UltimateDeckBuilder({ className = '' }) {
                   // Create comprehensive presentation data
                   const presentationData = {
                     id: `presentation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                    title: intakeData.businessContext || 'Strategic Analysis Presentation',
+                    title: intakeData.context.businessContext || 'Strategic Analysis Presentation',
                     slides: slides.map((slide: any) => ({
                       id: slide.id,
                       title: slide.title,
@@ -589,14 +707,14 @@ export function UltimateDeckBuilder({ className = '' }) {
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString(),
                         version: 1,
-                        tags: [intakeData.industry, 'AI-generated', 'executive'],
+                        tags: [intakeData.context.industry || 'General', 'AI-generated', 'executive'],
                         analysisId: analysisResult.metadata?.analysisId
                       }
                     })),
                     metadata: {
                       userId: user?.id || '',
-                      industry: intakeData.industry,
-                      businessContext: intakeData.businessContext,
+                      industry: intakeData.context.industry || 'General',
+                      businessContext: intakeData.context.businessContext || 'Business Analysis',
                       createdAt: new Date().toISOString(),
                       updatedAt: new Date().toISOString(),
                       version: 1,
@@ -675,36 +793,61 @@ export function UltimateDeckBuilder({ className = '' }) {
   }
 
   return (
-    <div className={`min-h-screen bg-gray-950 text-white p-4 sm:p-8 ${className}`}>
-      <div className="max-w-4xl mx-auto">
-        {/* New Header */}
-        <header className="mb-12">
+    <div className="min-h-screen flex flex-col bg-gray-950 text-white">
+      <PublicNavigation />
+      <div className="flex-1 flex flex-col justify-center">
+        <div className="max-w-6xl mx-auto w-full flex flex-col justify-center items-center">
+          {/* New Header */}
+          <header className="mb-12 w-full text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                Create a New Presentation
+              Create a New Presentation
             </h1>
             <p className="mt-4 text-lg text-gray-400">
-                Follow the steps below to generate a stunning, AI-powered deck.
+              Follow the steps below to generate a stunning, AI-powered deck.
             </p>
-        </header>
+          </header>
 
-        {/* New Stepper */}
-        <div className="mb-12 flex items-center justify-between">
+          {/* New Stepper - evenly spaced icons with clickable completed steps */}
+          <div className="mb-12 flex items-center w-full">
             {steps.map((step, index) => (
-                <React.Fragment key={step.id}>
-                    <div className="flex flex-col items-center text-center">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${currentStep >= step.id ? 'bg-blue-600 border-blue-500' : 'bg-gray-800 border-gray-700'} transition-all duration-300`}>
-                            {React.cloneElement(step.icon, { className: `w-6 h-6 ${currentStep >= step.id ? 'text-white' : 'text-gray-500'}` })}
-                        </div>
-                        <p className={`mt-2 text-sm font-medium ${currentStep >= step.id ? 'text-white' : 'text-gray-500'}`}>{step.title}</p>
-                    </div>
-                    {index < steps.length - 1 && (
-                        <div className={`flex-1 h-0.5 mx-4 ${currentStep > index + 1 ? 'bg-blue-600' : 'bg-gray-700'}`} />
-                    )}
-                </React.Fragment>
+              <React.Fragment key={step.id}>
+                <div className="flex flex-col items-center text-center flex-1">
+                  <button
+                    onClick={() => {
+                      // Allow clicking on completed steps to go back
+                      if (currentStep > step.id) {
+                        setCurrentStep(step.id)
+                      }
+                    }}
+                    disabled={currentStep <= step.id}
+                    className={`
+                      w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
+                      ${currentStep > step.id 
+                        ? 'bg-blue-600 border-blue-500 hover:bg-blue-700 hover:border-blue-400 cursor-pointer' 
+                        : currentStep === step.id 
+                        ? 'bg-blue-600 border-blue-500' 
+                        : 'bg-gray-800 border-gray-700'
+                      }
+                      ${currentStep > step.id ? 'hover:scale-105' : ''}
+                    `}
+                    title={currentStep > step.id ? `Click to go back to ${step.title}` : step.title}
+                  >
+                    {React.cloneElement(step.icon, { 
+                      className: `w-6 h-6 ${currentStep >= step.id ? 'text-white' : 'text-gray-500'}` 
+                    })}
+                  </button>
+                  <p className={`mt-2 text-sm font-medium ${currentStep >= step.id ? 'text-white' : 'text-gray-500'}`}>
+                    {step.title}
+                  </p>
+                </div>
+                {index < steps.length - 1 && (
+                  <div className="h-0.5 mx-2 flex-grow bg-gradient-to-r from-gray-700 to-gray-700" />
+                )}
+              </React.Fragment>
             ))}
-        </div>
+          </div>
 
-        <main>
+          <main className="w-full flex flex-col items-center">
             {error && (
               <Card className="p-4 mb-6 border-red-500 bg-red-950/20">
                 <div className="flex items-center space-x-2">
@@ -714,10 +857,12 @@ export function UltimateDeckBuilder({ className = '' }) {
               </Card>
             )}
             <AnimatePresence mode="wait">
-                {renderStep()}
+              {renderStep()}
             </AnimatePresence>
-        </main>
+          </main>
+        </div>
       </div>
+      <PublicFooter />
 
       {/* Upgrade Prompt Modal */}
       {showUpgradePrompt && upgradePromptData && subscription && (

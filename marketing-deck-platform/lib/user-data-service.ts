@@ -1,6 +1,6 @@
 'use client'
 
-import { createClientComponentClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { DeckPersistence, DeckDraft } from './deck-persistence'
 import { CSVStorage, CSVFileData } from './csv-storage'
 
@@ -53,7 +53,6 @@ export interface UserDataSummary {
 }
 
 export class UserDataService {
-  private supabase = createClientComponentClient()
   private deckPersistence = new DeckPersistence()
   private csvStorage = new CSVStorage()
 
@@ -141,7 +140,7 @@ export class UserDataService {
   // Get user profile from profiles table
   private async getUserProfile(): Promise<any> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .single()
@@ -161,7 +160,7 @@ export class UserDataService {
   // Get deck statistics
   private async getDeckStatistics(): Promise<{ success: boolean; data?: any }> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('presentations')
         .select('status, created_at')
 
@@ -190,7 +189,7 @@ export class UserDataService {
       const now = new Date()
       const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('usage_tracking')
         .select('*')
         .eq('month_year', monthYear)
@@ -211,7 +210,7 @@ export class UserDataService {
   // Save user context/preferences
   async saveUserContext(contextType: string, contextKey: string, contextValue: any): Promise<{ success: boolean; error?: string }> {
     try {
-      const { error } = await this.supabase
+      const { error } = await supabase
         .from('user_context')
         .upsert({
           context_type: contextType,
@@ -235,7 +234,7 @@ export class UserDataService {
   // Get user context by type
   async getUserContext(contextType: string): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('user_context')
         .select('context_key, context_value')
         .eq('context_type', contextType)
@@ -266,7 +265,7 @@ export class UserDataService {
                           type === 'data_uploads' ? 'data_uploads' :
                           'exports_generated'
 
-      const { error } = await this.supabase
+      const { error } = await supabase
         .from('usage_tracking')
         .upsert({
           month_year: monthYear,

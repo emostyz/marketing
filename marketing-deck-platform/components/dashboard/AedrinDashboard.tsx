@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '../ui/Card';
+import { Card } from '../ui/card';
 import { 
   DocumentTextIcon, 
   ChartBarIcon, 
@@ -11,7 +11,7 @@ import {
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface DashboardData {
   presentations: number;

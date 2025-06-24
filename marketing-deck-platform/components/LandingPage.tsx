@@ -3,8 +3,8 @@ import React from 'react'
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, BarChart3, Clock, Zap, Upload, Brain, Users } from 'lucide-react'
-import { Button } from './ui/Button'
-import { Card } from './ui/Card'
+import { Button } from './ui/button'
+import { Card } from './ui/card'
 import { motion } from 'framer-motion'
 
 export default function LandingPage() {
@@ -32,7 +32,7 @@ export default function LandingPage() {
         </motion.p>
         <div className="flex flex-col md:flex-row gap-4 justify-center">
           <Button>Get Started with AEDRIN</Button>
-          <Button variant="secondary">See Live Demo</Button>
+          <Button variant="outline">See Live Demo</Button>
         </div>
       </section>
 

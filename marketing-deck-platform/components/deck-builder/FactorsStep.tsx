@@ -3,9 +3,9 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, Plus, X, ArrowLeft, ArrowRight } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/card'
 
 interface FactorsStepProps {
   dataContext: any; // To be replaced with a more specific type

@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server-client';
+import { createServerClient } from '@/lib/supabase/server-client';
 import { cookies } from 'next/headers';
 
 export interface EventLoggerOptions {
@@ -18,7 +18,7 @@ export interface SystemEventOptions {
 
 export class EventLogger {
   private static async getSupabase() {
-    return createServerSupabaseClient();
+    return createServerClient();
   }
 
   /**

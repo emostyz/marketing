@@ -11,6 +11,13 @@ interface User {
   avatar?: string
   subscription: 'free' | 'pro' | 'enterprise'
   demo?: boolean
+  profile?: {
+    company?: string
+    industry?: string
+    jobTitle?: string
+    businessContext?: string
+    targetAudience?: string
+  } | null
 }
 
 interface AuthContextType {
@@ -26,143 +33,323 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Cache key for auth state
+const AUTH_CACHE_KEY = 'aedrin-auth-state'
+const DEMO_CACHE_KEY = 'aedrin-demo-session'
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    // Check for demo session
-    const demoSession = localStorage.getItem('demo-session')
-    if (demoSession) {
-      try {
-        const demoData = JSON.parse(demoSession)
-        if (demoData.expiresAt && new Date(demoData.expiresAt) > new Date()) {
-          setUser({
-            id: 'demo-user',
-            email: 'demo@aedrin.com',
-            name: 'Demo User',
-            subscription: 'pro',
-            demo: true
-          })
-          setLoading(false)
-          return
-        } else {
-          // Demo expired, clear it
-          localStorage.removeItem('demo-session')
+  // Cache user state to localStorage
+  const cacheUserState = (userData: User | null) => {
+    try {
+      if (userData) {
+        const cacheData = {
+          user: userData,
+          timestamp: Date.now()
         }
-      } catch (error) {
-        localStorage.removeItem('demo-session')
+        localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(cacheData))
+        console.log('💾 Cached user state for:', userData.email)
+      } else {
+        localStorage.removeItem(AUTH_CACHE_KEY)
+        console.log('🗑️ Cleared cached user state')
       }
+    } catch (error) {
+      console.error('❌ Error caching user state:', error)
     }
+  }
 
-    // Get initial session
-    const getInitialSession = async () => {
+  // Restore user state from cache
+  const restoreUserState = (): User | null => {
+    try {
+      const cached = localStorage.getItem(AUTH_CACHE_KEY)
+      if (cached) {
+        const data = JSON.parse(cached)
+        // Cache is valid for 10 minutes
+        if (data.user && data.timestamp && (Date.now() - data.timestamp) < 600000) {
+          console.log('💾 Restored cached user state for:', data.user.email)
+          return data.user
+        } else {
+          console.log('⏰ Cached user state expired, clearing...')
+          localStorage.removeItem(AUTH_CACHE_KEY)
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error restoring cached user state:', error)
+      localStorage.removeItem(AUTH_CACHE_KEY)
+    }
+    return null
+  }
+
+  // Initialize auth state
+  useEffect(() => {
+    console.log('🔧 AuthProvider initializing...')
+    
+    const initializeAuth = async () => {
       try {
+        // First, try to restore from cache for immediate UI response
+        const cachedUser = restoreUserState()
+        if (cachedUser) {
+          console.log('🚀 Using cached user state for immediate response')
+          setUser(cachedUser)
+          setLoading(false)
+        }
+
+        // Check for demo session
+        const demoSession = localStorage.getItem(DEMO_CACHE_KEY)
+        if (demoSession) {
+          try {
+            const demoData = JSON.parse(demoSession)
+            if (demoData.expiresAt && new Date(demoData.expiresAt) > new Date()) {
+              console.log('🎭 Demo session found and valid')
+              const demoUser = {
+                id: 'demo-user',
+                email: 'demo@aedrin.com',
+                name: 'Demo User',
+                subscription: 'pro' as const,
+                demo: true
+              }
+              setUser(demoUser)
+              cacheUserState(demoUser)
+              setLoading(false)
+              setInitialized(true)
+              return
+            } else {
+              console.log('⏰ Demo session expired, clearing...')
+              localStorage.removeItem(DEMO_CACHE_KEY)
+            }
+          } catch (error) {
+            console.log('❌ Invalid demo session, clearing...')
+            localStorage.removeItem(DEMO_CACHE_KEY)
+          }
+        }
+
+        // Get current session from Supabase
+        console.log('🔍 Getting current session from Supabase...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          console.error('Error getting session:', error)
+          console.error('❌ Error getting session:', error)
           setLoading(false)
+          setInitialized(true)
           return
         }
 
         if (session?.user) {
-          await fetchUserProfile(session.user)
-        } else {
+          console.log('✅ Active session found for user:', session.user.email)
+          await fetchAndSetUserProfile(session.user)
           setLoading(false)
+          setInitialized(true)
+          return
         }
-      } catch (error) {
-        console.error('Error in getInitialSession:', error)
+
+        // Fallback: check /api/auth/check for SSR cookie session
+        const resp = await fetch('/api/auth/check')
+        if (resp.ok) {
+          const { user: apiUser } = await resp.json()
+          if (apiUser) {
+            setUser(apiUser)
+            cacheUserState(apiUser)
+            setLoading(false)
+            setInitialized(true)
+            return
+          }
+        }
         setLoading(false)
+        setInitialized(true)
+      } catch (error) {
+        console.error('❌ Error in initializeAuth:', error)
+        setLoading(false)
+        setInitialized(true)
       }
     }
 
-    getInitialSession()
+    initializeAuth()
 
-    // Listen for auth changes
+    // Set up auth state change listener
+    console.log('👂 Setting up auth state change listener...')
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email)
+        console.log('🔄 Auth state changed:', event, session?.user?.email)
         
         if (event === 'SIGNED_IN' && session?.user) {
-          await fetchUserProfile(session.user)
+          console.log('✅ User signed in via auth state change')
+          await fetchAndSetUserProfile(session.user)
         } else if (event === 'SIGNED_OUT') {
+          console.log('🚪 User signed out, clearing state...')
           setUser(null)
+          cacheUserState(null)
           setLoading(false)
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          console.log('🔄 Token refreshed, updating state...')
+          await fetchAndSetUserProfile(session.user)
+        } else if (event === 'USER_UPDATED' && session?.user) {
+          console.log('👤 User updated, refreshing state...')
+          await fetchAndSetUserProfile(session.user)
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      console.log('🧹 Cleaning up auth state change listener...')
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const fetchUserProfile = async (authUser: any) => {
+  const fetchAndSetUserProfile = async (authUser: any) => {
     try {
-      // Set user with basic info first to ensure login works
-      const basicUser = {
+      console.log('🔍 Fetching profile for user:', authUser.id)
+      
+      // Set basic user state immediately
+      const basicUser: User = {
         id: authUser.id,
-        email: authUser.email,
-        name: authUser.user_metadata?.full_name || authUser.email,
-        subscription: 'free' as const
+        email: authUser.email || '',
+        name: authUser.user_metadata?.full_name || authUser.email || 'User',
+        subscription: 'free' as const,
+        profile: null
       }
       
       setUser(basicUser)
+      cacheUserState(basicUser)
       setLoading(false)
+      setInitialized(true)
       
-      // Try to fetch profile details (but don't block login if it fails)
+      console.log('✅ Basic user state set immediately:', basicUser.name)
+      
+      // Fetch full profile in background
       try {
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', authUser.id)
+          .eq('user_id', authUser.id)
           .single()
 
         if (!error && profile) {
-          setUser({
+          console.log('✅ Full profile loaded:', profile.full_name || profile.email)
+          
+          // Update user with full profile data
+          const fullUser: User = {
             ...basicUser,
-            name: profile.name || profile.full_name || basicUser.name,
-            subscription: profile.subscription_tier || 'free'
-          })
+            name: profile.full_name || basicUser.name,
+            subscription: (profile.subscription_tier as 'free' | 'pro' | 'enterprise') || 'free',
+            profile: {
+              company: profile.company_name || undefined,
+              industry: profile.industry || undefined,
+              jobTitle: profile.job_title || undefined,
+              businessContext: profile.business_context || undefined,
+              targetAudience: profile.target_audience || undefined
+            }
+          }
+          
+          setUser(fullUser)
+          cacheUserState(fullUser)
+          console.log('✅ User state updated with full profile')
+        } else if (error && error.code === 'PGRST116') {
+          // Profile doesn't exist, create it
+          console.log('📝 Creating new profile for user')
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: authUser.id,
+              email: authUser.email,
+              full_name: authUser.user_metadata?.full_name || null,
+              company_name: authUser.user_metadata?.company_name || null,
+              subscription_tier: 'free',
+              is_active: true,
+              email_verified: true
+            })
+            .select()
+            .single()
+          
+          if (!createError && newProfile) {
+            console.log('✅ Profile created successfully')
+            const fullUser: User = {
+              ...basicUser,
+              name: newProfile.full_name || basicUser.name,
+              subscription: (newProfile.subscription_tier as 'free' | 'pro' | 'enterprise') || 'free',
+              profile: {
+                company: newProfile.company_name || undefined
+              }
+            }
+            setUser(fullUser)
+            cacheUserState(fullUser)
+          } else {
+            console.error('❌ Failed to create profile:', createError)
+          }
+        } else {
+          console.error('❌ Profile fetch error:', error)
         }
       } catch (profileError) {
-        console.error('Profile fetch failed (non-blocking):', profileError)
+        console.error('❌ Profile fetch error:', profileError)
       }
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error)
+      console.error('❌ Error in fetchAndSetUserProfile:', error)
       setLoading(false)
+      setInitialized(true)
     }
   }
 
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true)
+      console.log('🔐 Attempting sign in for:', email)
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
 
       if (error) {
-        return { error: error.message }
+        setLoading(false)
+        console.error('❌ Sign in error:', error)
+        return { error: `Sign in failed: ${error.message}` }
       }
 
-      if (data.user) {
-        // Fetch user profile and update state
-        await fetchUserProfile(data.user)
+      if (data.user && data.session) {
+        console.log('✅ Sign in successful for user:', data.user.email)
         
-        // Force a router refresh and redirect
-        router.refresh()
-        router.push('/dashboard')
+        // Set user state immediately and cache it
+        await fetchAndSetUserProfile(data.user)
+
+        // Set the auth cookie for SSR/middleware
+        try {
+          await fetch('/api/auth/set-cookie', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: data.session.access_token })
+          })
+          console.log('🍪 Auth cookie set for SSR/middleware')
+        } catch (cookieError) {
+          console.error('❌ Failed to set auth cookie:', cookieError)
+        }
+        
+        // Use window.location.href for immediate redirect to avoid race conditions
+        console.log('🚀 Redirecting to dashboard...')
+        if (typeof window !== 'undefined') {
+          window.location.href = '/dashboard'
+        } else {
+          router.push('/dashboard')
+        }
+        
+        return {}
       }
 
-      return {}
+      setLoading(false)
+      return { error: 'Authentication failed. Please try again.' }
     } catch (error) {
-      console.error('Sign in error:', error)
-      return { error: 'An unexpected error occurred' }
+      console.error('❌ Sign in error:', error)
+      setLoading(false)
+      return { error: 'Network error. Please check your connection and try again.' }
     }
   }
 
   const signInDemo = async () => {
     try {
+      setLoading(true)
+      
       const response = await fetch('/api/auth/test', {
         method: 'POST',
         headers: {
@@ -171,36 +358,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ demo: true })
       })
 
+      if (!response.ok) {
+        setLoading(false)
+        console.error('Demo setup error:', response.status)
+        return { error: `Demo setup failed. Please try again later. (Error: ${response.status})` }
+      }
+
       const data = await response.json()
 
       if (!data.success) {
-        return { error: data.error || 'Failed to start demo' }
+        setLoading(false)
+        return { error: data.error || 'Failed to start demo session. Please try again.' }
       }
 
       // Store demo session
       const demoSession = {
         active: true,
         expiresAt: data.demo.expiresAt,
-        features: data.demo.features
+        features: data.demo.features,
+        startedAt: new Date().toISOString()
       }
-      localStorage.setItem('demo-session', JSON.stringify(demoSession))
+      localStorage.setItem(DEMO_CACHE_KEY, JSON.stringify(demoSession))
 
       // Set demo user
-      setUser({
+      const demoUser: User = {
         id: 'demo-user',
         email: 'demo@aedrin.com',
         name: 'Demo User',
         subscription: 'pro',
         demo: true
-      })
+      }
+      
+      setUser(demoUser)
+      cacheUserState(demoUser)
+      setLoading(false)
 
-      // Force router refresh and redirect
-      router.refresh()
-      router.push('/dashboard')
+      // Use window.location.href for immediate redirect to avoid race conditions
+      if (typeof window !== 'undefined') {
+        window.location.href = '/dashboard'
+      } else {
+        router.push('/dashboard')
+      }
       return {}
     } catch (error) {
       console.error('Demo sign in error:', error)
-      return { error: 'Failed to start demo mode' }
+      setLoading(false)
+      return { error: 'Network error while starting demo. Please check your connection and try again.' }
     }
   }
 
@@ -247,7 +450,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .insert({
             user_id: data.user.id,
-            email: data.user.email,
+            email: data.user.email || email,
             full_name: name,
             company_name: company
           })
@@ -255,6 +458,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (profileError) {
           console.error('Profile creation error:', profileError)
         }
+
+        // Set user state immediately after signup
+        const newUser: User = {
+          id: data.user.id,
+          email: data.user.email || email,
+          name: name,
+          subscription: 'free'
+        }
+        
+        setUser(newUser)
+        cacheUserState(newUser)
       }
 
       return {}
@@ -267,7 +481,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       // Clear demo session if exists
-      localStorage.removeItem('demo-session')
+      localStorage.removeItem(DEMO_CACHE_KEY)
       
       const { error } = await supabase.auth.signOut()
       if (error) {
@@ -275,6 +489,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       setUser(null)
+      cacheUserState(null)
       router.push('/')
     } catch (error) {
       console.error('Sign out error:', error)
@@ -291,41 +506,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(profileData)
       })
 
-      const data = await response.json()
-
-      if (!data.success) {
-        return { error: data.error || 'Failed to update profile' }
+      if (!response.ok) {
+        const errorData = await response.json()
+        return { error: errorData.error || 'Failed to update profile' }
       }
 
+      const data = await response.json()
+      
       // Update local user state
-      if (data.user && user) {
-        setUser({
+      if (user && data.profile) {
+        const updatedUser = {
           ...user,
-          name: data.user.name,
-          avatar: data.user.avatar
-        })
+          name: data.profile.full_name || user.name,
+          profile: {
+            ...user.profile,
+            company: data.profile.company_name,
+            industry: data.profile.industry,
+            jobTitle: data.profile.job_title,
+            businessContext: data.profile.business_context,
+            targetAudience: data.profile.target_audience
+          }
+        }
+        setUser(updatedUser)
+        cacheUserState(updatedUser)
       }
 
       return {}
     } catch (error) {
       console.error('Update profile error:', error)
-      return { error: 'Failed to update profile' }
+      return { error: 'An unexpected error occurred' }
     }
   }
 
-  const value = {
-    user,
-    loading,
-    signIn,
-    signInDemo,
-    signInWithOAuth,
-    signUp,
-    signOut,
-    updateProfile
-  }
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      signIn,
+      signInDemo,
+      signInWithOAuth,
+      signUp,
+      signOut,
+      updateProfile
+    }}>
       {children}
     </AuthContext.Provider>
   )

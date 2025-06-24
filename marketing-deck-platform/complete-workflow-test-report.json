@@ -1,0 +1,105 @@
+{
+  "timestamp": "2025-06-23T14:31:17.965Z",
+  "totalTests": 6,
+  "passedTests": 6,
+  "failedTests": 0,
+  "errors": [],
+  "warnings": [],
+  "recommendations": [
+    "System is performing well - consider adding more advanced features"
+  ],
+  "performanceMetrics": {
+    "fileUpload": 2,
+    "dataProcessing": 0,
+    "aiAnalysis": 0,
+    "chartGeneration": 0,
+    "deckCreation": 0,
+    "totalExecutionTime": 3
+  },
+  "workflow": {
+    "fileUpload": {
+      "status": "passed",
+      "details": {
+        "filesProcessed": 4,
+        "headersDetected": 4,
+        "numericColumns": 3,
+        "categoricalColumns": 1,
+        "processingTime": 2
+      }
+    },
+    "dataProcessing": {
+      "status": "passed",
+      "details": {
+        "hasHeaders": true,
+        "hasData": true,
+        "hasNumericColumns": true,
+        "dataConsistency": true,
+        "qualityScore": 100,
+        "originalRows": 5,
+        "sampledRows": 5,
+        "samplingApplied": false,
+        "processingTime": 0
+      }
+    },
+    "aiAnalysis": {
+      "status": "passed",
+      "details": {
+        "insightsGenerated": 3,
+        "slidesCreated": 3,
+        "averageConfidence": 0.85,
+        "deepInsights": {
+          "nonObviousPatterns": 2,
+          "hiddenDrivers": 1,
+          "emergingTrends": 1,
+          "confidence": 0.82
+        },
+        "processingTime": 0
+      }
+    },
+    "chartGeneration": {
+      "status": "passed",
+      "details": {
+        "chartsGenerated": 6,
+        "chartTypes": 6,
+        "themes": 3,
+        "qualityScore": 100,
+        "customizationOptions": 4,
+        "processingTime": 0
+      }
+    },
+    "deckCreation": {
+      "status": "passed",
+      "details": {
+        "slidesCreated": 5,
+        "slidesWithCharts": 1,
+        "qualityScore": 100,
+        "validation": {
+          "hasTitle": true,
+          "hasSlides": true,
+          "hasCharts": true,
+          "hasInsights": true,
+          "structureComplete": true,
+          "qualityScore": 100
+        },
+        "processingTime": 0
+      }
+    },
+    "visualQuality": {
+      "status": "passed",
+      "details": {
+        "qualityMetrics": {
+          "dataHandling": true,
+          "aiCapabilities": true,
+          "visualGeneration": true,
+          "deckAssembly": true,
+          "overallReliability": 0.8333333333333334,
+          "performance": "excellent"
+        },
+        "totalProcessingTime": 2,
+        "averageProcessingTime": 0.4,
+        "recommendations": 1,
+        "processingTime": 0
+      }
+    }
+  }
+}

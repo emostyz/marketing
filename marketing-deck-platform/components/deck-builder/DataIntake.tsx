@@ -3,11 +3,11 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Lightbulb, FileText, Building, Users, ArrowRight, LucideProps } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 // Use native HTML inputs to ensure they work properly
 // import { Input } from '@/components/ui/input'
 // import { Textarea } from '@/components/ui/textarea'
-import { Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/card'
 
 interface FormFieldProps {
   icon: React.ReactElement<LucideProps>;
@@ -158,6 +158,14 @@ export const DescribeDataStep: React.FC<DescribeDataStepProps> = ({ dataContext,
             localStorage.setItem('presentation_session', JSON.stringify(session))
             localStorage.setItem('data_context', JSON.stringify(dataContext))
           }
+        } else {
+          // Error handling: show specific error for 401 (not logged in), log all errors for debugging
+          if (sessionResponse.status === 401) {
+            setErrors({ description: 'You must be logged in to save your data. Please log in and try again.' })
+          } else {
+            setErrors({ description: sessionResult.error || 'Failed to save data. Please try again.' })
+          }
+          console.error('Failed to save data:', sessionResult)
         }
       } catch (error) {
         console.error('Failed to save data:', error)

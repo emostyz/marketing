@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 interface DataContext {
   description: string;
@@ -77,8 +77,13 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
           console.log('Data saved successfully')
           nextStep()
         } else {
-          console.error('Failed to save data')
-          setErrors({ description: 'Failed to save data. Please try again.' })
+          const errorData = await sessionResponse.json()
+          if (sessionResponse.status === 401) {
+            setErrors({ description: 'You must be logged in to save your data. Please log in and try again.' })
+          } else {
+            setErrors({ description: errorData.error || 'Failed to save data. Please try again.' })
+          }
+          console.error('Failed to save data:', errorData)
         }
       } catch (error) {
         console.error('Error saving data:', error)
@@ -90,17 +95,17 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full max-w-6xl mx-auto">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-white">Tell Us About Your Data</h1>
         <p className="text-xl text-gray-300 mt-4">Help our AI understand your context</p>
       </div>
 
-      <Card className="p-8 bg-gray-900 border-gray-700">
-        <div className="space-y-6">
+      <Card className="p-12 bg-gray-900 border-gray-700 w-full">
+        <div className="space-y-8">
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-lg font-medium text-gray-300 mb-3">
               What is the data about? *
             </label>
             <textarea
@@ -112,7 +117,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
                 console.log('Textarea onChange:', e.target.value)
                 handleInputChange('description', e.target.value)
               }}
-              className={`min-h-[120px] w-full p-3 rounded-lg bg-gray-800 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? 'border-red-500' : 'border-gray-600'}`}
+              className={`min-h-[150px] w-full p-4 rounded-lg bg-gray-800 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base ${errors.description ? 'border-red-500' : 'border-gray-600'}`}
               style={{ pointerEvents: 'auto' }}
             />
             {errors.description && (
@@ -122,7 +127,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
 
           {/* Industry */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-lg font-medium text-gray-300 mb-3">
               What is your industry? *
             </label>
             <input
@@ -135,7 +140,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
                 console.log('Industry onChange:', e.target.value)
                 handleInputChange('industry', e.target.value)
               }}
-              className={`w-full p-3 rounded-lg bg-gray-800 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.industry ? 'border-red-500' : 'border-gray-600'}`}
+              className={`w-full p-4 rounded-lg bg-gray-800 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base ${errors.industry ? 'border-red-500' : 'border-gray-600'}`}
               style={{ pointerEvents: 'auto' }}
             />
             {errors.industry && (
@@ -145,7 +150,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
 
           {/* Target Audience */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-lg font-medium text-gray-300 mb-3">
               Who is the target audience for this presentation? *
             </label>
             <input
@@ -158,7 +163,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
                 console.log('Target audience onChange:', e.target.value)
                 handleInputChange('targetAudience', e.target.value)
               }}
-              className={`w-full p-3 rounded-lg bg-gray-800 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.targetAudience ? 'border-red-500' : 'border-gray-600'}`}
+              className={`w-full p-4 rounded-lg bg-gray-800 border text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base ${errors.targetAudience ? 'border-red-500' : 'border-gray-600'}`}
               style={{ pointerEvents: 'auto' }}
             />
             {errors.targetAudience && (
@@ -168,7 +173,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
 
           {/* Business Context */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-lg font-medium text-gray-300 mb-3">
               Business Context (Optional)
             </label>
             <textarea
@@ -180,7 +185,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
                 console.log('Business context onChange:', e.target.value)
                 handleInputChange('businessContext', e.target.value)
               }}
-              className="min-h-[80px] w-full p-3 rounded-lg bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="min-h-[100px] w-full p-4 rounded-lg bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               style={{ pointerEvents: 'auto' }}
             />
           </div>
@@ -191,7 +196,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
         <Button 
           onClick={validateAndContinue}
           disabled={isSaving}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 text-lg"
         >
           {isSaving ? 'Saving...' : 'Continue'}
         </Button>

@@ -1,10 +1,28 @@
 "use client"
 
-// File: app/templates/page.tsx
 import { useSearchParams } from 'next/navigation'
-import { Card } from '../../components/ui/Card'
-import { Button } from '../../components/ui/Button'
-import { AuthSystem } from '@/lib/auth/auth-system'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Target, 
+  Calendar, 
+  Users, 
+  DollarSign,
+  ArrowRight,
+  Play,
+  Star,
+  Sparkles,
+  Zap,
+  Award
+} from 'lucide-react'
+import { useAuth } from '@/lib/auth/auth-context'
+import PublicPageLayout from '@/components/layout/PublicPageLayout'
+import Link from 'next/link'
 
 const templates = [
   {
@@ -13,111 +31,216 @@ const templates = [
     description: 'High-level overview with KPIs, trends, and strategic recommendations.',
     slides: 6,
     tags: ['C-suite ready', 'AI narratives'],
-    purpose: 'Story: Executive summary, big picture, strategic insights',
-    visual: 'Clean, modern, blue gradients',
-    preview: '/template-previews/executive-summary.png',
+    purpose: 'Executive presentations',
+    icon: BarChart3,
+    color: 'from-blue-500 to-purple-600',
+    features: ['KPI Dashboard', 'Trend Analysis', 'Strategic Recommendations']
   },
   {
     id: 'campaign-analysis',
-    name: 'Campaign ROI Analysis',
-    description: 'Detailed campaign performance with channel breakdown and optimization insights.',
+    name: 'Marketing Campaign Analysis',
+    description: 'Comprehensive analysis of marketing performance, ROI, and optimization opportunities.',
     slides: 8,
-    tags: ['Deep dive', 'Action items'],
-    purpose: 'Story: Campaign breakdown, ROI, optimization',
-    visual: 'Bold, dark, neon highlights',
-    preview: '/template-previews/campaign-analysis.png',
+    tags: ['Data-driven', 'ROI focused'],
+    purpose: 'Marketing teams',
+    icon: TrendingUp,
+    color: 'from-green-500 to-teal-600',
+    features: ['Channel Performance', 'ROI Metrics', 'Optimization Tips']
   },
   {
-    id: 'monthly-report',
-    name: 'Monthly Performance Report',
-    description: 'Comprehensive monthly review with trends, comparisons, and forecasts.',
-    slides: 10,
-    tags: ['Full metrics', 'Trends'],
-    purpose: 'Story: Month-over-month, trends, forecasts',
-    visual: 'Light, glassmorphic, animated stats',
-    preview: '/template-previews/monthly-report.png',
+    id: 'sales-performance',
+    name: 'Sales Performance Review',
+    description: 'Sales metrics, pipeline analysis, and revenue forecasting insights.',
+    slides: 7,
+    tags: ['Revenue focused', 'Pipeline analysis'],
+    purpose: 'Sales teams',
+    icon: Target,
+    color: 'from-orange-500 to-red-600',
+    features: ['Sales Metrics', 'Pipeline Analysis', 'Revenue Forecasting']
   },
   {
-    id: 'quarterly-business-review',
+    id: 'quarterly-review',
     name: 'Quarterly Business Review',
-    description: 'QBR template with performance summary, learnings, and next quarter plans.',
-    slides: 12,
-    tags: ['Strategic', 'Planning'],
-    purpose: 'Story: QBR, learnings, next steps',
-    visual: 'Professional, purple gradients, glass cards',
-    preview: '/template-previews/qbr.png',
+    description: 'Comprehensive quarterly performance analysis with strategic insights.',
+    slides: 10,
+    tags: ['Strategic', 'Comprehensive'],
+    purpose: 'Leadership teams',
+    icon: Calendar,
+    color: 'from-purple-500 to-indigo-600',
+    features: ['Quarterly Summary', 'Key Learnings', 'Next Quarter Plans']
   },
+  {
+    id: 'customer-insights',
+    name: 'Customer Behavior Analysis',
+    description: 'Deep dive into customer segments, behavior patterns, and engagement metrics.',
+    slides: 6,
+    tags: ['Customer-centric', 'Behavioral insights'],
+    purpose: 'Product & Marketing',
+    icon: Users,
+    color: 'from-pink-500 to-rose-600',
+    features: ['Customer Segments', 'Behavior Patterns', 'Retention Analysis']
+  },
+  {
+    id: 'financial-overview',
+    name: 'Financial Performance Overview',
+    description: 'Financial metrics, profitability analysis, and budget performance.',
+    slides: 8,
+    tags: ['Financial', 'Budget analysis'],
+    purpose: 'Finance teams',
+    icon: DollarSign,
+    color: 'from-emerald-500 to-green-600',
+    features: ['Revenue Analysis', 'Cost Breakdown', 'Profitability Metrics']
+  }
 ]
 
-export default function TemplatesPage() {
-  const searchParams = useSearchParams()
-  const isDemo = searchParams.get('demo') === 'true'
+export default function TemplatesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ demo?: string }>
+}) {
+  const { user, loading } = useAuth()
+  const [isDemo, setIsDemo] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
-  const handleTemplateClick = (templateId: string) => {
+  useEffect(() => {
+    const checkDemo = async () => {
+      const params = await searchParams
+      setIsDemo(params.demo === 'true')
+      setIsLoading(false)
+    }
+    checkDemo()
+  }, [searchParams])
+
+  // Restrict access to signed-in or demo users
+  useEffect(() => {
+    if (!isLoading && !loading && !user && !isDemo) {
+      router.push('/auth/login')
+    }
+  }, [user, loading, isDemo, isLoading, router])
+
+  const handleTemplateSelect = (templateId: string) => {
     if (isDemo) {
-      // In demo mode, redirect to demo page with template
-      window.location.href = `/demo?template=${templateId}`
+      router.push(`/demo?template=${templateId}`)
     } else {
-      // In normal mode, redirect to deck builder
-      window.location.href = `/deck-builder/new?template=${templateId}`
+      router.push(`/deck-builder/new?template=${templateId}`)
     }
   }
 
+  const handleTryDemo = () => {
+    router.push('/demo')
+  }
+
+  if (isLoading || loading || (!user && !isDemo)) {
+    return null
+  }
+
   return (
-    <div className="min-h-screen bg-[#0A0A0B]">
-      <div className="max-w-5xl mx-auto px-4 py-12">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-grotesk font-bold mb-2 text-white">AEDRIN Templates</h1>
-          <p className="text-blue-200 text-lg mb-2">Choose a template by <span className="font-semibold">story/purpose</span> or <span className="font-semibold">visual style</span> to start your executive-ready deck.</p>
-          <p className="text-blue-400 text-sm">All templates are designed for AEDRIN (aedrin.ai) and optimized for AI-powered narratives and beautiful charts.</p>
-          {isDemo && (
-            <div className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
-              <p className="text-blue-300 text-sm">🎉 Demo Mode: You can explore templates without signing in!</p>
-            </div>
-          )}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          {templates.map((tpl) => (
-            <div
-              key={tpl.id}
-              className="transition-transform hover:scale-[1.03] hover:shadow-[0_0_40px_#3B82F6]"
-            >
-              <Card className="cursor-pointer border-2 border-white/20 hover:border-blue-500 transition-all">
-                <div className="mb-3">
-                  <div className="w-full h-32 mb-2 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
-                    {tpl.name} Preview
+    <PublicPageLayout>
+      <main className="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e293b] py-12 px-4 sm:px-8">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-4xl font-bold text-white mb-6">Template Library</h1>
+          <p className="text-lg text-gray-300 mb-10">Browse and use professionally designed deck templates to jumpstart your next presentation.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {templates.map((template) => (
+              <Card key={template.id} className="group bg-white/5 backdrop-blur-sm border-white/20 hover:bg-white/10 transition-all duration-300 hover:scale-105">
+                <CardHeader className="pb-4">
+                  {/* Visual Preview */}
+                  <div className={`w-full h-48 mb-6 rounded-lg bg-gradient-to-br ${template.color} flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-300`}>
+                    <template.icon className="w-16 h-16 text-white z-10" />
+                    <div className="absolute inset-0 bg-black/20" />
+                    <div className="absolute top-4 right-4">
+                      <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                        {template.slides} slides
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="font-grotesk text-lg text-white mb-1">{tpl.name}</div>
-                  <div className="text-blue-200 text-sm mb-2">{tpl.description}</div>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {tpl.tags.map((tag) => (
-                      <span key={tag} className="px-2 py-1 bg-blue-900/40 text-blue-200 rounded text-xs">{tag}</span>
-                    ))}
+                  
+                  <CardTitle className="text-2xl font-bold text-white group-hover:text-blue-300 transition-colors">
+                    {template.name}
+                  </CardTitle>
+                  <CardDescription className="text-blue-200 text-base mt-3">
+                    {template.description}
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent className="pt-0">
+                  <div className="space-y-6">
+                    {/* Features */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-blue-300 mb-3 flex items-center">
+                        <Zap className="w-4 h-4 mr-2" />
+                        Key Features
+                      </h4>
+                      <ul className="space-y-2">
+                        {template.features.map((feature, index) => (
+                          <li key={index} className="text-blue-200 text-sm flex items-center">
+                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {template.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="bg-blue-900/50 text-blue-200 border-blue-700/50 text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {/* Purpose */}
+                    <div className="flex items-center text-sm text-blue-300">
+                      <Award className="w-4 h-4 mr-2" />
+                      For {template.purpose}
+                    </div>
+
+                    {/* Action Button */}
+                    <Button 
+                      onClick={() => handleTemplateSelect(template.id)}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3"
+                    >
+                      {isDemo ? (
+                        <>
+                          <Play className="w-4 h-4 mr-2" />
+                          Try Demo
+                        </>
+                      ) : (
+                        <>
+                          Use Template
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
                   </div>
-                  <div className="text-xs text-blue-400 mb-1">{tpl.slides} slides</div>
-                  <div className="text-xs text-blue-300 mb-1">{tpl.purpose}</div>
-                  <div className="text-xs text-blue-300">{tpl.visual}</div>
-                </div>
-                <Button 
-                  variant="default" 
-                  className="w-full mt-2"
-                  onClick={() => handleTemplateClick(tpl.id)}
-                >
-                  {isDemo ? 'Try This Template' : 'Use This Template'}
-                </Button>
+                </CardContent>
               </Card>
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+            <Link href="/auth/signup">
+              <Button
+                variant="gradient"
+                size="lg"
+                className="w-full sm:w-auto transition-colors"
+              >
+                🚀 Get Started
+              </Button>
+            </Link>
+            <Link href="/demo">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-blue-400 text-blue-200 hover:bg-blue-400/10 w-full sm:w-auto transition-colors"
+              >
+                🎯 Try Demo
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="mt-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-8 text-white text-center">
-          <h2 className="text-2xl font-bold mb-4">Need a Custom Template?</h2>
-          <p className="mb-6">
-            AEDRIN can create custom templates tailored to your brand and specific reporting needs.<br />
-            <span className="text-blue-200">Contact us at <a href="mailto:hello@aedrin.ai" className="underline">hello@aedrin.ai</a></span>
-          </p>
-          <Button variant="secondary" className="px-8">Contact AEDRIN</Button>
-        </div>
-      </div>
-    </div>
+      </main>
+    </PublicPageLayout>
   )
-}
+} 

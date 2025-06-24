@@ -1,6 +1,6 @@
 'use client'
 
-import { createClientComponentClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 export interface CSVFileData {
   id?: string
@@ -22,7 +22,7 @@ export interface CSVUploadRequest {
 }
 
 export class CSVStorage {
-  private supabase = createClientComponentClient()
+  private supabase = supabase
 
   // Validate description (must be at least 2 sentences)
   private validateDescription(description: string): { valid: boolean; error?: string } {

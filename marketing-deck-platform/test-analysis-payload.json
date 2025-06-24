@@ -1,0 +1,71 @@
+{
+  "data": [
+    {
+      "Date": "2024-01-01",
+      "Revenue": 125000,
+      "Customer_Acquisition_Cost": 45,
+      "Customer_Lifetime_Value": 1200,
+      "Marketing_Spend": 25000,
+      "Customer_Satisfaction": 4.2,
+      "Churn_Rate": 0.05,
+      "Sales_Team_Size": 12
+    },
+    {
+      "Date": "2024-02-01",
+      "Revenue": 132000,
+      "Customer_Acquisition_Cost": 42,
+      "Customer_Lifetime_Value": 1250,
+      "Marketing_Spend": 28000,
+      "Customer_Satisfaction": 4.3,
+      "Churn_Rate": 0.04,
+      "Sales_Team_Size": 12
+    },
+    {
+      "Date": "2024-03-01",
+      "Revenue": 128000,
+      "Customer_Acquisition_Cost": 48,
+      "Customer_Lifetime_Value": 1180,
+      "Marketing_Spend": 30000,
+      "Customer_Satisfaction": 4.1,
+      "Churn_Rate": 0.06,
+      "Sales_Team_Size": 13
+    },
+    {
+      "Date": "2024-04-01",
+      "Revenue": 145000,
+      "Customer_Acquisition_Cost": 38,
+      "Customer_Lifetime_Value": 1300,
+      "Marketing_Spend": 32000,
+      "Customer_Satisfaction": 4.4,
+      "Churn_Rate": 0.03,
+      "Sales_Team_Size": 13
+    },
+    {
+      "Date": "2024-05-01",
+      "Revenue": 158000,
+      "Customer_Acquisition_Cost": 35,
+      "Customer_Lifetime_Value": 1350,
+      "Marketing_Spend": 35000,
+      "Customer_Satisfaction": 4.5,
+      "Churn_Rate": 0.03,
+      "Sales_Team_Size": 14
+    }
+  ],
+  "context": {
+    "industry": "SaaS Technology",
+    "targetAudience": "C-Suite Executives",
+    "businessContext": "Strategic revenue optimization analysis",
+    "description": "Deep dive into SaaS metrics to uncover hidden drivers"
+  },
+  "timeFrame": {
+    "start": "2024-01-01",
+    "end": "2024-12-01",
+    "dataFrequency": "monthly",
+    "analysisType": "strategic"
+  },
+  "requirements": {
+    "slidesCount": 6,
+    "presentationDuration": 15,
+    "style": "strategic"
+  }
+}

@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation'
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from '@/lib/supabase/client'
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
 import { Button } from '../../../components/ui/Button';

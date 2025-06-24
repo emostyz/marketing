@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { 
   Image, BarChart3, RotateCw, Lock, Upload, Edit3
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { 
   ResponsiveContainer, BarChart, Bar, LineChart, Line, 
@@ -30,6 +30,18 @@ interface SlideElement {
     color?: string
     textAlign?: 'left' | 'center' | 'right'
     textDecoration?: string
+    backgroundImage?: string
+    background?: string
+    boxShadow?: string
+    filter?: string
+    textShadow?: string
+    lineHeight?: number
+    letterSpacing?: string
+    padding?: number | string
+    WebkitBackgroundClip?: string
+    WebkitTextFillColor?: string
+    backgroundClip?: string
+    transform?: any
   }
   content: any
   layer: number
@@ -61,7 +73,11 @@ export function FunctionalSlideElement({
 }: FunctionalSlideElementProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
+  const [resizeHandle, setResizeHandle] = useState<string | null>(null)
+  const [isRotating, setIsRotating] = useState(false)
   const [imageUploadHover, setImageUploadHover] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [elementStart, setElementStart] = useState({ x: 0, y: 0, width: 0, height: 0 })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +107,122 @@ export function FunctionalSlideElement({
       }
     })
   }, [element.content, onUpdate])
+
+  // Mouse event handlers for drag, resize, rotate
+  const handleMouseDown = useCallback((e: React.MouseEvent, action: 'drag' | 'resize' | 'rotate', handle?: string) => {
+    if (element.locked) return
+    
+    e.preventDefault()
+    e.stopPropagation()
+    
+    const rect = e.currentTarget.getBoundingClientRect()
+    const startX = e.clientX
+    const startY = e.clientY
+    
+    setDragStart({ x: startX, y: startY })
+    setElementStart({
+      x: element.position.x,
+      y: element.position.y,
+      width: element.position.width,
+      height: element.position.height
+    })
+    
+    if (action === 'drag') {
+      setIsDragging(true)
+    } else if (action === 'resize') {
+      setIsResizing(true)
+      setResizeHandle(handle || null)
+    } else if (action === 'rotate') {
+      setIsRotating(true)
+    }
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - startX
+      const deltaY = e.clientY - startY
+      
+      if (action === 'drag') {
+        onUpdate({
+          position: {
+            ...element.position,
+            x: Math.max(0, elementStart.x + deltaX / (zoom / 100)),
+            y: Math.max(0, elementStart.y + deltaY / (zoom / 100))
+          }
+        })
+      } else if (action === 'resize' && handle) {
+        handleResize(handle, deltaX / (zoom / 100), deltaY / (zoom / 100))
+      } else if (action === 'rotate') {
+        handleRotate(deltaX, deltaY)
+      }
+    }
+    
+    const handleMouseUp = () => {
+      setIsDragging(false)
+      setIsResizing(false)
+      setIsRotating(false)
+      setResizeHandle(null)
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }, [element, zoom, onUpdate])
+
+  const handleResize = useCallback((handle: string, deltaX: number, deltaY: number) => {
+    const newPosition = { ...element.position }
+    
+    switch (handle) {
+      case 'nw':
+        newPosition.x = elementStart.x + deltaX
+        newPosition.y = elementStart.y + deltaY
+        newPosition.width = Math.max(20, elementStart.width - deltaX)
+        newPosition.height = Math.max(20, elementStart.height - deltaY)
+        break
+      case 'ne':
+        newPosition.y = elementStart.y + deltaY
+        newPosition.width = Math.max(20, elementStart.width + deltaX)
+        newPosition.height = Math.max(20, elementStart.height - deltaY)
+        break
+      case 'sw':
+        newPosition.x = elementStart.x + deltaX
+        newPosition.width = Math.max(20, elementStart.width - deltaX)
+        newPosition.height = Math.max(20, elementStart.height + deltaY)
+        break
+      case 'se':
+        newPosition.width = Math.max(20, elementStart.width + deltaX)
+        newPosition.height = Math.max(20, elementStart.height + deltaY)
+        break
+      case 'n':
+        newPosition.y = elementStart.y + deltaY
+        newPosition.height = Math.max(20, elementStart.height - deltaY)
+        break
+      case 's':
+        newPosition.height = Math.max(20, elementStart.height + deltaY)
+        break
+      case 'w':
+        newPosition.x = elementStart.x + deltaX
+        newPosition.width = Math.max(20, elementStart.width - deltaX)
+        break
+      case 'e':
+        newPosition.width = Math.max(20, elementStart.width + deltaX)
+        break
+    }
+    
+    onUpdate({ position: newPosition })
+  }, [element.position, elementStart, onUpdate])
+
+  const handleRotate = useCallback((deltaX: number, deltaY: number) => {
+    const centerX = elementStart.x + elementStart.width / 2
+    const centerY = elementStart.y + elementStart.height / 2
+    const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI)
+    
+    onUpdate({
+      position: {
+        ...element.position,
+        rotation: (element.position.rotation + angle) % 360
+      }
+    })
+  }, [element.position, elementStart, onUpdate])
 
   const renderTextElement = () => (
     <div
@@ -186,7 +318,7 @@ export function FunctionalSlideElement({
     return (
       <div className="w-full h-full bg-white p-2">
         <ResponsiveContainer width="100%" height="100%">
-          {chartType === 'bar' && (
+          {chartType === 'bar' ? (
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
@@ -194,8 +326,7 @@ export function FunctionalSlideElement({
               <Tooltip />
               <Bar dataKey="value" fill={colors[0]} />
             </BarChart>
-          )}
-          {chartType === 'line' && (
+          ) : chartType === 'line' ? (
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
@@ -203,8 +334,7 @@ export function FunctionalSlideElement({
               <Tooltip />
               <Line type="monotone" dataKey="value" stroke={colors[0]} strokeWidth={3} />
             </LineChart>
-          )}
-          {chartType === 'pie' && (
+          ) : (
             <PieChart>
               <Pie
                 data={chartData}
@@ -215,7 +345,7 @@ export function FunctionalSlideElement({
                 dataKey="value"
                 label
               >
-                {chartData.map((entry, index) => (
+                {chartData.map((entry: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
               </Pie>
@@ -350,6 +480,7 @@ export function FunctionalSlideElement({
         boxShadow: element.style.shadow ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
       }}
       onClick={onSelect}
+      onMouseDown={(e) => !isSelected && handleMouseDown(e, 'drag')}
       whileHover={!element.locked ? { scale: 1.01 } : {}}
       whileTap={!element.locked ? { scale: 0.99 } : {}}
     >
@@ -359,19 +490,46 @@ export function FunctionalSlideElement({
       {isSelected && !element.locked && (
         <>
           {/* Corner resize handles */}
-          <div className="absolute -top-1 -left-1 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-nw-resize" />
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-ne-resize" />
-          <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-sw-resize" />
-          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-se-resize" />
+          <div 
+            className="absolute -top-1 -left-1 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-nw-resize hover:bg-blue-700 transition-colors" 
+            onMouseDown={(e) => handleMouseDown(e, 'resize', 'nw')}
+          />
+          <div 
+            className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-ne-resize hover:bg-blue-700 transition-colors" 
+            onMouseDown={(e) => handleMouseDown(e, 'resize', 'ne')}
+          />
+          <div 
+            className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-sw-resize hover:bg-blue-700 transition-colors" 
+            onMouseDown={(e) => handleMouseDown(e, 'resize', 'sw')}
+          />
+          <div 
+            className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-se-resize hover:bg-blue-700 transition-colors" 
+            onMouseDown={(e) => handleMouseDown(e, 'resize', 'se')}
+          />
           
           {/* Side resize handles */}
-          <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-n-resize" />
-          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-s-resize" />
-          <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-w-resize" />
-          <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-e-resize" />
+          <div 
+            className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-n-resize hover:bg-blue-700 transition-colors" 
+            onMouseDown={(e) => handleMouseDown(e, 'resize', 'n')}
+          />
+          <div 
+            className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-s-resize hover:bg-blue-700 transition-colors" 
+            onMouseDown={(e) => handleMouseDown(e, 'resize', 's')}
+          />
+          <div 
+            className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-w-resize hover:bg-blue-700 transition-colors" 
+            onMouseDown={(e) => handleMouseDown(e, 'resize', 'w')}
+          />
+          <div 
+            className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-600 border border-white rounded-full cursor-e-resize hover:bg-blue-700 transition-colors" 
+            onMouseDown={(e) => handleMouseDown(e, 'resize', 'e')}
+          />
           
           {/* Rotation handle */}
-          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-green-600 border border-white rounded-full cursor-grab flex items-center justify-center">
+          <div 
+            className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-green-600 border border-white rounded-full cursor-grab hover:bg-green-700 transition-colors flex items-center justify-center"
+            onMouseDown={(e) => handleMouseDown(e, 'rotate')}
+          >
             <RotateCw className="w-2 h-2 text-white" />
           </div>
         </>

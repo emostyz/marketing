@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server-client'
-import { EventLogger } from '@/lib/services/event-logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,40 +47,18 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-
-    const supabase = createServerSupabaseClient()
-    
-    // Get client info
-    const clientInfo = EventLogger.getClientInfo(request)
-    
-    // Log the demo request
-    await EventLogger.logSystemEvent(
-      'demo_requested',
-      { demo: true },
-      'info',
-      clientInfo
-    )
     
     return NextResponse.json({ 
       success: true, 
       message: 'Demo mode activated',
-      demo: true 
+      demo: {
+        active: true,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+        features: ['unlimited_presentations', 'ai_insights', 'templates']
+      }
     })
   } catch (error) {
     console.error('Demo route error:', error)
-    
-    // Log the error
-    try {
-      const clientInfo = EventLogger.getClientInfo(request)
-      await EventLogger.logSystemEvent(
-        'demo_error',
-        { error: error instanceof Error ? error.message : 'Unknown error' },
-        'error',
-        clientInfo
-      )
-    } catch (logError) {
-      console.error('Error logging system event:', logError)
-    }
     
     return NextResponse.json(
       { error: 'Internal server error' },

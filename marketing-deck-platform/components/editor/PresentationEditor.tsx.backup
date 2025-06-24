@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase/client'
 import { 
   Save, Download, Share2, ChevronLeft, ChevronRight, 
   Plus, Trash2, Edit3, BarChart3, Type, Image,
@@ -61,7 +61,6 @@ export default function PresentationEditor({ presentation }: any) {
   const [editingElement, setEditingElement] = useState<{ slideIdx: number, elementIdx: number } | null>(null)
   const [elementEditValue, setElementEditValue] = useState<string>('')
   const [draggedElement, setDraggedElement] = useState<{ slideIdx: number, elementIdx: number } | null>(null)
-  const supabase = createClientComponentClient()
 
   const sensors = useSensors(useSensor(PointerSensor))
 

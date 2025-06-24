@@ -1,23 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server-client'
-import { EventLogger } from '@/lib/services/event-logger'
+import { createServerClient } from '@/lib/supabase/server-client'
+// import { EventLogger } from '@/lib/services/event-logger'
 
 export async function POST(request: NextRequest) {
   try {
-    const { pageUrl, pageTitle } = await request.json()
-    
+    let pageUrl = null, pageTitle = null;
+    try {
+      const body = await request.text();
+      if (body) {
+        const json = JSON.parse(body);
+        pageUrl = json.pageUrl;
+        pageTitle = json.pageTitle;
+      }
+    } catch (e) {
+      return NextResponse.json({ error: 'Invalid JSON input' }, { status: 400 });
+    }
     if (!pageUrl) {
-      return NextResponse.json(
-        { error: 'Page URL is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing pageUrl' }, { status: 400 });
     }
 
-    // Get client info
-    const clientInfo = EventLogger.getClientInfo(request)
-    
-    // Log the page view
-    await EventLogger.logPageView(pageUrl, pageTitle, clientInfo)
+    // Analytics disabled - EventLogger removed
+    console.log('Page view event (disabled):', { pageUrl, pageTitle })
     
     return NextResponse.json({ success: true })
   } catch (error) {

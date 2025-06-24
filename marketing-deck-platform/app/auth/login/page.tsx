@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Brain } from 'lucide-react'
@@ -12,10 +12,27 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState<string | null>(null)
   const router = useRouter()
-  const { signIn, signInDemo, signInWithOAuth } = useAuth()
+  const { signIn, signInDemo, signInWithOAuth, user, loading: authLoading } = useAuth()
+
+  // Add redirect for authenticated users
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/dashboard'
+      } else {
+        router.push('/dashboard')
+      }
+    }
+  }, [user, authLoading, router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password')
+      return
+    }
+
     setLoading(true)
     setError('')
     
@@ -24,11 +41,11 @@ export default function LoginPage() {
       
       if (result.error) {
         setError(result.error)
-        setLoading(false)
       }
-      // The auth context will handle the redirect
+      // The auth context will handle the redirect if successful
     } catch (err) {
-      setError('Network error occurred')
+      setError('Network error occurred. Please check your connection and try again.')
+    } finally {
       setLoading(false)
     }
   }
@@ -42,16 +59,16 @@ export default function LoginPage() {
       
       if (result.error) {
         setError(result.error)
-        setLoading(false)
       }
-      // The auth context will handle the redirect
+      // The auth context will handle the redirect if successful
     } catch (error) {
-      setError('Failed to start demo')
+      setError('Failed to start demo. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
 
-  const handleOAuthLogin = async (provider: 'google' | 'github' | 'microsoft') => {
+  const handleOAuthLogin = async (provider: 'google' | 'github') => {
     setOauthLoading(provider)
     setError('')
     
@@ -79,8 +96,14 @@ export default function LoginPage() {
         </div>
         
         {error && (
-          <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg mb-4">
-            {error}
+          <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg mb-4 animate-in slide-in-from-top-2">
+            <div className="flex items-center gap-2">
+              <span className="text-red-400 text-lg">⚠️</span>
+              <div>
+                <p className="font-medium">Sign In Failed</p>
+                <p className="text-sm text-red-300">{error}</p>
+              </div>
+            </div>
           </div>
         )}
         
@@ -91,8 +114,10 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="your.email@company.com"
+              required
+              disabled={loading}
             />
           </div>
           <div>
@@ -101,8 +126,10 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full rounded-lg bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="Enter your password"
+              required
+              disabled={loading}
             />
           </div>
           <button
@@ -148,18 +175,6 @@ export default function LoginPage() {
               '🐙'
             )}
             {oauthLoading === 'github' ? 'Connecting...' : 'Continue with GitHub'}
-          </button>
-          <button
-            onClick={() => handleOAuthLogin('microsoft')}
-            disabled={loading || oauthLoading !== null}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {oauthLoading === 'microsoft' ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              '🏢'
-            )}
-            {oauthLoading === 'microsoft' ? 'Connecting...' : 'Continue with Microsoft'}
           </button>
         </div>
 

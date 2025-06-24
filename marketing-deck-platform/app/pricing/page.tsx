@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Check, Star, Zap, Crown, Users, BarChart3, Shield, Globe, ArrowRight, TrendingUp, Brain, Award, Clock, Sparkles, Rocket, Target, Infinity, Lock, Headphones, Palette, Code, Database, Cloud, Smartphone, Monitor, Users2 } from 'lucide-react'
+import PublicPageLayout from '@/components/layout/PublicPageLayout'
 
 const pricingTiers = [
   {
@@ -15,16 +16,14 @@ const pricingTiers = [
     color: 'blue',
     gradient: 'from-blue-500 to-cyan-500',
     features: [
-      '5 presentations per month',
-      'Basic AI insights & analysis',
-      '20+ professional templates',
-      'CSV/Excel data upload',
-      'PDF export',
-      'Email support',
-      'Basic analytics dashboard',
-      '1 team member',
-      'Standard charts & graphs',
-      'Mobile responsive design'
+      '📊 5 presentations per month',
+      '🤖 Basic AI insights & analysis',
+      '📋 20+ professional templates',
+      '📁 CSV/Excel data upload',
+      '📄 PDF export',
+      '📧 Email support',
+      '📈 Basic analytics dashboard',
+      '👥 1 team member'
     ],
     limitations: [
       'No advanced AI features',
@@ -45,21 +44,18 @@ const pricingTiers = [
     color: 'purple',
     gradient: 'from-purple-500 to-pink-500',
     features: [
-      '25 presentations per month',
-      'Advanced AI insights & predictions',
-      '50+ premium templates',
-      'All file formats supported',
-      'PowerPoint & Keynote export',
-      'Priority email & chat support',
-      'Advanced analytics & reporting',
-      '5 team members',
-      'Custom branding & themes',
-      'Advanced charts & visualizations',
-      'Real-time collaboration',
-      'API access',
-      'Data integrations',
-      'Custom color schemes',
-      'Presentation scheduling'
+      '📊 25 presentations per month',
+      '🧠 Advanced AI insights & predictions',
+      '📋 50+ premium templates',
+      '📁 All file formats supported',
+      '📄 PowerPoint & Keynote export',
+      '💬 Priority email & chat support',
+      '📈 Advanced analytics & reporting',
+      '👥 5 team members',
+      '🎨 Custom branding & themes',
+      '📊 Advanced charts & visualizations',
+      '🤝 Real-time collaboration',
+      '🔌 API access'
     ],
     limitations: [
       'No enterprise security features',
@@ -79,26 +75,18 @@ const pricingTiers = [
     color: 'gold',
     gradient: 'from-yellow-500 to-orange-500',
     features: [
-      'Unlimited presentations',
-      'Custom AI models & training',
-      'Custom template creation',
-      'All integrations & APIs',
-      'All export formats',
-      '24/7 phone & priority support',
-      'Advanced analytics & BI',
-      'Unlimited team members',
-      'Full custom branding',
-      'Advanced AI features',
-      'Real-time collaboration',
-      'Full API access',
-      'SSO & SAML integration',
-      'Dedicated account manager',
-      'Custom training sessions',
-      'SLA guarantee',
-      'Advanced security & compliance',
-      'White-label options',
-      'Custom integrations',
-      'On-premise deployment'
+      '♾️ Unlimited presentations',
+      '🧠 Custom AI models & training',
+      '🎨 Custom template creation',
+      '🔌 All integrations & APIs',
+      '📄 All export formats',
+      '📞 24/7 phone & priority support',
+      '📊 Advanced analytics & BI',
+      '👥 Unlimited team members',
+      '🎨 Full custom branding',
+      '🔒 Advanced security & compliance',
+      '🤝 Real-time collaboration',
+      '👨‍💼 Dedicated account manager'
     ],
     limitations: [],
     stripePriceId: 'price_enterprise_monthly',
@@ -164,6 +152,7 @@ const faqs = [
 export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<'month' | 'year'>('month')
   const [loading, setLoading] = useState<string | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<string>('Professional')
 
   const getPrice = (tier: typeof pricingTiers[0]) => {
     if (billingPeriod === 'year') {
@@ -176,52 +165,24 @@ export default function PricingPage() {
     setLoading(tier.name)
     
     try {
-      const response = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId: tier.stripePriceId,
-          billingPeriod,
-          tier: tier.name.toLowerCase()
-        })
-      })
-
-      const { sessionId } = await response.json()
+      // Create different Stripe checkout URLs for each plan
+      const stripeUrls = {
+        'Starter': 'https://buy.stripe.com/starter-plan',
+        'Professional': 'https://buy.stripe.com/professional-plan', 
+        'Enterprise': 'https://buy.stripe.com/enterprise-plan'
+      }
       
-      // Redirect to Stripe Checkout
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-      await stripe?.redirectToCheckout({ sessionId })
+      // Redirect directly to the specific Stripe page for this plan
+      window.open(stripeUrls[tier.name as keyof typeof stripeUrls], '_blank')
     } catch (error) {
-      console.error('Error creating checkout session:', error)
+      console.error('Error redirecting to checkout:', error)
     } finally {
       setLoading(null)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
-      {/* Navigation */}
-      <nav className="relative z-50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Brain className="w-8 h-8 text-blue-500" />
-            <span className="text-2xl font-bold text-white">AEDRIN</span>
-          </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-300 hover:text-white transition-colors">Home</Link>
-            <Link href="/#features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
-            <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
-            <Link href="/auth/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
-            <Link href="/auth/signup">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+    <PublicPageLayout>
 
       {/* Header */}
       <section className="px-6 py-20 text-center">
@@ -270,22 +231,22 @@ export default function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {pricingTiers.map((tier) => {
               const IconComponent = tier.icon
-              const isPopular = tier.popular
+              const isSelected = selectedPlan === tier.name
               
               return (
                 <div
                   key={tier.name}
-                  className={`relative p-8 rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
-                    isPopular 
-                      ? 'border-purple-500 bg-gradient-to-br from-purple-900/20 to-pink-900/20 shadow-2xl shadow-purple-500/20' 
-                      : 'border-gray-700 bg-gray-800/30 hover:border-gray-600'
-                  }`}
+                  className={`relative pt-10 p-8 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${
+                    isSelected
+                      ? 'border-purple-500 bg-gradient-to-br from-purple-900 to-blue-900 shadow-2xl'
+                      : 'border-gray-700 bg-gray-900/80'
+                  } ${tier.popular ? 'scale-105 z-10' : 'opacity-90'} hover:border-purple-400 hover:shadow-xl`}
+                  onClick={() => setSelectedPlan(tier.name)}
+                  style={{ minHeight: 420 }}
                 >
-                  {isPopular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                        {tier.savings}
-                      </span>
+                  {tier.popular && (
+                    <div className="absolute left-1/2 -translate-x-1/2 top-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-semibold shadow-lg z-20">
+                      Most Popular
                     </div>
                   )}
                   
@@ -327,8 +288,8 @@ export default function PricingPage() {
                   <Button
                     onClick={() => handleSubscribe(tier)}
                     disabled={loading === tier.name}
-                    className={`w-full py-4 text-lg font-semibold ${
-                      isPopular 
+                    className={`w-full py-4 text-lg font-semibold transition-colors duration-200 ${
+                      isSelected
                         ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white' 
                         : 'bg-blue-600 hover:bg-blue-700 text-white'
                     }`}
@@ -340,7 +301,7 @@ export default function PricingPage() {
                       </div>
                     ) : (
                       <>
-                        Get Started
+                        🚀 Get Started
                         <ArrowRight className="w-5 h-5 ml-2" />
                       </>
                     )}
@@ -352,153 +313,80 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Features Comparison */}
-      <section className="px-6 py-20 bg-gray-900/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Compare Features</h2>
-            <p className="text-xl text-gray-300">See what's included in each plan</p>
-          </div>
-          
-          <div className="bg-gray-800/30 rounded-2xl border border-gray-700 overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-4 divide-x divide-gray-700">
-              {/* Features Column */}
-              <div className="p-8 bg-gray-800/50">
-                <div className="text-center mb-8">
-                  <h3 className="text-xl font-bold text-white mb-2">Features</h3>
-                  <p className="text-gray-400 text-sm">Everything you need to know</p>
+      {/* Feature Comparison Table */}
+      <section className="px-6 py-12 overflow-x-auto">
+        <div className="min-w-[700px] max-w-5xl mx-auto">
+          <div className="bg-gray-900/50 rounded-2xl border border-gray-700 overflow-hidden">
+            {/* Table Header with Icons */}
+            <div className="bg-gray-800/60 px-6 py-6">
+              <div className="grid grid-cols-4 gap-4 items-center">
+                <div className="text-left text-gray-400 text-sm font-semibold">
+                  Feature Comparison
                 </div>
-                <div className="space-y-6">
-                  <div className="flex items-center space-x-3">
-                    <BarChart3 className="w-5 h-5 text-blue-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">Presentations per month</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Brain className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">AI Insights & Analysis</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Palette className="w-5 h-5 text-green-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">Professional Templates</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Users className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">Team Members</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Code className="w-5 h-5 text-red-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">Export Formats</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Database className="w-5 h-5 text-indigo-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">API Access</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Shield className="w-5 h-5 text-pink-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">Custom Branding</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Headphones className="w-5 h-5 text-orange-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">Priority Support</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <TrendingUp className="w-5 h-5 text-teal-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">Advanced Analytics</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Users2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />
-                    <span className="text-gray-300 font-medium">Real-time Collaboration</span>
-                  </div>
-                </div>
+                {pricingTiers.map((tier) => {
+                  const IconComponent = tier.icon
+                  return (
+                    <div key={tier.name} className="text-center">
+                      <div className={`w-12 h-12 bg-gradient-to-r ${tier.gradient} rounded-xl flex items-center justify-center mx-auto mb-2`}>
+                        <IconComponent className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-gray-200 text-base font-semibold">{tier.name}</div>
+                      <div className="text-gray-400 text-xs">${getPrice(tier)}/{billingPeriod}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            
+            {/* Table Body - Shortened with categories */}
+            <div className="divide-y divide-gray-700">
+              {/* Presentations */}
+              <div className="grid grid-cols-4 gap-4 items-center px-6 py-4 bg-gray-800/20">
+                <div className="text-gray-300 text-sm font-medium">📊 Presentations</div>
+                <div className="text-center text-gray-300">5/month</div>
+                <div className="text-center text-gray-300">25/month</div>
+                <div className="text-center text-gray-300">♾️ Unlimited</div>
               </div>
               
-              {/* Pricing Tiers */}
-              {pricingTiers.map((tier) => (
-                <div key={tier.name} className="p-8 relative">
-                  {tier.popular && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-semibold">
-                        Most Popular
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="text-center mb-8">
-                    <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
-                    <div className="text-3xl font-bold text-white mb-1">${getPrice(tier)}</div>
-                    <div className="text-gray-400 text-sm">per {billingPeriod}</div>
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-center">
-                      <span className="text-2xl font-bold text-white">
-                        {tier.name === 'Enterprise' ? '∞' : tier.features[0].split(' ')[0]}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        tier.name === 'Starter' ? 'bg-gray-600 text-gray-300' : 
-                        tier.name === 'Professional' ? 'bg-blue-600 text-white' : 
-                        'bg-purple-600 text-white'
-                      }`}>
-                        {tier.name === 'Starter' ? 'Basic' : tier.name === 'Professional' ? 'Advanced' : 'Custom'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <span className="text-white font-semibold">
-                        {tier.name === 'Starter' ? '20+' : tier.name === 'Professional' ? '50+' : 'Custom'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <span className="text-white font-semibold">
-                        {tier.name === 'Starter' ? '1' : tier.name === 'Professional' ? '5' : '∞'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <span className="text-white font-semibold">
-                        {tier.name === 'Starter' ? 'PDF' : tier.name === 'Professional' ? 'PPT, PDF' : 'All'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      {tier.name === 'Starter' ? (
-                        <span className="text-gray-500 text-xl">×</span>
-                      ) : (
-                        <Check className="w-6 h-6 text-green-400" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-center">
-                      {tier.name === 'Starter' ? (
-                        <span className="text-gray-500 text-xl">×</span>
-                      ) : (
-                        <Check className="w-6 h-6 text-green-400" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-center">
-                      {tier.name === 'Starter' ? (
-                        <span className="text-gray-500 text-xl">×</span>
-                      ) : tier.name === 'Professional' ? (
-                        <span className="text-blue-400 text-sm font-semibold">Email/Chat</span>
-                      ) : (
-                        <span className="text-purple-400 text-sm font-semibold">24/7 Phone</span>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        tier.name === 'Starter' ? 'bg-gray-600 text-gray-300' : 'bg-green-600 text-white'
-                      }`}>
-                        {tier.name === 'Starter' ? 'Basic' : 'Advanced'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      {tier.name === 'Starter' ? (
-                        <span className="text-gray-500 text-xl">×</span>
-                      ) : (
-                        <Check className="w-6 h-6 text-green-400" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {/* AI Features */}
+              <div className="grid grid-cols-4 gap-4 items-center px-6 py-4">
+                <div className="text-gray-300 text-sm font-medium">🤖 AI Features</div>
+                <div className="text-center text-gray-300">Basic</div>
+                <div className="text-center text-gray-300">Advanced</div>
+                <div className="text-center text-gray-300">Custom</div>
+              </div>
+              
+              {/* Templates */}
+              <div className="grid grid-cols-4 gap-4 items-center px-6 py-4 bg-gray-800/20">
+                <div className="text-gray-300 text-sm font-medium">📋 Templates</div>
+                <div className="text-center text-gray-300">20+</div>
+                <div className="text-center text-gray-300">50+</div>
+                <div className="text-center text-gray-300">🎨 Custom</div>
+              </div>
+              
+              {/* Team Members */}
+              <div className="grid grid-cols-4 gap-4 items-center px-6 py-4">
+                <div className="text-gray-300 text-sm font-medium">👥 Team Members</div>
+                <div className="text-center text-gray-300">1</div>
+                <div className="text-center text-gray-300">5</div>
+                <div className="text-center text-gray-300">♾️ Unlimited</div>
+              </div>
+              
+              {/* Support */}
+              <div className="grid grid-cols-4 gap-4 items-center px-6 py-4 bg-gray-800/20">
+                <div className="text-gray-300 text-sm font-medium">💬 Support</div>
+                <div className="text-center text-gray-300">📧 Email</div>
+                <div className="text-center text-gray-300">💬 Priority</div>
+                <div className="text-center text-gray-300">📞 24/7 Phone</div>
+              </div>
+              
+              {/* Security */}
+              <div className="grid grid-cols-4 gap-4 items-center px-6 py-4">
+                <div className="text-gray-300 text-sm font-medium">🔒 Security</div>
+                <div className="text-center text-gray-300">Standard</div>
+                <div className="text-center text-gray-300">Enhanced</div>
+                <div className="text-center text-gray-300">🔒 Enterprise</div>
+              </div>
             </div>
           </div>
         </div>
@@ -575,52 +463,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="px-6 py-12 bg-gray-900">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Brain className="w-6 h-6 text-blue-500" />
-                <span className="text-xl font-bold text-white">AEDRIN</span>
-              </div>
-              <p className="text-gray-400">AI-powered presentation platform for modern businesses.</p>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/#features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/templates" className="hover:text-white transition-colors">Templates</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="/docs" className="hover:text-white transition-colors">Documentation</Link></li>
-                <li><Link href="/status" className="hover:text-white transition-colors">Status</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2024 AEDRIN. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PublicPageLayout>
   )
 }
 
-async function loadStripe(stripePublishableKey: string) {
-  const { loadStripe } = await import('@stripe/stripe-js')
-  return loadStripe(stripePublishableKey)
-}

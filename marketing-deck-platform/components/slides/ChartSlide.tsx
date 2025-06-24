@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { AreaChart, BarChart, LineChart, Card } from '@tremor/react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Edit, Settings, Download, Palette } from 'lucide-react'
 
 interface ChartSlideProps {
@@ -87,7 +87,7 @@ export function ChartSlide({ slide, onUpdate, editable = true }: ChartSlideProps
                 <Button size="sm" onClick={handleSave}>
                   Save
                 </Button>
-                <Button size="sm" variant="secondary" onClick={() => setIsEditing(false)}>
+                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
                   Cancel
                 </Button>
               </>

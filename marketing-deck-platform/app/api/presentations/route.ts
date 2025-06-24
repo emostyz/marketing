@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server-client'
+import { requireAuth } from '@/lib/auth/api-auth'
 import UserDataService from '@/lib/services/user-data-service'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerClient()
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Get authenticated user
+    const user = await requireAuth()
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '50')
     const status = searchParams.get('status')
@@ -52,15 +45,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient()
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Get authenticated user
+    const user = await requireAuth()
     const presentationData = await request.json()
     // Validate required fields
     if (!presentationData.title) {
@@ -105,15 +91,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createServerClient()
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Get authenticated user
+    const user = await requireAuth()
     const presentationData = await request.json()
     // Validate required fields
     if (!presentationData.id) {
@@ -125,38 +104,22 @@ export async function PUT(request: NextRequest) {
     // Track API usage
     await UserDataService.trackApiUsage(user.id, '/api/presentations', 'PUT')
     // Update presentation
-    const { data: existingPresentation } = await supabase
-      .from('presentations')
-      .select('*')
-      .eq('id', presentationData.id)
-      .eq('user_id', user.id)
-      .single()
-    if (!existingPresentation) {
+    const updatedPresentation = await UserDataService.updatePresentation(user.id, presentationData.id, {
+      title: presentationData.title,
+      description: presentationData.description,
+      slides: presentationData.slides,
+      theme: presentationData.theme,
+      settings: presentationData.settings,
+      collaborators: presentationData.collaborators,
+      last_modified: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    
+    if (!updatedPresentation) {
       return NextResponse.json(
-        { error: 'Presentation not found' },
+        { error: 'Presentation not found or update failed' },
         { status: 404 }
       )
-    }
-    const { data: updatedPresentation, error: updateError } = await supabase
-      .from('presentations')
-      .update({
-        title: presentationData.title || existingPresentation.title,
-        description: presentationData.description || existingPresentation.description,
-        slides: presentationData.slides || existingPresentation.slides,
-        theme: presentationData.theme || existingPresentation.theme,
-        settings: presentationData.settings || existingPresentation.settings,
-        collaborators: presentationData.collaborators || existingPresentation.collaborators,
-        version: (existingPresentation.version || 0) + 1,
-        last_modified: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        user_id: user.id
-      })
-      .eq('id', presentationData.id)
-      .eq('user_id', user.id)
-      .select()
-      .single()
-    if (updateError) {
-      throw updateError
     }
     // Track activity
     await UserDataService.trackUserActivity(user.id, {

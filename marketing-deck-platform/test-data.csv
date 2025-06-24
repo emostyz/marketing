@@ -1,7 +1,7 @@
-Date,Revenue,Customers,Orders
-2024-01-01,125000,450,234
-2024-02-01,130000,478,251
-2024-03-01,142000,502,289
-2024-04-01,138000,495,267
-2024-05-01,155000,532,312
-2024-06-01,162000,548,334
+name,sales,month
+Product A,1000,Jan
+Product B,1500,Jan
+Product A,1200,Feb
+Product B,1800,Feb
+Product A,1400,Mar
+Product B,2000,Mar

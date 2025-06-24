@@ -16,182 +16,584 @@
      ✓ clientSegmentCache
 
  ✓ Starting...
- ✓ Compiled middleware in 129ms
- ✓ Ready in 1054ms
- ○ Compiling /api/upload ...
- ✓ Compiled /api/upload in 681ms
-Error: Route "/api/upload" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at getItemAsync (../../../src/lib/helpers.ts:129:30)
-    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
-    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
-    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
-    at <unknown> (../../src/GoTrueClient.ts:1868:13)
-    at <unknown> (../../src/GoTrueClient.ts:1206:25)
-    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
-    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
-    at <unknown> (../../src/GoTrueClient.ts:1867:17)
-Error: Route "/api/upload" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at getItemAsync (../../../src/lib/helpers.ts:129:30)
-    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
-    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
-    at SupabaseAuthClient._emitInitialSession (../../src/GoTrueClient.ts:1876:22)
-    at <unknown> (../../src/GoTrueClient.ts:1868:13)
-    at <unknown> (../../src/GoTrueClient.ts:1206:25)
-    at SupabaseAuthClient.lockNoOp [as lock] (../../src/GoTrueClient.ts:130:15)
-    at SupabaseAuthClient._acquireLock (../../src/GoTrueClient.ts:1200:24)
-    at <unknown> (../../src/GoTrueClient.ts:1867:17)
-Error: Route "/api/upload" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at getItemAsync (../../../src/lib/helpers.ts:129:30)
-    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
-    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
-    at <unknown> (../../src/GoTrueClient.ts:1162:18)
-    at <unknown> (../../src/GoTrueClient.ts:1184:23)
-Error: Route "/api/upload" used `cookies().get('sb-waddrfstpqkvdfwbxvfw-auth-token.0')`. `cookies()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at getItemAsync (../../../src/lib/helpers.ts:129:30)
-    at SupabaseAuthClient.__loadSession (../../src/GoTrueClient.ts:1316:46)
-    at SupabaseAuthClient._useSession (../../src/GoTrueClient.ts:1274:32)
-    at <unknown> (../../src/GoTrueClient.ts:1162:18)
-    at <unknown> (../../src/GoTrueClient.ts:1184:23)
-Using demo mode for file upload testing
-📊 File parsed successfully: {
-  fileName: 'test_user_data.csv',
-  rowCount: 6,
-  columns: 7,
-  dataQuality: 'excellent',
-  timeSeriesDetected: true
-}
- ✓ Compiled /api/presentations/session in 385ms
- POST /api/presentations/session 401 in 446ms
- POST /api/upload 200 in 1356ms
- ✓ Compiled /api/openai/enhanced-analyze in 398ms
+ ✓ Compiled middleware in 93ms
+ ✓ Ready in 1061ms
+ ○ Compiling /auth/login ...
+ ✓ Compiled /auth/login in 1216ms
+ HEAD /auth/login 200 in 1418ms
+ ✓ Compiled /api/openai/enhanced-analyze in 370ms
 🧠 Enhanced Analysis - Starting request processing
 🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
 🧠 Enhanced Analysis - Extracted data: {
   dataLength: 1,
   isArray: true,
-  firstDataItem: [ 'fileId', 'fileName', 'data', 'columns', 'dataType' ],
-  contextKeys: [ 'industry', 'targetAudience', 'businessContext', 'description' ],
-  timeFrameKeys: [ 'start', 'end', 'dataFrequency', 'analysisType', 'comparisons' ],
-  requirementsKeys: [ 'slidesCount', 'presentationDuration', 'focusAreas', 'style' ]
+  firstDataItem: [ 'Date', 'Revenue', 'Customers' ],
+  contextKeys: [
+    'description',
+    'factors',
+    'industry',
+    'businessContext',
+    'dataQuality',
+    'dataSource',
+    'collectionMethod',
+    'lastUpdated',
+    'confidence'
+  ],
+  timeFrameKeys: [ 'start', 'end', 'comparisons', 'dataFrequency' ],
+  requirementsKeys: [ 'slidesCount', 'presentationDuration', 'style', 'focusAreas' ]
 }
 🧠 Enhanced Analysis - All validations passed, getting user context
 🧠 Enhanced Analysis - User profile retrieved: No
+Error logging user event: {}
 🧠 Enhanced Analysis - Enhanced context prepared
 🧠 Enhanced Analysis - Transformed timeFrame: {
   primaryPeriod: {
     start: '2024-01-01',
-    end: '2024-06-01',
-    label: '2024-01-01 to 2024-06-01'
+    end: '2024-01-01',
+    label: '2024-01-01 to 2024-01-01'
   },
-  analysisType: 'custom',
+  analysisType: 'm/m',
   includeTrends: true,
   includeSeasonality: true,
   includeOutliers: true
 }
 🧠 Enhanced Analysis - Transformed requirements: {
-  slideCount: 8,
-  targetDuration: 15,
+  slideCount: 3,
+  targetDuration: 5,
   structure: 'ai_suggested',
-  keyPoints: [
-    'Revenue Growth',
-    'Customer Acquisition',
-    'Conversion Optimization'
-  ],
+  keyPoints: [ 'Revenue' ],
   slideDescriptions: [],
   audienceType: 'executive',
-  presentationStyle: 'formal',
+  presentationStyle: 'storytelling',
   includeAppendix: true,
   includeSources: true
 }
 🧠 Enhanced Analysis - Brain initialized, performing analysis...
-🧠 Enhanced Analysis - Processing file data array
-🧠 Enhanced Analysis - Flattened data length: 6
+🧠 Enhanced Analysis - Checking dataset size for intelligent sampling...
+🧠 Dataset size: optimal (1 rows)
+🧠 User message: Perfect! Your dataset has 1 rows, which is ideal for comprehensive AI analysis. We'll analyze every data point to find the most nuanced insights.
 🧠 EnhancedBrainV2: Starting analysis...
 🧠 EnhancedBrainV2: Input validation passed
 🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
 🧠 EnhancedBrainV2: performInitialScan - Starting...
-🧠 EnhancedBrainV2: performInitialScan - Making OpenAI API call...
-🧠 EnhancedBrainV2: performInitialScan - OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Making Master Brain API call...
+🧠 EnhancedBrainV2: performInitialScan - Master Brain response received
+🧠 EnhancedBrainV2: Master Brain returned error, trying direct OpenAI fallback: No AI providers available for your tier
+🧠 EnhancedBrainV2: Using direct OpenAI fallback...
+🧠 EnhancedBrainV2: Direct OpenAI response received
 🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
 🧠 EnhancedBrainV2: performInitialScan - Completed successfully
 🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+ ✓ Compiled middleware in 1ms
+ POST /api/openai/enhanced-analyze 200 in 30005ms
 🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
-❌ EnhancedBrainV2.analyzeData Error: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.generateNovelInsights (lib/ai/enhanced-brain-v2.ts:655:70)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:354:39)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:136:19)
-  653 | EXECUTIVE BRIEFING:
-  654 | Industry: ${context.industry} | Business Context: ${context.businessContext}
-> 655 | Data Quality: ${context.dataQuality} | Key Factors: ${context.factors.join(', ')}
-      |                                                                      ^
-  656 |
-  657 | ANALYTICAL FOUNDATION:
-  658 | ${JSON.stringify(patternAnalysis, null, 2)}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'join')
-Error stack: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.generateNovelInsights (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__ecde7161._.js:1094:71)
-    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__ecde7161._.js:816:46)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__ecde7161._.js:2241:24)
-    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
-    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
-    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_next_39c78298._.js:14473:38)
-    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
-    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_next_39c78298._.js:14535:32)
-    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_next_39c78298._.js:14587:13)
-    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
-    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
-    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
-    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
-    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
-    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
-    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
-    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
-    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
-    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
-    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
-    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
-❌ Enhanced analysis error: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.generateNovelInsights (lib/ai/enhanced-brain-v2.ts:655:70)
-    at EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:354:39)
-    at async POST (app/api/openai/enhanced-analyze/route.ts:136:19)
-  653 | EXECUTIVE BRIEFING:
-  654 | Industry: ${context.industry} | Business Context: ${context.businessContext}
-> 655 | Data Quality: ${context.dataQuality} | Key Factors: ${context.factors.join(', ')}
-      |                                                                      ^
-  656 |
-  657 | ANALYTICAL FOUNDATION:
-  658 | ${JSON.stringify(patternAnalysis, null, 2)}
-Error name: TypeError
-Error message: Cannot read properties of undefined (reading 'join')
-Error stack: TypeError: Cannot read properties of undefined (reading 'join')
-    at EnhancedBrainV2.generateNovelInsights (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__ecde7161._.js:1094:71)
-    at EnhancedBrainV2.analyzeData (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__ecde7161._.js:816:46)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async POST (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/[root-of-the-server]__ecde7161._.js:2241:24)
-    at async AppRouteRouteModule.do (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:37894)
-    at async AppRouteRouteModule.handle (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:5:45039)
-    at async responseGenerator (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_next_39c78298._.js:14473:38)
-    at async AppRouteRouteModule.handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/compiled/next-server/app-route-turbo-experimental.runtime.dev.js:1:190411)
-    at async handleResponse (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_next_39c78298._.js:14535:32)
-    at async handler (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/.next/server/chunks/node_modules_next_39c78298._.js:14587:13)
-    at async doRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1589:34)
-    at async DevServer.renderToResponseWithComponentsImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1931:13)
-    at async DevServer.renderPageComponent (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2397:24)
-    at async DevServer.renderToResponseImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:2437:32)
-    at async DevServer.pipeImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:1033:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/next-server.js:391:17)
-    at async DevServer.handleRequestImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/base-server.js:924:17)
-    at async /Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:398:20
-    at async Span.traceAsyncFn (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/trace/trace.js:157:20)
-    at async DevServer.handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
-    at async invokeRender (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:239:21)
-    at async handleRequest (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:436:24)
-    at async requestHandlerImpl (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/router-server.js:464:13)
-    at async Server.requestListener (/Users/emilmostrom/Desktop/marketing-deck-platform/marketing-deck-platform/node_modules/next/dist/server/lib/start-server.js:216:13)
-Full error object: {}
- POST /api/openai/enhanced-analyze 500 in 45444ms
+🧠 Enhanced Analysis - Starting request processing
+🧠 Enhanced Analysis - Request body received: [ 'data', 'context', 'timeFrame', 'requirements' ]
+🧠 Enhanced Analysis - Extracted data: {
+  dataLength: 1,
+  isArray: true,
+  firstDataItem: [ 'Revenue' ],
+  contextKeys: [
+    'description',
+    'factors',
+    'industry',
+    'businessContext',
+    'dataQuality',
+    'dataSource',
+    'collectionMethod',
+    'lastUpdated',
+    'confidence'
+  ],
+  timeFrameKeys: [ 'start', 'end', 'comparisons', 'dataFrequency' ],
+  requirementsKeys: [ 'slidesCount', 'presentationDuration', 'style', 'focusAreas' ]
+}
+🧠 Enhanced Analysis - All validations passed, getting user context
+🧠 Enhanced Analysis - User profile retrieved: No
+Error logging user event: {}
+🧠 Enhanced Analysis - Enhanced context prepared
+🧠 Enhanced Analysis - Transformed timeFrame: {
+  primaryPeriod: {
+    start: '2024-01-01',
+    end: '2024-01-01',
+    label: '2024-01-01 to 2024-01-01'
+  },
+  analysisType: 'm/m',
+  includeTrends: true,
+  includeSeasonality: true,
+  includeOutliers: true
+}
+🧠 Enhanced Analysis - Transformed requirements: {
+  slideCount: 2,
+  targetDuration: 3,
+  structure: 'ai_suggested',
+  keyPoints: [ 'Revenue' ],
+  slideDescriptions: [],
+  audienceType: 'executive',
+  presentationStyle: 'storytelling',
+  includeAppendix: true,
+  includeSources: true
+}
+🧠 Enhanced Analysis - Brain initialized, performing analysis...
+🧠 Enhanced Analysis - Checking dataset size for intelligent sampling...
+🧠 Dataset size: optimal (1 rows)
+🧠 User message: Perfect! Your dataset has 1 rows, which is ideal for comprehensive AI analysis. We'll analyze every data point to find the most nuanced insights.
+🧠 EnhancedBrainV2: Starting analysis...
+🧠 EnhancedBrainV2: Input validation passed
+🧠 EnhancedBrainV2: Phase 1 - Initial Data Scan
+🧠 EnhancedBrainV2: performInitialScan - Starting...
+🧠 EnhancedBrainV2: performInitialScan - Making Master Brain API call...
+🧠 EnhancedBrainV2: performInitialScan - Master Brain response received
+🧠 EnhancedBrainV2: Master Brain returned error, trying direct OpenAI fallback: No AI providers available for your tier
+🧠 EnhancedBrainV2: Using direct OpenAI fallback...
+🧠 EnhancedBrainV2: Direct OpenAI response received
+🧠 EnhancedBrainV2: performInitialScan - Parsing JSON response...
+🧠 EnhancedBrainV2: performInitialScan - Completed successfully
+🧠 EnhancedBrainV2: Phase 2 - Deep Pattern Analysis
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+🧠 EnhancedBrainV2: Phase 3 - Novel Insight Generation
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+ POST /api/openai/enhanced-analyze 200 in 60014ms
+🧠 EnhancedBrainV2: Phase 4 - Narrative Development
+ ○ Compiling /api/upload ...
+ ✓ Compiled /api/upload in 557ms
+ POST /api/upload 401 in 667ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1268ms
+ GET / 200 in 1649ms
+ ○ Compiling /api/analytics/page-view ...
+ GET /auth/login 200 in 1779ms
+ GET /auth/login 200 in 1669ms
+🧠 EnhancedBrainV2: Phase 5 - Slide Structure Creation
+ ✓ Compiled /api/analytics/page-view in 1976ms
+ POST /api/analytics/page-view 400 in 2123ms
+ POST /api/analytics/page-view 400 in 2128ms
+Provider system_openai_gpt4 failed: SyntaxError: Unexpected token '`', "```json
+{
+"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at MasterBrain.processWithOpenAI (lib/ai/master-brain.ts:533:20)
+    at async MasterBrain.processWithProvider (lib/ai/master-brain.ts:463:19)
+    at async MasterBrain.processAnalysis (lib/ai/master-brain.ts:114:23)
+    at async EnhancedBrainV2.createSlideStructure (lib/ai/enhanced-brain-v2.ts:1025:21)
+    at async EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:369:29)
+    at async POST (app/api/openai/enhanced-analyze/route.ts:182:19)
+  531 |
+  532 |     return {
+> 533 |       content: JSON.parse(response.choices[0].message.content || '{}'),
+      |                    ^
+  534 |       usage: response.usage
+  535 |     };
+  536 |   }
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 2337ms
+ GET /favicon.ico 200 in 2353ms
+ ○ Compiling /api/analytics/user-interaction ...
+ ✓ Compiled /api/analytics/user-interaction in 779ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 981ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 1029ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 161ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 283ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 282ms
+ GET / 200 in 284ms
+ POST /api/analytics/page-view 400 in 114ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 196ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 193ms
+ ○ Compiling /pricing ...
+ ✓ Compiled /pricing in 948ms
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+ GET /pricing 200 in 1117ms
+ POST /api/analytics/page-view 400 in 69ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 254ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 263ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 283ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 217ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 215ms
+Provider system_openai_gpt4 failed: SyntaxError: Unexpected token '`', "```json
+{
+"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at MasterBrain.processWithOpenAI (lib/ai/master-brain.ts:533:20)
+    at async MasterBrain.processWithProvider (lib/ai/master-brain.ts:463:19)
+    at async MasterBrain.processAnalysis (lib/ai/master-brain.ts:114:23)
+    at async EnhancedBrainV2.generateRecommendations (lib/ai/enhanced-brain-v2.ts:1135:21)
+    at async EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:380:30)
+    at async POST (app/api/openai/enhanced-analyze/route.ts:182:19)
+  531 |
+  532 |     return {
+> 533 |       content: JSON.parse(response.choices[0].message.content || '{}'),
+      |                    ^
+  534 |       usage: response.usage
+  535 |     };
+  536 |   }
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 156ms
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 2 insights
+🔍 Enhanced Analysis - Performing deep insight analysis...
+🔍 Starting deep insight analysis for non-obvious patterns...
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 327ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 399ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 412ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 397ms
+ ✓ Compiled in 171ms
+Provider system_openai_gpt4 failed: SyntaxError: Unexpected token '`', "```json
+{
+"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at MasterBrain.processWithOpenAI (lib/ai/master-brain.ts:533:20)
+    at async MasterBrain.processWithProvider (lib/ai/master-brain.ts:463:19)
+    at async MasterBrain.processAnalysis (lib/ai/master-brain.ts:114:23)
+    at async EnhancedBrainV2.createSlideStructure (lib/ai/enhanced-brain-v2.ts:1025:21)
+    at async EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:369:29)
+    at async POST (app/api/openai/enhanced-analyze/route.ts:182:19)
+  531 |
+  532 |     return {
+> 533 |       content: JSON.parse(response.choices[0].message.content || '{}'),
+      |                    ^
+  534 |       usage: response.usage
+  535 |     };
+  536 |   }
+🎯 Deep analysis complete: 1 non-obvious insights found
+🔍 Deep insights found: 1 non-obvious patterns
+🔍 Hidden drivers: 1 primary drivers
+Error logging user event: {}
+🧠 EnhancedBrainV2: Phase 7 - Final Validation and Recommendations
+Provider system_openai_gpt4 failed: SyntaxError: Unexpected token '`', "```json
+{
+"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at MasterBrain.processWithOpenAI (lib/ai/master-brain.ts:533:20)
+    at async MasterBrain.processWithProvider (lib/ai/master-brain.ts:463:19)
+    at async MasterBrain.processAnalysis (lib/ai/master-brain.ts:114:23)
+    at async EnhancedBrainV2.generateRecommendations (lib/ai/enhanced-brain-v2.ts:1135:21)
+    at async EnhancedBrainV2.analyzeData (lib/ai/enhanced-brain-v2.ts:380:30)
+    at async POST (app/api/openai/enhanced-analyze/route.ts:182:19)
+  531 |
+  532 |     return {
+> 533 |       content: JSON.parse(response.choices[0].message.content || '{}'),
+      |                    ^
+  534 |       usage: response.usage
+  535 |     };
+  536 |   }
+🧠 EnhancedBrainV2: Analysis completed successfully
+🧠 Enhanced Analysis - Completed with 2 insights
+🔍 Enhanced Analysis - Performing deep insight analysis...
+🔍 Starting deep insight analysis for non-obvious patterns...
+🎯 Deep analysis complete: 1 non-obvious insights found
+🔍 Deep insights found: 1 non-obvious patterns
+🔍 Hidden drivers: 1 primary drivers
+Error logging user event: {}
+ ✓ Compiled in 149ms
+   Reload env: .env.local
+ GET /pricing 200 in 1971ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 403ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 556ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 593ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 624ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 603ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 576ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 635ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 549ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 463ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 518ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 472ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 499ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 479ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 480ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 461ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 461ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 440ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 476ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 469ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 513ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 507ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 516ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 512ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 507ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 516ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 348ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 306ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 337ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 313ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 139ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 141ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 174ms
+ GET /auth/login 200 in 182ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 239ms
+ POST /api/analytics/page-view 400 in 132ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 310ms
+ POST /api/analytics/page-view 400 in 134ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 315ms
+ POST /api/upload 401 in 280ms
+ ✓ Compiled middleware in 6ms
+ ✓ Compiled in 492ms
+ GET /auth/login 200 in 265ms
+ GET /auth/login 200 in 213ms
+ ✓ Compiled middleware in 8ms
+🔍 Upload request from: Demo user demo-user
+Error logging user event: {}
+ ○ Compiling /api/presentations/session ...
+ ✓ Compiled /api/presentations/session in 1032ms
+Saving data-upload data for presentation: undefined
+ POST /api/presentations/session 401 in 1187ms
+Error logging user event: {}
+ POST /api/upload 200 in 1610ms
+ ✓ Compiled in 117ms
+🔍 Upload request from: Demo user demo-user
+Error logging user event: {}
+Saving data-upload data for presentation: undefined
+ POST /api/presentations/session 401 in 162ms
+Error logging user event: {}
+ POST /api/upload 200 in 629ms
+ ✓ Compiled in 107ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /auth/login 200 in 2958ms
+ GET /auth/login 200 in 2351ms
+Error creating page view: SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at POST (app/api/analytics/page-view/route.ts:7:49)
+   5 | export async function POST(request: NextRequest) {
+   6 |   try {
+>  7 |     const { pageUrl, pageTitle } = await request.json()
+     |                                                 ^
+   8 |     
+   9 |     if (!pageUrl) {
+  10 |       return NextResponse.json(
+Error creating page view: SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at POST (app/api/analytics/page-view/route.ts:7:49)
+   5 | export async function POST(request: NextRequest) {
+   6 |   try {
+>  7 |     const { pageUrl, pageTitle } = await request.json()
+     |                                                 ^
+   8 |     
+   9 |     if (!pageUrl) {
+  10 |       return NextResponse.json(
+ POST /api/analytics/page-view 400 in 535ms
+ POST /api/analytics/page-view 400 in 537ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 369ms
+ ✓ Compiled /auth/login in 157ms
+ GET /auth/login 200 in 1210ms
+ POST /api/analytics/page-view 400 in 407ms
+ POST /api/analytics/page-view 400 in 371ms
+ POST /api/analytics/page-view 400 in 448ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 693ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 693ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 156ms
+ GET /auth/login 200 in 609ms
+ POST /api/analytics/page-view 400 in 443ms
+ POST /api/analytics/page-view 400 in 1129ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 552ms
+ ○ Compiling /api/auth/test ...
+ ✓ Compiled /api/auth/test in 705ms
+Error logging system event: {}
+ POST /api/auth/test 200 in 1143ms
+ GET /auth/login 200 in 478ms
+ GET /auth/login 200 in 579ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 124ms
+ GET /auth/login 200 in 596ms
+ POST /api/analytics/page-view 400 in 482ms
+ POST /api/analytics/page-view 400 in 449ms
+ GET /auth/login 200 in 1052ms
+ GET /favicon.ico 200 in 1123ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 1121ms
+ GET /auth/login 200 in 1266ms
  ✓ Compiled middleware in 3ms
+ ✓ Compiled in 470ms
+ ✓ Compiled in 84ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /auth/login 200 in 498ms
+ GET /auth/login 200 in 945ms
+ POST /api/analytics/page-view 400 in 739ms
+ POST /api/analytics/page-view 400 in 630ms
+ ✓ Compiled in 236ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /auth/login 200 in 804ms
+ POST /api/analytics/page-view 400 in 724ms
+ POST /api/analytics/page-view 400 in 660ms
+ ✓ Compiled in 109ms
+ ✓ Compiled / in 86ms
+`legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
+
+npx @next/codemod@latest new-link .
+
+Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components
+ GET / 200 in 951ms
+ ✓ Compiled in 132ms
+ ✓ Compiled middleware in 29ms
+ ✓ Compiled in 209ms
+ ✓ Compiled in 132ms
+ ✓ Compiled in 103ms
+ ✓ Compiled in 119ms
+ ✓ Compiled middleware in 27ms
+ ✓ Compiled in 199ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 456ms
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./lib/auth/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 17ms
+`legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
+
+npx @next/codemod@latest new-link .
+
+Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components
+ GET /auth/login 200 in 7663ms
+ GET / 200 in 8790ms
+ ✓ Compiled in 344ms
+Error creating page view: SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at POST (app/api/analytics/page-view/route.ts:7:49)
+   5 | export async function POST(request: NextRequest) {
+   6 |   try {
+>  7 |     const { pageUrl, pageTitle } = await request.json()
+     |                                                 ^
+   8 |     
+   9 |     if (!pageUrl) {
+  10 |       return NextResponse.json(
+Error creating page view: SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at POST (app/api/analytics/page-view/route.ts:7:49)
+   5 | export async function POST(request: NextRequest) {
+   6 |   try {
+>  7 |     const { pageUrl, pageTitle } = await request.json()
+     |                                                 ^
+   8 |     
+   9 |     if (!pageUrl) {
+  10 |       return NextResponse.json(
+ GET /favicon.ico 200 in 5352ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 5365ms
+ GET /auth/login 200 in 7416ms
+ GET /auth/login 200 in 7485ms
+ GET / 200 in 5675ms
+ ✓ Compiled middleware in 193ms
+ POST /api/analytics/page-view 400 in 2461ms
+ POST /api/analytics/page-view 400 in 2655ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 3489ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 3263ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 3236ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 3302ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2731ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2524ms
+ ○ Compiling /demo ...
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2805ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2672ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2725ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2643ms
+ GET / 200 in 3062ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2217ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2059ms
+ ✓ Compiled in 666ms
+ ✓ Compiled /demo in 4.4s
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 3419ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 3485ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 3606ms
+ GET /demo 200 in 5428ms
+ GET /demo 200 in 7135ms
+ GET /demo 200 in 6272ms
+ ✓ Compiled in 228ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2941ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 2652ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 1967ms
+ GET /demo 200 in 3045ms
+ GET /demo 200 in 2041ms
+ POST /api/analytics/page-view 400 in 578ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 721ms
+`legacyBehavior` is deprecated and will be removed in a future release. A codemod is available to upgrade your components:
+
+npx @next/codemod@latest new-link .
+
+Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components
+ GET / 200 in 1563ms
+ POST /api/analytics/page-view 400 in 814ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 1726ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 1782ms
+ ○ Compiling /auth/signup ...
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 3795ms
+ GET /demo 200 in 4475ms
+Error logging user event: {}
+ POST /api/analytics/user-interaction 200 in 4599ms
+[?25h

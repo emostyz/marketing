@@ -4,7 +4,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { TemplateLibrary } from '@/components/templates/TemplateLibrary'
 import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 
 // TODO: Move this to a central types file
 export interface Template {

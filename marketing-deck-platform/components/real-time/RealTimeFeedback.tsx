@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { Button } from '@/components/ui/Button'
-import { Card as UICard } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card as UICard } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 import {

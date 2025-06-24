@@ -10,7 +10,7 @@ import BulletList from '@tiptap/extension-bullet-list'
 import OrderedList from '@tiptap/extension-ordered-list'
 import ListItem from '@tiptap/extension-list-item'
 import Paragraph from '@tiptap/extension-paragraph'
-import { Button } from './Button'
+import { Button } from './button'
 
 interface TiptapEditorProps {
   content: string

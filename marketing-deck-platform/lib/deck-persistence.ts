@@ -71,27 +71,26 @@ export class DeckPersistence {
 
       const draftData = {
         id: draft.id || crypto.randomUUID(),
-        userId: user.id.toString(),
+        user_id: user.id.toString(),
         title: draft.title || 'Untitled Presentation',
         description: draft.description,
         slides: draft.slides || [],
         status: draft.status || 'draft',
-        templateId: draft.templateId,
-        dataSources: draft.dataSources || [],
-        narrativeConfig: draft.narrativeConfig || {
+        template_id: draft.templateId,
+        data_sources: draft.dataSources || [],
+        narrative_config: draft.narrativeConfig || {
           tone: 'professional',
           audience: 'executive',
           keyMessages: [],
           callToAction: ''
         },
-        aiFeedback: draft.aiFeedback || {
+        ai_feedback: draft.aiFeedback || {
           suggestions: [],
           improvements: [],
           confidence: 0
         },
-        createdAt: draft.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastEditedAt: new Date().toISOString()
+        created_at: draft.createdAt || new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
 
       const { data, error } = await supabase
@@ -196,7 +195,7 @@ export class DeckPersistence {
     try {
       const savedDraft = await this.saveDraft({
         ...draft,
-        lastEditedAt: new Date()
+        updatedAt: new Date()
       })
       return savedDraft !== null
     } catch (error) {
@@ -363,7 +362,7 @@ export class DeckPersistence {
       },
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
-      lastEditedAt: new Date(data.last_edited_at || data.updated_at)
+      lastEditedAt: new Date(data.updated_at) // Use updated_at since last_edited_at doesn't exist
     }
   }
 
@@ -399,14 +398,21 @@ export class DeckPersistence {
         id: draftId,
         slides: content.slides,
         narrativeConfig: content.narrativeConfig,
-        lastEditedAt: new Date()
+        updatedAt: new Date()
       })
+
+      // Get current user for autosave table
+      const user = await ClientAuth.createUserFromSession()
+      if (!user) {
+        return mainSaveSuccess
+      }
 
       // Also save to autosaves table for versioning
       const { error } = await supabase
         .from('presentation_autosaves')
         .insert({
           presentation_id: draftId,
+          user_id: user.id.toString(),
           content,
           saved_at: new Date().toISOString()
         })

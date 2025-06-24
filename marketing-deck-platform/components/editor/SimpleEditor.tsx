@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { AdvancedDataUploadModal } from '@/components/upload/AdvancedDataUploadModal'
 import { Brain, Upload, Zap, BarChart3, Target, CheckCircle, ArrowRight } from 'lucide-react'
 import { Toaster, toast } from 'react-hot-toast'

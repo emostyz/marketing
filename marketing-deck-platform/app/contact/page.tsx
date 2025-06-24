@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { Brain, Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Brain, Mail, Phone, MapPin, Send } from 'lucide-react'
+import PublicPageLayout from '@/components/layout/PublicPageLayout'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -13,7 +14,6 @@ export default function ContactPage() {
     message: ''
   })
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,69 +36,33 @@ export default function ContactPage() {
       const result = await response.json()
 
       if (result.success) {
-        setSuccess(true)
-        setFormData({ name: '', email: '', company: '', message: '' })
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          message: ''
+        })
+        alert('Thank you for your message! We\'ll get back to you soon.')
       } else {
-        setError(result.error || 'Something went wrong')
+        setError(result.error || 'Failed to send message. Please try again.')
       }
     } catch (error) {
-      setError('Failed to submit. Please try again.')
+      setError('Failed to send message. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value
-    }))
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center p-8">
-          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-400" />
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-4">Message Sent!</h1>
-          <p className="text-gray-300 mb-8">
-            Thank you for reaching out. We'll get back to you within 24 hours.
-          </p>
-          <Link href="/">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-              Return to Homepage
-            </Button>
-          </Link>
-        </div>
-      </div>
-    )
+    })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
-      {/* Navigation */}
-      <nav className="relative z-50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Brain className="w-8 h-8 text-blue-500" />
-            <span className="text-2xl font-bold text-white">AEDRIN</span>
-          </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-300 hover:text-white transition-colors">Home</Link>
-            <Link href="/#features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
-            <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</Link>
-            <Link href="/auth/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
-            <Link href="/auth/signup">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+    <PublicPageLayout>
       {/* Hero Section */}
       <section className="px-6 py-20">
         <div className="max-w-4xl mx-auto text-center">
@@ -277,67 +241,31 @@ export default function ContactPage() {
             </div>
             <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
               <h3 className="text-xl font-semibold text-white mb-3">
-                Do you offer custom solutions for enterprise clients?
+                What file formats does AEDRIN support?
               </h3>
               <p className="text-gray-300">
-                Yes! Our Enterprise plan includes custom AI models, dedicated account management, and tailored solutions for your specific needs.
+                We support CSV, Excel (.xlsx, .xls), Google Sheets, and JSON files. Our AI can analyze any structured data format.
               </p>
             </div>
             <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
               <h3 className="text-xl font-semibold text-white mb-3">
-                What kind of support do you provide?
+                Can I customize the presentation templates?
               </h3>
               <p className="text-gray-300">
-                We offer email support for all plans, priority support for Professional and Enterprise plans, and 24/7 phone support for Enterprise customers.
+                Yes! All templates are fully customizable. You can modify colors, fonts, layouts, and add your own branding.
+              </p>
+            </div>
+            <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+              <h3 className="text-xl font-semibold text-white mb-3">
+                Is my data secure?
+              </h3>
+              <p className="text-gray-300">
+                Absolutely. We use enterprise-grade encryption and never share your data with third parties. Your privacy is our top priority.
               </p>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="px-6 py-12 bg-gray-900">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Brain className="w-6 h-6 text-blue-500" />
-                <span className="text-xl font-bold text-white">AEDRIN</span>
-              </div>
-              <p className="text-gray-400">
-                AI-powered presentation platform for modern businesses.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/#features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/templates" className="hover:text-white transition-colors">Templates</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="/docs" className="hover:text-white transition-colors">Documentation</Link></li>
-                <li><Link href="/status" className="hover:text-white transition-colors">Status</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 AEDRIN. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PublicPageLayout>
   )
 }

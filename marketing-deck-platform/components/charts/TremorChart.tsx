@@ -8,7 +8,7 @@ import {
   DonutChart,
   Card
 } from '@tremor/react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Settings, Palette, Eye, EyeOff } from 'lucide-react'
 
 interface TremorChartProps {

@@ -11,8 +11,8 @@ import {
   ChevronDown, ChevronRight, Search, Filter, MoreHorizontal,
   FileText, Square, Circle, Triangle, Upload
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -31,6 +31,9 @@ import { CollaborationPanel } from './CollaborationPanel'
 import { PresentationPreview } from './PresentationPreview'
 import { AnimationPanel } from './AnimationPanel'
 import { Animation, Transition, animationEngine, transitionEngine } from '@/lib/animations-system'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
+import { useNotifications } from '@/components/ui/NotificationSystem'
+import { TierLimitModal } from '@/components/ui/TierLimitModal'
 
 interface SlideElement {
   id: string
@@ -81,6 +84,7 @@ export default function FunctionalDeckBuilder({
   onExport 
 }: FunctionalDeckBuilderProps) {
   const { user } = useAuth()
+  const notifications = useNotifications()
   const [presentation, setPresentation] = useState<Presentation | null>(null)
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
   const [selectedElements, setSelectedElements] = useState<string[]>([])
@@ -101,8 +105,34 @@ export default function FunctionalDeckBuilder({
   const [showPreview, setShowPreview] = useState(false)
   const [clipboard, setClipboard] = useState<SlideElement[]>([])
   
+  // Tier management
+  const [showTierLimitModal, setShowTierLimitModal] = useState(false)
+  const [tierLimitType, setTierLimitType] = useState<'presentations' | 'slides' | 'storage' | 'exports' | 'features'>('presentations')
+  const [currentTier] = useState<'free' | 'pro' | 'enterprise'>('free') // Would come from user context
+  const [tierUsage] = useState({ presentations: 2, slides: 8, storage: 45, exports: 3 }) // Would come from API
+  const [tierLimits] = useState({ free: { presentations: 3, slides: 10, storage: 50, exports: 5 } })
+  
   const canvasRef = useRef<HTMLDivElement>(null)
-  const autoSaveRef = useRef<NodeJS.Timeout>()
+  const autoSaveRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Tier management functions
+  const checkTierLimit = useCallback((type: keyof typeof tierUsage) => {
+    const usage = tierUsage[type]
+    const limit = tierLimits[currentTier][type]
+    return usage >= limit
+  }, [tierUsage, tierLimits, currentTier])
+
+  const showTierLimitDialog = useCallback((type: 'presentations' | 'slides' | 'storage' | 'exports' | 'features') => {
+    setTierLimitType(type)
+    setShowTierLimitModal(true)
+  }, [])
+
+  const handleUpgrade = useCallback((tier: 'pro' | 'enterprise') => {
+    // Would integrate with payment system
+    console.log('Upgrading to:', tier)
+    notifications.showSuccess('Upgrade Initiated', `Redirecting to ${tier} upgrade page...`)
+    // Redirect to payment flow
+  }, [notifications])
 
   // Initialize presentation
   useEffect(() => {
@@ -306,11 +336,20 @@ export default function FunctionalDeckBuilder({
     const y = ((e.clientY - rect.top) / (zoom / 100)) - (canvasRef.current?.scrollTop || 0)
 
     if (selectedTool !== 'select') {
+      // Check tier limits for elements per slide
+      const currentSlide = presentation.slides[currentSlideIndex]
+      if (currentSlide && currentSlide.content.length >= tierLimits[currentTier].slides) {
+        showTierLimitDialog('slides')
+        return
+      }
+
       saveState('add_element', `Added ${selectedTool} element`)
       const newElement = createElement(selectedTool, { x, y })
       addElementToSlide(newElement)
       setSelectedElements([newElement.id])
       setSelectedTool('select')
+      
+      notifications.showSuccess('Element Added', `${selectedTool} element has been added to your slide`)
     }
   }
 
@@ -473,6 +512,12 @@ export default function FunctionalDeckBuilder({
   const addSlide = (template: string = 'blank', index?: number) => {
     if (!presentation) return
 
+    // Check tier limits for total presentations/slides
+    if (presentation.slides.length >= tierLimits[currentTier].presentations * 10) { // Assuming 10 slides per presentation average
+      showTierLimitDialog('presentations')
+      return
+    }
+
     saveState('add_slide', 'Added new slide')
     
     const newSlide = createBlankSlide()
@@ -484,6 +529,8 @@ export default function FunctionalDeckBuilder({
     
     setPresentation({ ...presentation, slides: newSlides })
     setCurrentSlideIndex(insertIndex)
+    
+    notifications.showSuccess('Slide Added', 'New slide has been added to your presentation')
   }
 
   const deleteSlide = (index: number) => {
@@ -545,6 +592,102 @@ export default function FunctionalDeckBuilder({
       setSelectedElements(nextState.selectedElements)
     }
   }
+
+  // Template selection
+  const handleTemplateSelect = useCallback((template: any) => {
+    if (!presentation) return
+    
+    try {
+      // Apply template to current slide
+      const currentSlide = presentation.slides[currentSlideIndex]
+      if (!currentSlide) return
+
+      // Save state for undo
+      undoRedoSystem.saveState(
+        presentation.slides,
+        currentSlideIndex,
+        selectedElements,
+        'apply_template',
+        `Applied ${template.name} template`
+      )
+
+      const updatedSlide = {
+        ...currentSlide,
+        template: template.id,
+        background: template.background || currentSlide.background,
+        // Apply template-specific elements if they exist
+        content: template.elements ? [...template.elements] : currentSlide.content
+      }
+
+      const updatedSlides = [...presentation.slides]
+      updatedSlides[currentSlideIndex] = updatedSlide
+
+      setPresentation({
+        ...presentation,
+        slides: updatedSlides,
+        theme: template.theme || presentation.theme
+      })
+
+      setShowTemplateLibrary(false)
+      notifications.showSuccess('Template Applied', `${template.name} template has been applied successfully`)
+    } catch (error) {
+      console.error('Failed to apply template:', error)
+      notifications.showError('Template Error', 'Failed to apply template. Please try again.')
+    }
+  }, [presentation, currentSlideIndex, selectedElements])
+
+  // Chart update functionality
+  const handleChartUpdate = useCallback((updates: any) => {
+    if (!presentation || !editingChart) return
+
+    try {
+      const currentSlide = presentation.slides[currentSlideIndex]
+      if (!currentSlide) return
+
+      // Save state for undo
+      undoRedoSystem.saveState(
+        presentation.slides,
+        currentSlideIndex,
+        selectedElements,
+        'update_chart',
+        'Updated chart data'
+      )
+
+      // Find and update the chart element
+      const updatedContent = currentSlide.content.map(element => {
+        if (element.type === 'chart' && element.id === editingChart.id) {
+          return {
+            ...element,
+            content: {
+              ...element.content,
+              ...updates
+            }
+          }
+        }
+        return element
+      })
+
+      const updatedSlide = {
+        ...currentSlide,
+        content: updatedContent
+      }
+
+      const updatedSlides = [...presentation.slides]
+      updatedSlides[currentSlideIndex] = updatedSlide
+
+      setPresentation({
+        ...presentation,
+        slides: updatedSlides
+      })
+
+      setShowChartEditor(false)
+      setEditingChart(null)
+      notifications.showSuccess('Chart Updated', 'Your chart has been updated successfully')
+    } catch (error) {
+      console.error('Failed to update chart:', error)
+      notifications.showError('Chart Update Failed', 'Failed to update chart. Please try again.')
+    }
+  }, [presentation, currentSlideIndex, selectedElements, editingChart])
 
   const handleKeyboardShortcuts = useCallback((e: KeyboardEvent) => {
     if (e.ctrlKey || e.metaKey) {
@@ -1074,20 +1217,14 @@ export default function FunctionalDeckBuilder({
         <TemplateLibrary 
           isOpen={showTemplateLibrary}
           onClose={() => setShowTemplateLibrary(false)}
-          onSelectTemplate={(template) => {
-            console.log('Selected template:', template)
-            setShowTemplateLibrary(false)
-          }}
+          onSelectTemplate={handleTemplateSelect}
         />
 
         {/* Chart Editor Modal */}
         {showChartEditor && editingChart && (
           <ChartEditingSystem
             chartData={editingChart}
-            onUpdateChart={(updates) => {
-              console.log('Chart updated:', updates)
-              setShowChartEditor(false)
-            }}
+            onUpdateChart={handleChartUpdate}
             onClose={() => setShowChartEditor(false)}
             isOpen={showChartEditor}
           />
@@ -1112,6 +1249,17 @@ export default function FunctionalDeckBuilder({
             />
           )}
         </AnimatePresence>
+
+        {/* Tier Limit Modal */}
+        <TierLimitModal
+          isOpen={showTierLimitModal}
+          onClose={() => setShowTierLimitModal(false)}
+          currentTier={currentTier}
+          limitType={tierLimitType}
+          currentUsage={tierUsage[tierLimitType]}
+          maxUsage={tierLimits[currentTier][tierLimitType]}
+          onUpgrade={handleUpgrade}
+        />
       </div>
     </TooltipProvider>
   )

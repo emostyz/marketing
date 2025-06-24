@@ -197,6 +197,7 @@ export const dataImports = pgTable('data_imports', {
   fileName: text('file_name').notNull(),
   fileType: text('file_type').notNull(),
   fileSize: integer('file_size'),
+  folder: text('folder'),
   storagePath: text('storage_path').notNull(),
   publicUrl: text('public_url'),
   rawData: jsonb('raw_data'),

@@ -7,10 +7,10 @@ import {
   Maximize, Minimize, Settings, Clock, Eye, EyeOff,
   RotateCcw, RotateCw, Download, Share2, MessageCircle
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface PresentationPreviewProps {

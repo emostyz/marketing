@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server-client';
+import { createServerSupabaseClient } from '@/lib/supabase/server-client';
 import { EventLogger } from '@/lib/services/event-logger';
+import { profileService } from '@/lib/services/profile-service';
 
 // Input validation helper
 function validateProfileInput(data: any) {
@@ -58,7 +59,7 @@ export async function PUT(request: NextRequest) {
 
 async function handleProfileUpdate(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createServerSupabaseClient();
     
     // Get client info for logging
     const clientIP = request.headers.get('x-forwarded-for') || 
@@ -135,11 +136,7 @@ async function handleProfileUpdate(request: NextRequest) {
     }
 
     // Get current profile for comparison
-    const { data: currentProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
+    const currentProfile = await profileService.retrieveProfile(user.id)
 
     const {
       name,
@@ -158,9 +155,7 @@ async function handleProfileUpdate(request: NextRequest) {
     } = body;
 
     // Prepare update object with only defined values
-    const updateData: any = {
-      updated_at: new Date().toISOString()
-    };
+    const updateData: any = {};
 
     // Track what fields are being changed
     const changedFields: string[] = [];
@@ -203,12 +198,8 @@ async function handleProfileUpdate(request: NextRequest) {
       if (currentProfile?.master_system_prompt !== masterSystemPrompt) changedFields.push('master_system_prompt');
     }
     if (profilePictureUrl !== undefined) {
-      updateData.avatar_url = profilePictureUrl;
-      if (currentProfile?.avatar_url !== profilePictureUrl) changedFields.push('avatar_url');
-    }
-    if (logoUrl !== undefined) {
-      updateData.logo_url = logoUrl;
-      if (currentProfile?.logo_url !== logoUrl) changedFields.push('logo_url');
+      updateData.profile_picture_url = profilePictureUrl;
+      if (currentProfile?.profile_picture_url !== profilePictureUrl) changedFields.push('profile_picture_url');
     }
     if (keyMetrics !== undefined) {
       updateData.key_metrics = keyMetrics;
@@ -216,35 +207,31 @@ async function handleProfileUpdate(request: NextRequest) {
     }
     if (brandColors !== undefined) {
       updateData.brand_colors = brandColors;
-      if (currentProfile?.brand_colors !== brandColors) changedFields.push('brand_colors');
+      if (JSON.stringify(currentProfile?.brand_colors) !== JSON.stringify(brandColors)) changedFields.push('brand_colors');
+    }
+    if (logoUrl !== undefined) {
+      updateData.logo_url = logoUrl;
+      if (currentProfile?.logo_url !== logoUrl) changedFields.push('logo_url');
     }
 
-    // If no fields are being changed, return early
+    // If no changes, return early
     if (changedFields.length === 0) {
       return NextResponse.json(
-        { success: true, message: 'No changes detected' },
+        { message: 'No changes detected', profile: currentProfile },
         { status: 200 }
       );
     }
 
-    // Update the profile
-    const { data: updatedProfile, error: updateError } = await supabase
-      .from('profiles')
-      .update(updateData)
-      .eq('user_id', user.id)
-      .select()
-      .single();
+    // Update profile using the profile service
+    const updatedProfile = await profileService.updateProfile(user.id, updateData);
 
-    if (updateError) {
-      console.error('Profile update error:', updateError);
-      
+    if (!updatedProfile) {
       // Log update failure
       await EventLogger.logUserEvent(
         'profile_update_failed',
         {
-          error: updateError.message,
-          error_code: updateError.code,
-          attempted_fields: changedFields
+          error: 'Failed to update profile in database',
+          attempted_updates: updateData
         },
         {
           ip_address: clientIP,
@@ -261,10 +248,10 @@ async function handleProfileUpdate(request: NextRequest) {
 
     // Log successful update
     await EventLogger.logUserEvent(
-      'profile_update_successful',
+      'profile_updated',
       {
-        updated_fields: changedFields,
-        profile_id: updatedProfile.id
+        changed_fields: changedFields,
+        update_summary: Object.keys(updateData)
       },
       {
         ip_address: clientIP,
@@ -275,34 +262,22 @@ async function handleProfileUpdate(request: NextRequest) {
 
     return NextResponse.json(
       { 
-        success: true, 
         message: 'Profile updated successfully',
-        user: {
-          id: user.id,
-          name: updatedProfile.full_name,
-          email: user.email,
-          companyName: updatedProfile.company_name,
-          jobTitle: updatedProfile.job_title,
-          industry: updatedProfile.industry,
-          avatar: updatedProfile.avatar_url
-        }
+        profile: updatedProfile,
+        changedFields
       },
       { status: 200 }
     );
 
   } catch (error) {
-    console.error('Profile update route error:', error);
+    console.error('Profile update error:', error);
     
     // Log system error
     await EventLogger.logSystemEvent(
       'profile_update_system_error',
       {
-        error_message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      'error',
-      {
-        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
-        user_agent: request.headers.get('user-agent') || 'unknown'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
       }
     );
 

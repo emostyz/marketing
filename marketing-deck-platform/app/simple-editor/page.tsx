@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Button } from '../../components/ui/Button'
-import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/button'
+import { Card } from '../../components/ui/card'
 import { ChevronLeft, ChevronRight, Download, Play, BarChart3, LineChart, PieChart } from 'lucide-react'
 import { BarChart, Bar, LineChart as RechartsLineChart, Line, PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 

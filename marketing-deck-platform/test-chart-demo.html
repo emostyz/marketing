@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Deck Platform - Chart Quality Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .chart-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #f1f5f9;
+        }
+        .chart-subtitle {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .metadata {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #93c5fd;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge.high { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
+        .badge.success { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+        .insights {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 40px;
+        }
+        .insight-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #c4b5fd;
+        }
+        .insight-list {
+            list-style: none;
+            padding: 0;
+        }
+        .insight-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            color: #e2e8f0;
+        }
+        .insight-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chart Quality Demonstration</h1>
+            <p style="color: #94a3b8; font-size: 1.125rem;">Professional-grade visualizations generated from your data</p>
+        </div>
+
+        <div class="chart-grid">
+            <!-- Revenue Trend Chart -->
+            <div class="chart-card">
+                <div class="metadata">
+                    <span class="badge high">High Priority</span>
+                    <span class="badge">Significant Impact</span>
+                    <span class="badge success">92% Confidence</span>
+                </div>
+                <h3 class="chart-title">Quarterly Revenue Growth</h3>
+                <p class="chart-subtitle">AI-detected 18% upward trend with seasonal patterns</p>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Customer Acquisition Chart -->
+            <div class="chart-card">
+                <div class="metadata">
+                    <span class="badge">Medium Priority</span>
+                    <span class="badge">Moderate Impact</span>
+                    <span class="badge success">87% Confidence</span>
+                </div>
+                <h3 class="chart-title">Customer Acquisition Analysis</h3>
+                <p class="chart-subtitle">Product B showing 23% higher acquisition rate</p>
+                <div class="chart-container">
+                    <canvas id="customerChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Product Performance Comparison -->
+            <div class="chart-card">
+                <div class="metadata">
+                    <span class="badge high">High Priority</span>
+                    <span class="badge">Transformational Impact</span>
+                    <span class="badge success">95% Confidence</span>
+                </div>
+                <h3 class="chart-title">Product Performance Distribution</h3>
+                <p class="chart-subtitle">Market share analysis with growth predictions</p>
+                <div class="chart-container">
+                    <canvas id="productChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Advanced Analytics Chart -->
+            <div class="chart-card">
+                <div class="metadata">
+                    <span class="badge">Medium Priority</span>
+                    <span class="badge">Significant Impact</span>
+                    <span class="badge success">89% Confidence</span>
+                </div>
+                <h3 class="chart-title">Revenue vs Customer Correlation</h3>
+                <p class="chart-subtitle">Strong positive correlation (R² = 0.94) identified</p>
+                <div class="chart-container">
+                    <canvas id="correlationChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights">
+            <h3 class="insight-title">AI-Generated Insights</h3>
+            <ul class="insight-list">
+                <li class="insight-item">📈 Revenue growth accelerated 23% in Q4, driven by Product B performance</li>
+                <li class="insight-item">🎯 Customer acquisition efficiency improved 15% with targeted campaigns</li>
+                <li class="insight-item">💡 Strong correlation between customer count and revenue suggests scalable model</li>
+                <li class="insight-item">⚡ Seasonal patterns indicate Q1 optimization opportunity worth $50K+</li>
+                <li class="insight-item">🔮 Predictive models show 95% confidence in continued growth trajectory</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Professional color palette
+        const colors = {
+            primary: '#3b82f6',
+            secondary: '#8b5cf6',
+            success: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            gradients: {
+                blue: 'rgba(59, 130, 246, 0.8)',
+                purple: 'rgba(139, 92, 246, 0.8)',
+                green: 'rgba(16, 185, 129, 0.8)',
+                orange: 'rgba(245, 158, 11, 0.8)'
+            }
+        };
+
+        // Sample data (this would come from your uploaded CSV)
+        const sampleData = {
+            labels: ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024'],
+            revenue: [120000, 135000, 142000, 165000],
+            customers: [450, 520, 580, 680],
+            productA: [45, 48, 42, 38],
+            productB: [55, 52, 58, 62]
+        };
+
+        // Chart.js default configuration
+        Chart.defaults.color = '#e2e8f0';
+        Chart.defaults.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+        Chart.defaults.borderColor = 'rgba(59, 130, 246, 0.3)';
+
+        // Revenue Trend Chart (Line)
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: {
+                labels: sampleData.labels,
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: sampleData.revenue,
+                    borderColor: colors.primary,
+                    backgroundColor: colors.gradients.blue,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointBackgroundColor: colors.primary,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0',
+                        borderColor: colors.primary,
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(59, 130, 246, 0.1)' },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value/1000) + 'K';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                animations: {
+                    y: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            }
+        });
+
+        // Customer Acquisition Chart (Bar)
+        new Chart(document.getElementById('customerChart'), {
+            type: 'bar',
+            data: {
+                labels: sampleData.labels,
+                datasets: [{
+                    label: 'Customers',
+                    data: sampleData.customers,
+                    backgroundColor: colors.gradients.green,
+                    borderColor: colors.success,
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(16, 185, 129, 0.1)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                animations: {
+                    y: {
+                        duration: 1500,
+                        easing: 'easeOutBounce'
+                    }
+                }
+            }
+        });
+
+        // Product Performance Chart (Doughnut)
+        new Chart(document.getElementById('productChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Product A', 'Product B'],
+                datasets: [{
+                    data: [42, 58],
+                    backgroundColor: [colors.gradients.orange, colors.gradients.purple],
+                    borderColor: [colors.warning, colors.secondary],
+                    borderWidth: 3,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0',
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
+                        }
+                    }
+                },
+                cutout: '60%',
+                animations: {
+                    rotation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            }
+        });
+
+        // Correlation Scatter Chart
+        new Chart(document.getElementById('correlationChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Revenue vs Customers',
+                    data: sampleData.labels.map((label, i) => ({
+                        x: sampleData.customers[i],
+                        y: sampleData.revenue[i]
+                    })),
+                    backgroundColor: colors.gradients.purple,
+                    borderColor: colors.secondary,
+                    borderWidth: 2,
+                    pointRadius: 8,
+                    pointHoverRadius: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0',
+                        callbacks: {
+                            title: function() { return 'Data Point'; },
+                            label: function(context) {
+                                return `Customers: ${context.parsed.x}, Revenue: $${context.parsed.y/1000}K`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Customers' },
+                        grid: { color: 'rgba(139, 92, 246, 0.1)' }
+                    },
+                    y: {
+                        title: { display: true, text: 'Revenue ($)' },
+                        grid: { color: 'rgba(139, 92, 246, 0.1)' },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value/1000) + 'K';
+                            }
+                        }
+                    }
+                },
+                animations: {
+                    x: { duration: 1500, easing: 'easeOutQuart' },
+                    y: { duration: 1500, easing: 'easeOutQuart' }
+                }
+            }
+        });
+
+        // Add smooth animations on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.chart-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease-out';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+        });
+    </script>
+</body>
+</html>

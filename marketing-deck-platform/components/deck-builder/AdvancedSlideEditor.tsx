@@ -9,13 +9,13 @@ import {
   Underline, Palette, Link2, Settings, Lock, Unlock, Eye,
   EyeOff, ChevronUp, ChevronDown, MoreHorizontal
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ColorPicker } from '@/components/ui/color-picker'
 import { FontPicker } from '@/components/ui/font-picker'

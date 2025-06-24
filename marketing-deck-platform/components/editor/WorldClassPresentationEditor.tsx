@@ -23,6 +23,11 @@ import { HexColorPicker } from 'react-colorful'
 import { CollaborationProvider, useCollaboration } from '@/components/real-time/CollaborationProvider'
 import { UserPresence, ConnectionStatus } from '@/components/real-time/UserPresence'
 import { CommentSystem } from '@/components/real-time/CommentSystem'
+import { PostCreationEditor } from '@/components/deck-builder/PostCreationEditor'
+import { AdvancedChartEditor } from '@/components/deck-builder/AdvancedChartEditor'
+import { AIFeedbackPanel } from '@/components/deck-builder/AIFeedbackPanel'
+import { EnhancedAutoSave, AutoSaveState } from '@/lib/auto-save/enhanced-auto-save'
+import { SaveStatusIndicator, CompactSaveStatus } from '@/components/ui/SaveStatusIndicator'
 
 // Interfaces
 // ENTERPRISE-GRADE Element Interface with Advanced Properties
@@ -1790,7 +1795,27 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(true)
   const [history, setHistory] = useState<Slide[][]>([slides])
   const [historyIndex, setHistoryIndex] = useState(0)
+  const [showPostCreationEditor, setShowPostCreationEditor] = useState(false)
+  const [showAdvancedChartEditor, setShowAdvancedChartEditor] = useState(false)
+  const [showAIFeedbackPanel, setShowAIFeedbackPanel] = useState(false)
+  const [selectedChartData, setSelectedChartData] = useState<any>(null)
   const [draggedElement, setDraggedElement] = useState<SlideElement | null>(null)
+  
+  // AUTO-SAVE State and Configuration
+  const [autoSave] = useState(() => new EnhancedAutoSave({
+    debounceMs: 3000, // 3 second debounce
+    maxRetries: 3,
+    saveOnVisibilityChange: true,
+    saveOnBeforeUnload: true,
+    enableVersionHistory: true
+  }))
+  const [autoSaveState, setAutoSaveState] = useState<AutoSaveState>({
+    status: 'idle',
+    lastSaved: null,
+    lastError: null,
+    retryCount: 0,
+    hasUnsavedChanges: false
+  })
   
   // ENTERPRISE DnD Kit sensors with performance optimization
   const sensors = useSensors(
@@ -1830,6 +1855,62 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
       }
     })
   )
+  
+  // AUTO-SAVE Initialization and Effects
+  useEffect(() => {
+    // Initialize auto-save
+    autoSave.initialize(presentationId, setAutoSaveState)
+    
+    // Cleanup on unmount
+    return () => {
+      autoSave.destroy()
+    }
+  }, [presentationId, autoSave])
+  
+  // Auto-save when slides change
+  useEffect(() => {
+    if (slides.length > 0) {
+      const presentationData = {
+        id: presentationId,
+        title: slides[0]?.title || 'Untitled Presentation',
+        slides: slides,
+        metadata: {
+          userId: currentUser?.id || '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          version: 1,
+          totalSlides: slides.length,
+          estimatedDuration: slides.length * 2.5
+        }
+      }
+      
+      autoSave.registerChange('slide_content_update', presentationData)
+    }
+  }, [slides, presentationId, autoSave, currentUser])
+  
+  // Force save function for manual saves and error recovery
+  const handleForceSave = useCallback(async () => {
+    if (slides.length === 0) return
+    
+    const presentationData = {
+      id: presentationId,
+      title: slides[0]?.title || 'Untitled Presentation',
+      slides: slides,
+      metadata: {
+        userId: currentUser?.id || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        version: 1,
+        totalSlides: slides.length,
+        estimatedDuration: slides.length * 2.5
+      }
+    }
+    
+    const success = await autoSave.saveImmediate(presentationData)
+    if (success && onSave) {
+      await onSave(slides)
+    }
+  }, [slides, presentationId, autoSave, currentUser, onSave])
   
   // History management functions
   const undo = useCallback(() => {
@@ -1876,8 +1957,24 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
     setHistory(newHistory)
     setHistoryIndex(newHistory.length - 1)
     
+    // Trigger auto-save
+    const presentationData = {
+      id: presentationId,
+      title: newSlides[0]?.title || 'Untitled Presentation',
+      slides: newSlides,
+      metadata: {
+        userId: currentUser?.id || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        version: 1,
+        totalSlides: newSlides.length,
+        estimatedDuration: newSlides.length * 2.5
+      }
+    }
+    autoSave.registerChange(`slide_update_${slideId}`, presentationData)
+    
     broadcastSlideUpdate(slideId, updates)
-  }, [slides, history, historyIndex, broadcastSlideUpdate])
+  }, [slides, history, historyIndex, broadcastSlideUpdate, presentationId, autoSave, currentUser])
 
   const addTextElement = useCallback(() => {
     const newElement: SlideElement = {
@@ -2346,7 +2443,23 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
     newHistory.push(newSlides)
     setHistory(newHistory)
     setHistoryIndex(newHistory.length - 1)
-  }, [slides, history, historyIndex])
+    
+    // Trigger auto-save
+    const presentationData = {
+      id: presentationId,
+      title: newSlides[0]?.title || 'Untitled Presentation',
+      slides: newSlides,
+      metadata: {
+        userId: currentUser?.id || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        version: 1,
+        totalSlides: newSlides.length,
+        estimatedDuration: newSlides.length * 2.5
+      }
+    }
+    autoSave.registerChange('slide_added', presentationData)
+  }, [slides, history, historyIndex, presentationId, autoSave, currentUser])
 
   const deleteSlide = useCallback((slideId: string) => {
     if (slides.length <= 1) return
@@ -2366,7 +2479,23 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
     newHistory.push(newSlides)
     setHistory(newHistory)
     setHistoryIndex(newHistory.length - 1)
-  }, [slides, currentSlide, history, historyIndex])
+    
+    // Trigger auto-save
+    const presentationData = {
+      id: presentationId,
+      title: newSlides[0]?.title || 'Untitled Presentation',
+      slides: newSlides,
+      metadata: {
+        userId: currentUser?.id || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        version: 1,
+        totalSlides: newSlides.length,
+        estimatedDuration: newSlides.length * 2.5
+      }
+    }
+    autoSave.registerChange('slide_deleted', presentationData)
+  }, [slides, currentSlide, history, historyIndex, presentationId, autoSave, currentUser])
 
 
 
@@ -2375,6 +2504,62 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
       await onExport(format)
     }
   }, [onExport])
+
+  // Post-creation editing handlers
+  const handlePostCreationEdit = useCallback(() => {
+    setShowPostCreationEditor(true)
+  }, [])
+
+  const handleAdvancedChartEdit = useCallback((chartData?: any) => {
+    if (chartData) {
+      setSelectedChartData(chartData)
+    }
+    setShowAdvancedChartEditor(true)
+  }, [])
+
+  const handleAIFeedback = useCallback(() => {
+    setShowAIFeedbackPanel(true)
+  }, [])
+
+  const handlePresentationUpdate = useCallback((updates: any) => {
+    // Update slides with new data
+    if (updates.slides) {
+      setSlides(updates.slides)
+      addToHistory(updates.slides)
+    }
+  }, [])
+
+  const handleChartUpdate = useCallback((chartUpdates: any) => {
+    // Update specific chart in current slide
+    if (chartUpdates && selectedChartData) {
+      const updatedSlides = slides.map((slide, index) => {
+        if (index === currentSlide) {
+          return {
+            ...slide,
+            charts: slide.charts?.map(chart => 
+              chart.id === selectedChartData.id ? { ...chart, ...chartUpdates } : chart
+            ) || []
+          }
+        }
+        return slide
+      })
+      setSlides(updatedSlides)
+      addToHistory(updatedSlides)
+    }
+    setShowAdvancedChartEditor(false)
+    setSelectedChartData(null)
+  }, [slides, currentSlide, selectedChartData])
+
+  const handleApplyFeedback = useCallback((feedback: any) => {
+    // Apply AI feedback to presentation
+    console.log('Applying AI feedback:', feedback)
+    // Implementation would depend on feedback type
+  }, [])
+
+  const addToHistory = useCallback((newSlides: Slide[]) => {
+    setHistory(prev => [...prev.slice(0, historyIndex + 1), newSlides])
+    setHistoryIndex(prev => prev + 1)
+  }, [historyIndex])
 
   // Presentation mode
   if (isPresenting) {
@@ -2497,6 +2682,22 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
               
               <div className="flex items-center space-x-2">
                 <button
+                  onClick={handlePostCreationEdit}
+                  className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  title="Post-Creation Editor"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <span className="font-medium">Edit</span>
+                </button>
+                <button
+                  onClick={handleAIFeedback}
+                  className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  title="AI Feedback & Insights"
+                >
+                  <Wand2 className="w-4 h-4" />
+                  <span className="font-medium">AI Insights</span>
+                </button>
+                <button
                   onClick={savePresentation}
                   className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
@@ -2543,16 +2744,32 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
                   </div>
                   <p className="text-xs text-gray-300 truncate">{slide.title}</p>
                   
-                  {/* Delete button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      deleteSlide(slide.id)
-                    }}
-                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white p-1 rounded transition-all"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
+                  {/* Action buttons */}
+                  <div className="absolute top-1 right-1 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all">
+                    {/* Chart edit button (show if slide has charts) */}
+                    {slide.charts && slide.charts.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleAdvancedChartEdit(slide.charts[0])
+                        }}
+                        className="bg-orange-500 hover:bg-orange-600 text-white p-1 rounded transition-all"
+                        title="Edit Charts"
+                      >
+                        <BarChart3 className="w-3 h-3" />
+                      </button>
+                    )}
+                    {/* Delete button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteSlide(slide.id)
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white p-1 rounded transition-all"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -2765,6 +2982,15 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
                   </div>
                 )}
               </div>
+              
+              {/* AUTO-SAVE STATUS INDICATOR */}
+              <CompactSaveStatus
+                status={autoSaveState.status}
+                lastSaved={autoSaveState.lastSaved}
+                hasUnsavedChanges={autoSaveState.hasUnsavedChanges}
+                onForceSave={handleForceSave}
+                className="mr-4"
+              />
               
               <button
                 onClick={() => setIsEditMode(!isEditMode)}
@@ -3137,6 +3363,59 @@ const PresentationEditorContent: React.FC<PresentationEditorProps> = ({
           )}
         </div>
       </div>
+      
+      {/* Post-Creation Editing Components */}
+      {showPostCreationEditor && (
+        <PostCreationEditor
+          presentation={{
+            id: presentationId,
+            title: slides[0]?.title || 'Presentation',
+            slides: slides,
+            theme: { name: 'Default', colors: ['#3b82f6', '#8b5cf6'] },
+            metadata: { createdAt: new Date().toISOString() }
+          }}
+          onUpdatePresentation={handlePresentationUpdate}
+          onClose={() => setShowPostCreationEditor(false)}
+        />
+      )}
+
+      {showAdvancedChartEditor && (
+        <AdvancedChartEditor
+          chartData={selectedChartData || {
+            id: 'default-chart',
+            type: 'bar',
+            data: [
+              { name: 'Jan', value: 100 },
+              { name: 'Feb', value: 150 },
+              { name: 'Mar', value: 200 }
+            ],
+            colors: ['#3b82f6', '#ef4444', '#10b981'],
+            title: 'Sample Chart',
+            showLegend: true,
+            showGrid: true
+          }}
+          onUpdateChart={handleChartUpdate}
+          onClose={() => {
+            setShowAdvancedChartEditor(false)
+            setSelectedChartData(null)
+          }}
+          isOpen={showAdvancedChartEditor}
+        />
+      )}
+
+      {showAIFeedbackPanel && (
+        <AIFeedbackPanel
+          presentation={{
+            id: presentationId,
+            title: slides[0]?.title || 'Presentation',
+            slides: slides,
+            metadata: { createdAt: new Date().toISOString() }
+          }}
+          onApplyFeedback={handleApplyFeedback}
+          isOpen={showAIFeedbackPanel}
+          onClose={() => setShowAIFeedbackPanel(false)}
+        />
+      )}
       
       {/* DnD Overlay */}
       <DragOverlay>

@@ -1,0 +1,105 @@
+{
+  "timestamp": "2025-06-23T19:30:09.408Z",
+  "tests": [
+    {
+      "name": "Data Upload - Data Structure",
+      "status": "passed",
+      "details": "Data structure valid with 6 rows and fields: Date, Revenue, Customers, Product",
+      "timestamp": "2025-06-23T19:30:09.413Z",
+      "data": null
+    },
+    {
+      "name": "Data Upload - API Response",
+      "status": "failed",
+      "details": "Upload failed with status 500: Unknown error",
+      "timestamp": "2025-06-23T19:30:09.857Z",
+      "data": null
+    },
+    {
+      "name": "Brain Analysis - Basic Revenue Analysis - API Response",
+      "status": "passed",
+      "details": "Analysis completed in 18501ms",
+      "timestamp": "2025-06-23T19:30:28.359Z",
+      "data": null
+    },
+    {
+      "name": "Brain Analysis - Basic Revenue Analysis - Result Structure",
+      "status": "passed",
+      "details": "All required fields present: insights, narrative, slideStructure, metadata",
+      "timestamp": "2025-06-23T19:30:28.360Z",
+      "data": null
+    },
+    {
+      "name": "Brain Analysis - Basic Revenue Analysis - Insights Quality",
+      "status": "passed",
+      "details": "3 high-quality insights generated",
+      "timestamp": "2025-06-23T19:30:28.360Z",
+      "data": null
+    },
+    {
+      "name": "Brain Analysis - Basic Revenue Analysis - Slide Structure",
+      "status": "failed",
+      "details": "Only 5 slides generated, expected 8",
+      "timestamp": "2025-06-23T19:30:28.360Z",
+      "data": null
+    },
+    {
+      "name": "Brain Analysis - Enterprise Customer Analysis - API Response",
+      "status": "failed",
+      "details": "Analysis failed with status 500: {\"error\":\"An error occurred during analysis. Please try again.\"}",
+      "timestamp": "2025-06-23T19:31:05.084Z",
+      "data": null
+    },
+    {
+      "name": "Slide Generation - Basic Revenue Analysis - Prerequisites",
+      "status": "skipped",
+      "details": "Skipped due to failed analysis",
+      "timestamp": "2025-06-23T19:31:05.084Z",
+      "data": null
+    },
+    {
+      "name": "Slide Generation - Enterprise Customer Analysis - Prerequisites",
+      "status": "skipped",
+      "details": "Skipped due to failed analysis",
+      "timestamp": "2025-06-23T19:31:05.084Z",
+      "data": null
+    },
+    {
+      "name": "Data Upload - Data Structure",
+      "status": "failed",
+      "details": "Missing required fields. Expected: Date, Revenue, Customers, Found: name, sales, month",
+      "timestamp": "2025-06-23T19:31:05.085Z",
+      "data": null
+    },
+    {
+      "name": "Complete Workflow - Upload Step",
+      "status": "failed",
+      "details": "Workflow stopped at upload step",
+      "timestamp": "2025-06-23T19:31:05.085Z",
+      "data": null
+    }
+  ],
+  "summary": {
+    "total": 11,
+    "passed": 4,
+    "failed": 5,
+    "skipped": 2,
+    "successRate": "36.4",
+    "completedAt": "2025-06-23T19:31:05.085Z"
+  },
+  "systemInfo": {
+    "nodeVersion": "v22.16.0",
+    "platform": "darwin",
+    "testConfig": {
+      "BASE_URL": "http://localhost:3000",
+      "TEST_DATA_FILE": "./test-data.csv",
+      "ENHANCED_DATA_FILE": "./sample_business_data.csv",
+      "ENDPOINTS": {
+        "UPLOAD": "/api/upload",
+        "ANALYZE": "/api/openai/enhanced-analyze",
+        "PRESENTATIONS": "/api/presentations",
+        "SESSION": "/api/presentations/session"
+      }
+    }
+  }
+}

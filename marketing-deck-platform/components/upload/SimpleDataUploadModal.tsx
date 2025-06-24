@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Upload, X } from 'lucide-react'
 
 interface DataUploadModalProps {
@@ -62,13 +62,13 @@ export function DataUploadModal({ onClose, onUpload }: DataUploadModalProps) {
               <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-300 font-semibold mb-2">Drag & drop your files here</p>
               <p className="text-sm text-gray-400 mb-4">Supports CSV, Excel, and JSON files</p>
-              <Button variant="secondary">Browse Files</Button>
+              <Button variant="outline">Browse Files</Button>
             </div>
             <p className="text-sm text-blue-400 mt-2">💡 Skip this step to use sample data and see AI in action!</p>
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button variant="secondary" className="flex-1" onClick={onClose}>
+            <Button variant="outline" className="flex-1" onClick={onClose}>
               Cancel
             </Button>
             <Button className="flex-1" onClick={handleContinue}>

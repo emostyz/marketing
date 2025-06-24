@@ -3,10 +3,11 @@
 import React, { useCallback, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, AlertTriangle, CheckCircle2 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { SimpleFileUpload } from '@/components/upload/SimpleFileUpload'
 import { UploadedFile } from '@/lib/types/upload'
+import { toast } from '@/lib/hooks/use-toast'
 
 interface UploadStepProps {
   files: UploadedFile[];
@@ -19,6 +20,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({ files, setFiles, nextSte
   const [error, setError] = useState<string | null>(null)
 
   const handleFilesChange = useCallback((newFiles: any[]) => {
+    console.log('🔄 UploadStep: handleFilesChange called with:', newFiles)
     setFiles(newFiles)
     setError(null)
     
@@ -30,13 +32,43 @@ export const UploadStep: React.FC<UploadStepProps> = ({ files, setFiles, nextSte
     }
   }, [setFiles])
 
-  const canProceed = files.length > 0 && 
-                    files.every(f => f.status === 'success') && 
-                    files.some(f => f.parsedData)
-
   const successfulFiles = files.filter(f => f.status === 'success')
   const totalRows = successfulFiles.reduce((sum, f) => sum + (f.parsedData?.rowCount || 0), 0)
   const totalColumns = Math.max(...successfulFiles.map(f => f.parsedData?.columns?.length || 0), 0)
+
+  // New: Check for empty data
+  const allFilesEmpty = successfulFiles.length > 0 && successfulFiles.every(f => (f.parsedData?.rowCount || 0) === 0 || (f.parsedData?.columns?.length || 0) === 0)
+  const showDataReady = successfulFiles.length > 0 && !allFilesEmpty
+
+  // Only allow proceed if at least one file has >0 rows and >0 columns
+  const canProceed = successfulFiles.length > 0 &&
+    successfulFiles.every(f => f.status === 'success') &&
+    successfulFiles.some(f => (f.parsedData?.rowCount || 0) > 0 && (f.parsedData?.columns?.length || 0) > 0)
+
+  // Debug logging
+  console.log('🔍 UploadStep Debug:', {
+    filesCount: files.length,
+    successfulFilesCount: successfulFiles.length,
+    successfulFiles: successfulFiles.map(f => ({
+      name: f.name,
+      status: f.status,
+      parsedData: f.parsedData,
+      rowCount: f.parsedData?.rowCount,
+      columnsLength: f.parsedData?.columns?.length,
+      hasRowCount: !!(f.parsedData?.rowCount && f.parsedData.rowCount > 0),
+      hasColumns: !!(f.parsedData?.columns && f.parsedData.columns.length > 0)
+    })),
+    totalRows,
+    totalColumns,
+    allFilesEmpty,
+    showDataReady,
+    canProceed,
+    canProceedBreakdown: {
+      hasSuccessfulFiles: successfulFiles.length > 0,
+      allFilesSuccessful: successfulFiles.every(f => f.status === 'success'),
+      hasFileWithData: successfulFiles.some(f => (f.parsedData?.rowCount || 0) > 0 && (f.parsedData?.columns?.length || 0) > 0)
+    }
+  })
 
   return (
     <motion.div
@@ -65,7 +97,16 @@ export const UploadStep: React.FC<UploadStepProps> = ({ files, setFiles, nextSte
           </div>
         )}
 
-        {successfulFiles.length > 0 && (
+        {/* New: Show error if all files are empty */}
+        {allFilesEmpty && (
+          <div className="flex items-center space-x-2 p-4 bg-red-900/20 border border-red-500 rounded-lg mb-6">
+            <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <p className="text-red-400 text-sm">No data found in uploaded file(s). Please check your file(s) and try again.</p>
+          </div>
+        )}
+
+        {/* Only show Data Ready if at least one file has data */}
+        {showDataReady && (
           <div className="bg-green-900/20 border border-green-500 rounded-lg p-4">
             <div className="flex items-center space-x-2 mb-2">
               <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -93,6 +134,29 @@ export const UploadStep: React.FC<UploadStepProps> = ({ files, setFiles, nextSte
             </div>
           </div>
         )}
+
+        {/* Debug Info - Remove in production */}
+        <div className="mb-4 p-4 bg-gray-800 rounded text-xs">
+          <h3 className="font-semibold mb-2">Debug Info:</h3>
+          <p>Files Count: {files.length}</p>
+          <p>Successful Files: {successfulFiles.length}</p>
+          <p>Total Rows: {totalRows}</p>
+          <p>Total Columns: {totalColumns}</p>
+          <p>All Files Empty: {allFilesEmpty ? 'Yes' : 'No'}</p>
+          <p>Show Data Ready: {showDataReady ? 'Yes' : 'No'}</p>
+          <p>Can Proceed: {canProceed ? 'Yes' : 'No'}</p>
+          <p>Button Disabled: {!canProceed ? 'Yes' : 'No'}</p>
+          {successfulFiles.length > 0 && (
+            <div className="mt-2">
+              <p className="font-semibold">File Details:</p>
+              {successfulFiles.map((f, i) => (
+                <div key={i} className="ml-2">
+                  <p>• {f.name}: {f.parsedData?.rowCount || 0} rows, {f.parsedData?.columns?.length || 0} columns</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </Card>
       
       <div className="flex justify-between">
@@ -101,12 +165,18 @@ export const UploadStep: React.FC<UploadStepProps> = ({ files, setFiles, nextSte
           Back
         </Button>
         <Button 
-          onClick={nextStep} 
+          onClick={() => {
+            console.log('🔘 Continue to Analysis button clicked!')
+            console.log('📊 canProceed:', canProceed)
+            console.log('📁 successfulFiles:', successfulFiles)
+            toast.success('Analysis started! Moving to analysis step...')
+            nextStep()
+          }} 
           size="lg" 
           disabled={!canProceed}
-          className={canProceed ? 'bg-green-600 hover:bg-green-700' : ''}
+          className={canProceed ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 cursor-not-allowed'}
         >
-          Continue to Analysis
+          {canProceed ? 'Continue to Analysis' : 'Upload Data First'}
           <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </div>

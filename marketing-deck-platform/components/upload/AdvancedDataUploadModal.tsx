@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Upload, X, Brain, FileText, BarChart3, TrendingUp, DollarSign, Users, Target, MessageSquare } from 'lucide-react'
 import { EnhancedDataProcessor } from '@/lib/data/enhanced-data-processor'
 
@@ -257,7 +257,7 @@ export function AdvancedDataUploadModal({ onClose, onUpload }: AdvancedDataUploa
             </div>
           )}
           <p className="text-sm text-gray-400 mb-4">Supports CSV, Excel, and JSON files • Advanced analysis included</p>
-          <Button variant="secondary" disabled={isUploading}>
+          <Button variant="outline" disabled={isUploading}>
             {isUploading ? 'Processing...' : 'Browse Files'}
           </Button>
         </div>
@@ -272,7 +272,7 @@ export function AdvancedDataUploadModal({ onClose, onUpload }: AdvancedDataUploa
       </div>
 
       <div className="flex gap-3 pt-4">
-        <Button variant="secondary" className="flex-1" onClick={onClose}>
+        <Button variant="outline" className="flex-1" onClick={onClose}>
           Cancel
         </Button>
         <Button 
@@ -465,7 +465,7 @@ export function AdvancedDataUploadModal({ onClose, onUpload }: AdvancedDataUploa
         {currentStep === 2 && (
           <div className="flex gap-3 pt-6">
             <Button 
-              variant="secondary" 
+              variant="outline" 
               className="flex-1" 
               onClick={() => qaState.step > 1 ? setQAState(prev => ({ ...prev, step: prev.step - 1 })) : setCurrentStep(1)}
             >

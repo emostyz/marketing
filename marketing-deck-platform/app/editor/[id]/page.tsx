@@ -1,8 +1,8 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { Button } from '../../../components/ui/Button'
-import { Card } from '../../../components/ui/Card'
+import { Button } from '../../../components/ui/button'
+import { Card } from '../../../components/ui/card'
 import { 
   ChevronLeft, ChevronRight, Play, Download, Save, 
   BarChart3, LineChart, PieChart, FileText,
@@ -296,7 +296,7 @@ export default function SlideEditor() {
               <Share2 className="w-4 h-4 mr-2" />
               Share
             </Button>
-            <Button variant="secondary" size="sm" onClick={handleExport}>
+            <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>

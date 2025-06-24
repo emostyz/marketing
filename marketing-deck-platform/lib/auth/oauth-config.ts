@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from '@/lib/supabase/enhanced-client'
+import { supabase } from '@/lib/supabase/client'
 
 export interface OAuthProvider {
   name: string
@@ -24,23 +24,11 @@ export const oauthProviders: Record<string, OAuthProvider> = {
     icon: '🐙',
     color: '#24292e',
     enabled: true
-  },
-  microsoft: {
-    name: 'azure',
-    displayName: 'Microsoft',
-    icon: '🏢',
-    color: '#0078d4',
-    scopes: 'openid email profile',
-    enabled: true
   }
 }
 
 export class OAuthManager {
   static async signInWithProvider(provider: keyof typeof oauthProviders, redirectTo?: string) {
-    if (!isSupabaseConfigured()) {
-      throw new Error('OAuth is not configured. Please set up Supabase environment variables.')
-    }
-
     const providerConfig = oauthProviders[provider]
     if (!providerConfig.enabled) {
       throw new Error(`${providerConfig.displayName} OAuth is not enabled.`)
@@ -98,24 +86,19 @@ export class OAuthManager {
       const { data: existingUser } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single()
 
       const userData = {
-        id: user.id,
+        user_id: user.id,
         email: user.email,
-        companyName: user.user_metadata?.company_name || user.user_metadata?.organization || user.user_metadata?.full_name || 'My Company',
-        logoUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture,
-        industry: user.user_metadata?.industry || 'Technology',
-        targetAudience: user.user_metadata?.target_audience || 'Business Professionals',
-        businessContext: user.user_metadata?.business_context || 'Marketing and Sales Presentations',
-        keyMetrics: user.user_metadata?.key_metrics || ['Revenue Growth', 'Customer Acquisition', 'Market Share'],
-        dataPreferences: user.user_metadata?.data_preferences || {
-          chartStyles: ['modern', 'clean'],
-          colorSchemes: ['blue', 'green'],
-          narrativeStyle: 'professional'
-        },
-        updatedAt: new Date().toISOString()
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+        company_name: user.user_metadata?.company_name || user.user_metadata?.organization || 'My Company',
+        avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+        subscription_tier: 'free',
+        is_active: true,
+        email_verified: true,
+        updated_at: new Date().toISOString()
       }
 
       if (existingUser) {
@@ -123,7 +106,7 @@ export class OAuthManager {
         const { error } = await supabase
           .from('profiles')
           .update(userData)
-          .eq('id', user.id)
+          .eq('user_id', user.id)
 
         if (error) {
           console.error('Error updating user profile:', error)
@@ -135,7 +118,7 @@ export class OAuthManager {
           .from('profiles')
           .insert({
             ...userData,
-            createdAt: new Date().toISOString()
+            created_at: new Date().toISOString()
           })
 
         if (error) {
@@ -148,7 +131,7 @@ export class OAuthManager {
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single()
 
       return profile
@@ -173,19 +156,23 @@ export class OAuthManager {
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single()
 
     // Format user to match the User interface
     const formattedUser = {
-      id: parseInt(user.id) || 0,
+      id: user.id,
       email: user.email || '',
-      name: profile?.companyName || user.user_metadata?.full_name || user.user_metadata?.name || 'User',
-      avatar: profile?.logoUrl || user.user_metadata?.avatar_url,
-      subscription: 'pro' as const, // Default to pro for OAuth users
-      createdAt: new Date(user.created_at || Date.now()),
-      lastLoginAt: new Date(),
-      profile: profile || undefined
+      name: profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || 'User',
+      avatar: profile?.avatar_url || user.user_metadata?.avatar_url,
+      subscription: (profile?.subscription_tier || 'free') as 'free' | 'pro' | 'enterprise',
+      profile: profile ? {
+        company: profile.company_name,
+        industry: profile.industry,
+        jobTitle: profile.job_title,
+        businessContext: profile.business_context,
+        targetAudience: profile.target_audience
+      } : null
     }
 
     return formattedUser
@@ -193,24 +180,6 @@ export class OAuthManager {
 
   static onAuthStateChange(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange(callback)
-  }
-
-  static async updateUserProfile(profileData: any) {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) throw new Error('No authenticated user')
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        ...profileData,
-        updatedAt: new Date().toISOString()
-      })
-      .eq('id', user.id)
-
-    if (error) throw error
-
-    return this.getCurrentUser()
   }
 }
 

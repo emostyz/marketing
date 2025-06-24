@@ -1,0 +1,24 @@
+{
+  "data": [{
+    "fileName": "test-sample-data.csv",
+    "data": [
+      {"Month":"Jan","Revenue":"125000","Customer_Acquisition":"450"},
+      {"Month":"Feb","Revenue":"138000","Customer_Acquisition":"520"},
+      {"Month":"Mar","Revenue":"152000","Customer_Acquisition":"580"}
+    ]
+  }],
+  "context": {
+    "industry": "Technology",
+    "targetAudience": "Executives",
+    "businessContext": "Q1 Performance Review"
+  },
+  "timeFrame": {
+    "start": "2024-01-01",
+    "end": "2024-03-31",
+    "granularity": "monthly"
+  },
+  "requirements": {
+    "slidesCount": 3,
+    "style": "professional"
+  }
+}

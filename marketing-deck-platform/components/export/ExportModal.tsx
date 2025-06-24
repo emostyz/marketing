@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Download, FileText, Presentation, Palette, Monitor, Smartphone, Printer } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { toast } from 'react-hot-toast'
 
 interface ExportModalProps {

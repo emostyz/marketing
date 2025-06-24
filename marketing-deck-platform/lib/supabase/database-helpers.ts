@@ -1,6 +1,6 @@
 'use client'
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase/client'
 
 export interface PresentationData {
   id?: string
@@ -42,12 +42,10 @@ export interface DatasetData {
 }
 
 class DatabaseHelpers {
-  private supabase = createClientComponentClient()
-
   // Presentations
   async savePresentation(presentationData: PresentationData): Promise<{ data?: PresentationData, error?: string }> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('presentations')
         .upsert({
           ...presentationData,
@@ -70,7 +68,7 @@ class DatabaseHelpers {
 
   async loadUserPresentations(userId: string): Promise<{ data?: PresentationData[], error?: string }> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('presentations')
         .select('*')
         .eq('user_id', userId)
@@ -90,7 +88,7 @@ class DatabaseHelpers {
 
   async loadPresentation(id: string, userId: string): Promise<{ data?: PresentationData, error?: string }> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('presentations')
         .select('*')
         .eq('id', id)
@@ -111,7 +109,7 @@ class DatabaseHelpers {
 
   async deletePresentation(id: string, userId: string): Promise<{ error?: string }> {
     try {
-      const { error } = await this.supabase
+      const { error } = await supabase
         .from('presentations')
         .delete()
         .eq('id', id)
@@ -132,7 +130,7 @@ class DatabaseHelpers {
   // Datasets
   async saveDataset(datasetData: DatasetData): Promise<{ data?: DatasetData, error?: string }> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('datasets')
         .upsert({
           ...datasetData,
@@ -155,7 +153,7 @@ class DatabaseHelpers {
 
   async loadUserDatasets(userId: string): Promise<{ data?: DatasetData[], error?: string }> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await supabase
         .from('datasets')
         .select('*')
         .eq('user_id', userId)
@@ -175,7 +173,7 @@ class DatabaseHelpers {
 
   async deleteDataset(id: string, userId: string): Promise<{ error?: string }> {
     try {
-      const { error } = await this.supabase
+      const { error } = await supabase
         .from('datasets')
         .delete()
         .eq('id', id)
@@ -196,7 +194,7 @@ class DatabaseHelpers {
   // Analytics
   async incrementAnalysisCount(datasetId: string): Promise<void> {
     try {
-      const { error } = await this.supabase.rpc('increment_analysis_count', {
+      const { error } = await supabase.rpc('increment_analysis_count', {
         dataset_id: datasetId
       })
 
@@ -216,11 +214,11 @@ class DatabaseHelpers {
   }> {
     try {
       const [presentationsResult, datasetsResult] = await Promise.all([
-        this.supabase
+        supabase
           .from('presentations')
           .select('slides, metadata')
           .eq('user_id', userId),
-        this.supabase
+        supabase
           .from('datasets')
           .select('id')
           .eq('user_id', userId)

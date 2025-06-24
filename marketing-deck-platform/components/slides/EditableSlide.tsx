@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { ChartSlide } from './ChartSlide'
 import { Edit, Type, BarChart3, Plus, Trash2 } from 'lucide-react'
 
@@ -91,7 +91,7 @@ export function EditableSlide({ slide, onUpdate, onDelete, editable = true }: Ed
                 <Button size="sm" onClick={handleSave}>
                   Save
                 </Button>
-                <Button size="sm" variant="secondary" onClick={() => setIsEditing(false)}>
+                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
                   Cancel
                 </Button>
               </>

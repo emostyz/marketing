@@ -1,17 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://waddrfstpqkvdfwbxvfw.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZGRyZnN0cHFrdmRmd2J4dmZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNDU3NzUsImV4cCI6MjA2NTkyMTc3NX0.xzosM3NHbf_kpmw5hRFKKqDuvbNLp9MrqsWITk9tD5w'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 // For client-side usage (browser)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined
-  }
-})
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Database types
 export interface Database {
@@ -34,12 +27,182 @@ export interface Database {
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           onboarding_completed: boolean | null
-          brand_colors: string | null
+          brand_colors: any | null
+          bio: string | null
+          phone: string | null
+          target_audience: string | null
+          business_context: string | null
+          master_system_prompt: string | null
+          key_metrics: any | null
+          logo_url: string | null
+          profile_picture_url: string | null
+          preferences: any | null
+          last_login: string | null
+          login_count: number | null
+          is_active: boolean | null
+          email_verified: boolean | null
+          timezone: string | null
+          language: string | null
+          notification_settings: any | null
           created_at: string
           updated_at: string
         }
-        Insert: any
-        Update: any
+        Insert: {
+          id?: string
+          user_id: string
+          email?: string
+          full_name?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          company_name?: string | null
+          job_title?: string | null
+          industry?: string | null
+          avatar_url?: string | null
+          subscription_tier?: string | null
+          subscription_status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          onboarding_completed?: boolean | null
+          brand_colors?: any | null
+          bio?: string | null
+          phone?: string | null
+          target_audience?: string | null
+          business_context?: string | null
+          master_system_prompt?: string | null
+          key_metrics?: any | null
+          logo_url?: string | null
+          profile_picture_url?: string | null
+          preferences?: any | null
+          last_login?: string | null
+          login_count?: number | null
+          is_active?: boolean | null
+          email_verified?: boolean | null
+          timezone?: string | null
+          language?: string | null
+          notification_settings?: any | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email?: string
+          full_name?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          company_name?: string | null
+          job_title?: string | null
+          industry?: string | null
+          avatar_url?: string | null
+          subscription_tier?: string | null
+          subscription_status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          onboarding_completed?: boolean | null
+          brand_colors?: any | null
+          bio?: string | null
+          phone?: string | null
+          target_audience?: string | null
+          business_context?: string | null
+          master_system_prompt?: string | null
+          key_metrics?: any | null
+          logo_url?: string | null
+          profile_picture_url?: string | null
+          preferences?: any | null
+          last_login?: string | null
+          login_count?: number | null
+          is_active?: boolean | null
+          email_verified?: boolean | null
+          timezone?: string | null
+          language?: string | null
+          notification_settings?: any | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      presentations: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string | null
+          status: string
+          template_id: string | null
+          data: any
+          settings: any
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description?: string | null
+          status?: string
+          template_id?: string | null
+          data?: any
+          settings?: any
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string | null
+          status?: string
+          template_id?: string | null
+          data?: any
+          settings?: any
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      datasets: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          data: any
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          data: any
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          data?: any
+          created_at?: string
+        }
+      }
+      analytics: {
+        Row: {
+          id: string
+          user_id: string | null
+          event_type: string
+          event_data: any
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          event_type: string
+          event_data: any
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          event_type?: string
+          event_data?: any
+          created_at?: string
+        }
       }
       leads: {
         Row: {

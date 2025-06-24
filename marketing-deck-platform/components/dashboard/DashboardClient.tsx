@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { UserHeader } from '@/components/ui/UserHeader'
 import { useAuth } from '@/lib/auth/auth-context'
 import { Plus, FileText, Calendar, TrendingUp, Play, Brain, Settings, Download, MoreVertical } from 'lucide-react'
 import { ExportModal } from '@/components/export/ExportModal'
 import { DeckDraft } from '@/lib/deck-persistence'
+import { ClientTracker } from '@/lib/analytics/client-tracker'
 
 interface DashboardClientProps {
   user: any
@@ -25,7 +26,19 @@ export function DashboardClient({ user, drafts }: DashboardClientProps) {
 
   useEffect(() => {
     setPresentations(drafts)
-  }, [drafts])
+    
+    // Initialize client tracker with user ID
+    if (user?.id) {
+      ClientTracker.init(user.id)
+    }
+    
+    // Track dashboard view
+    ClientTracker.trackPageView('/dashboard', 'Dashboard')
+    ClientTracker.trackEngagement('session_start', {
+      user_tier: user?.subscription || 'free',
+      presentation_count: drafts.length
+    })
+  }, [drafts, user])
 
   const stats = {
     total: presentations.length,
@@ -40,15 +53,30 @@ export function DashboardClient({ user, drafts }: DashboardClientProps) {
   }
 
   const handleCreatePresentation = () => {
+    ClientTracker.trackUserInteraction('create_presentation_clicked', {
+      source: 'dashboard',
+      user_tier: user?.subscription || 'free'
+    })
     router.push('/deck-builder/new')
   }
 
   const handlePresentationClick = (id: string) => {
+    const presentation = presentations.find(p => p.id === id)
+    ClientTracker.trackPresentationEvent('opened', id, {
+      title: presentation?.title || 'Untitled',
+      status: presentation?.status || 'unknown',
+      last_modified: presentation?.updatedAt
+    })
     router.push(`/deck-builder/${id}`)
   }
 
   const handleExportClick = (e: React.MouseEvent, presentation: DeckDraft) => {
     e.stopPropagation() // Prevent navigation
+    ClientTracker.trackPresentationEvent('exported', presentation.id, {
+      title: presentation.title || 'Untitled',
+      slide_count: presentation.slides?.length || 0,
+      export_source: 'dashboard'
+    })
     setSelectedPresentationForExport(presentation)
     setExportModalOpen(true)
   }

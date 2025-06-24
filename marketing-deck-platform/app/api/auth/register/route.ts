@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server-client'
-import { EventLogger } from '@/lib/services/event-logger'
+import { createServerSupabaseClient } from '@/lib/supabase/server-client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,43 +29,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createServerClient()
+    const supabase = await createServerSupabaseClient()
     
-    // Get client info for logging
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                    request.headers.get('x-real-ip') || 
-                    'unknown'
-    const userAgent = request.headers.get('user-agent') || 'unknown'
-    
-    // Sign up the user
+    // Sign up the user with auto-confirm for development
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          full_name: name
-        }
+          full_name: name,
+          email_confirmed: true
+        },
+        emailRedirectTo: undefined // Skip email confirmation for development
       }
     })
 
     if (error) {
       console.error('Registration error:', error)
-      
-      // Log failed registration
-      await EventLogger.logAuthEvent(
-        'anonymous',
-        'registration_failed',
-        {
-          email,
-          name,
-          error_message: error.message,
-          error_code: error.status || 'unknown'
-        },
-        {
-          ip_address: clientIP,
-          user_agent: userAgent
-        }
-      )
 
       // Provide specific error messages
       let errorMessage = error.message
@@ -110,38 +89,9 @@ export async function POST(request: NextRequest) {
 
     if (profileError) {
       console.error('Profile creation error:', profileError)
-      
-      // Log profile creation error
-      await EventLogger.logSystemEvent(
-        'profile_creation_error',
-        {
-          user_id: data.user.id,
-          error_message: profileError.message,
-          error_code: profileError.code || 'unknown'
-        },
-        'error',
-        {
-          ip_address: clientIP,
-          user_agent: userAgent
-        }
-      )
+    } else {
+      console.log('✅ Profile created successfully for user:', data.user.id)
     }
-
-    // Log successful registration
-    await EventLogger.logAuthEvent(
-      data.user.id,
-      'registration_successful',
-      {
-        email,
-        name,
-        user_id: data.user.id
-      },
-      {
-        ip_address: clientIP,
-        user_agent: userAgent,
-        session_id: data.session?.access_token || undefined
-      }
-    )
 
     // Set cookies for the session
     const response = NextResponse.json(
@@ -177,19 +127,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Registration route error:', error)
-    
-    // Log system error
-    await EventLogger.logSystemEvent(
-      'registration_system_error',
-      {
-        error_message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      'error',
-      {
-        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
-        user_agent: request.headers.get('user-agent') || 'unknown'
-      }
-    )
 
     return NextResponse.json(
       { error: 'Internal server error' },

@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { 
   Type, Square, Circle, Triangle, Image, Palette, 
   Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight,

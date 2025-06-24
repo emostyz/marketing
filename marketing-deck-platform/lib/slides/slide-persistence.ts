@@ -1,4 +1,4 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase/client'
 import { ClientAuth } from '@/lib/auth/client-auth'
 
 export interface SlideData {
@@ -43,7 +43,7 @@ export interface PresentationData {
 }
 
 export class SlidePersistenceService {
-  private supabase = createClientComponentClient()
+  private supabase = supabase
 
   async savePresentation(presentationData: PresentationData): Promise<string> {
     try {

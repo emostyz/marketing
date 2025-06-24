@@ -10,8 +10,8 @@ import {
   Underline, Palette, Eye, EyeOff, Lock, Unlock, MessageCircle,
   ChevronDown, ChevronRight, Search, Filter, MoreHorizontal
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -80,7 +80,7 @@ export default function ProfessionalDeckBuilder({
   const [selectedTool, setSelectedTool] = useState<string>('select')
   
   const canvasRef = useRef<HTMLDivElement>(null)
-  const autoSaveRef = useRef<NodeJS.Timeout>()
+  const autoSaveRef = useRef<NodeJS.Timeout | null>(null)
 
   // Initialize presentation
   useEffect(() => {

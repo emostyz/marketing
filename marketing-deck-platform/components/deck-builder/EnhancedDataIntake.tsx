@@ -340,7 +340,12 @@ export const EnhancedDataIntake: React.FC<EnhancedDataIntakeProps> = ({
     setIsSubmitting(true)
     try {
       await onFormSubmit(formData)
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        setErrors({ customRequirements: 'You must be logged in to save your data. Please log in and try again.' })
+      } else {
+        setErrors({ customRequirements: error?.message || 'Failed to save data. Please try again.' })
+      }
       console.error('Form submission error:', error)
     } finally {
       setIsSubmitting(false)

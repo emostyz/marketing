@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEDRIN - Strategic CSV Analysis Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #64748b;
+            font-size: 1.2rem;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+        .btn {
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 10px 10px 0;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn-large {
+            padding: 16px 32px;
+            font-size: 1.1rem;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .highlight {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .success {
+            color: #22c55e;
+        }
+        .warning {
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AEDRIN</div>
+            <div class="subtitle">AI-Powered Strategic Analysis Platform</div>
+            <p>✨ <span class="highlight">Enhanced with Strategic Insights & Hidden Drivers</span> ✨</p>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Strategic CSV → Slides Flow Test</h2>
+            <p>Test the complete flow from CSV upload to strategic slide generation with beautiful embedded visualizations and bullet points.</p>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>
+                    <h3>Start New Presentation</h3>
+                    <p>Begin the strategic analysis process</p>
+                    <a href="http://localhost:3002/deck-builder/new" class="btn btn-large" target="_blank">
+                        🚀 Start Deck Builder
+                    </a>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>
+                    <h3>Upload Sample Business Data</h3>
+                    <p>Use the sample CSV with SaaS business metrics</p>
+                    <a href="http://localhost:3002/sample_business_data.csv" class="btn" target="_blank">
+                        📊 Download Sample CSV
+                    </a>
+                    <div class="code">
+Contains: Revenue, Customer_Acquisition_Cost, Customer_Lifetime_Value, 
+Marketing_Spend, Customer_Satisfaction, Churn_Rate, Sales_Team_Size
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>
+                    <h3>Fill Strategic Context</h3>
+                    <p>Provide business context for strategic analysis</p>
+                    <div class="code">
+Industry: <span class="success">SaaS Technology</span>
+Target Audience: <span class="success">C-Suite Executives</span>
+Business Context: <span class="success">Strategic revenue optimization and customer acquisition analysis</span>
+Description: <span class="success">Deep dive into SaaS metrics to uncover hidden drivers and strategic opportunities</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div>
+                    <h3>Run AI Analysis</h3>
+                    <p>Watch the enhanced strategic analysis generate insights</p>
+                    <div class="code">
+Expected: <span class="highlight">McKinsey-level strategic insights</span>
+- Hidden efficiency threshold effects
+- Non-obvious performance correlations  
+- Strategic timing signals
+- Competitive advantage opportunities
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">5</div>
+                <div>
+                    <h3>View Enhanced Slides</h3>
+                    <p>Verify beautiful charts with strategic bullet points</p>
+                    <div class="code">
+Look for:
+✓ Charts with embedded insights panels
+✓ "HIDDEN INSIGHT" amber callouts
+✓ "STRATEGIC VALUE" emerald sections
+✓ Numbered bullet points with gradients
+✓ Confidence scores and pattern detection
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 What to Expect in Enhanced Slides</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Beautiful Chart Integration</h3>
+                    <p>Charts with smooth animations, gradients, and real CSV data visualization on the left side</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>Strategic Insights Panel</h3>
+                    <p>Enhanced bullet points with numbered cards, hover effects, and strategic callouts on the right side</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Hidden Driver Alerts</h3>
+                    <p>Amber "HIDDEN INSIGHT" boxes highlighting non-obvious patterns and correlations</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎖️</div>
+                    <h3>Strategic Value Indicators</h3>
+                    <p>Emerald "STRATEGIC VALUE" sections showing competitive advantages</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Pattern Detection</h3>
+                    <p>Purple "Pattern Detected" callouts revealing hidden data relationships</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Confidence Scoring</h3>
+                    <p>Animated progress bars showing analysis confidence levels</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ Success Criteria</h2>
+            <div class="code">
+<span class="success">✓ CSV uploads successfully and data is parsed</span>
+<span class="success">✓ Strategic analysis generates 6+ slides</span>
+<span class="success">✓ 50%+ of slides contain strategic-level insights</span>
+<span class="success">✓ Charts display actual CSV data with beautiful styling</span>
+<span class="success">✓ Bullet points are elegantly formatted with numbers</span>
+<span class="success">✓ Hidden insights and strategic callouts appear</span>
+<span class="success">✓ Layout shows chart left, insights right</span>
+<span class="warning">⚠ Slides should go beyond basic revenue trends</span>
+<span class="warning">⚠ Content should mention "threshold effects", "hidden patterns"</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 Quick Test Links</h2>
+            <a href="http://localhost:3002/deck-builder/new" class="btn btn-large" target="_blank">
+                🏗️ Deck Builder
+            </a>
+            <a href="http://localhost:3002/dashboard" class="btn" target="_blank">
+                📊 Dashboard
+            </a>
+            <a href="http://localhost:3002/demo?template=executive-summary" class="btn" target="_blank">
+                🎭 Demo Mode
+            </a>
+            <a href="http://localhost:3002/sample_business_data.csv" class="btn" target="_blank">
+                📁 Sample CSV
+            </a>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 Technical Implementation</h2>
+            <p>The enhanced system now includes:</p>
+            <div class="code">
+<span class="success">✓ Enhanced OpenAI prompts for strategic insights</span>
+<span class="success">✓ McKinsey-level analysis philosophy</span>
+<span class="success">✓ ComprehensiveSlideRenderer with beautiful layouts</span>
+<span class="success">✓ Chart + bullet point integration</span>
+<span class="success">✓ Strategic callout components</span>
+<span class="success">✓ Hidden driver detection</span>
+<span class="success">✓ Confidence scoring and pattern alerts</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 30 seconds to keep the test interface fresh
+        setTimeout(() => location.reload(), 30000);
+        
+        console.log('🧪 AEDRIN Strategic Analysis Test Interface Loaded');
+        console.log('📊 Ready to test CSV → Strategic Slides flow');
+        console.log('🎯 Look for: Beautiful charts + strategic bullet points');
+    </script>
+</body>
+</html>

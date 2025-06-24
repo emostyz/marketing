@@ -6,17 +6,7 @@ export interface TemplateSlide {
     id: string
     type: 'text' | 'image' | 'chart' | 'table' | 'shape' | 'icon'
     position: { x: number; y: number; width: number; height: number; rotation: number }
-    style: {
-      backgroundColor?: string
-      borderColor?: string
-      borderWidth?: number
-      borderRadius?: number
-      fontSize?: number
-      fontFamily?: string
-      fontWeight?: string
-      color?: string
-      textAlign?: 'left' | 'center' | 'right'
-    }
+    style: { [key: string]: any }
     content: any
     layer: number
     locked: boolean

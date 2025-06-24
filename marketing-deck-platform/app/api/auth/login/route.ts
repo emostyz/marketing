@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server-client'
-import { EventLogger } from '@/lib/services/event-logger'
+import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server-client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,43 +12,67 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createServerClient()
+    const supabase = await createServerSupabaseClient()
     
-    // Get client info for logging
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                    request.headers.get('x-real-ip') || 
-                    'unknown'
-    const userAgent = request.headers.get('user-agent') || 'unknown'
+    // For development, try admin auth to bypass email confirmation
+    let data: any, error: any;
     
-    // Sign in the user
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // First try normal login
+    const loginResult = await supabase.auth.signInWithPassword({
       email,
       password
     })
+    
+    data = loginResult.data
+    error = loginResult.error
+    
+    // If email not confirmed, try to manually confirm and login for development
+    if (error && error.message.includes('Email not confirmed') && process.env.NODE_ENV === 'development') {
+      console.log('🔧 Development mode: attempting to bypass email confirmation')
+      
+      // Use admin client to confirm email and try again
+      try {
+        const adminSupabase = createAdminSupabaseClient()
+        
+        // Get user by email to find their ID
+        const { data: adminData } = await adminSupabase.auth.admin.listUsers()
+        const user = adminData.users?.find(u => u.email === email)
+        
+        if (user) {
+          // Manually confirm the user
+          const { error: updateError } = await adminSupabase.auth.admin.updateUserById(user.id, {
+            email_confirm: true
+          })
+          
+          if (updateError) {
+            console.error('Failed to confirm email:', updateError)
+          } else {
+            console.log('✅ Email confirmed for development user:', email)
+            
+            // Try login again
+            const retryResult = await supabase.auth.signInWithPassword({
+              email,
+              password
+            })
+            
+            data = retryResult.data
+            error = retryResult.error
+          }
+        }
+      } catch (adminError) {
+        console.error('Admin auth error:', adminError)
+        // Continue with original error
+      }
+    }
 
     if (error) {
       console.error('Login error:', error)
-      
-      // Log failed login attempt
-      await EventLogger.logAuthEvent(
-        'anonymous',
-        'login_failed',
-        {
-          email,
-          error_message: error.message,
-          error_code: error.status || 'unknown'
-        },
-        {
-          ip_address: clientIP,
-          user_agent: userAgent
-        }
-      )
 
       // Provide specific error messages
       let errorMessage = 'Invalid email or password'
       
       if (error.message.includes('Email not confirmed')) {
-        errorMessage = 'Please check your email and confirm your account before signing in. If you haven\'t received the confirmation email, please check your spam folder or contact support.'
+        errorMessage = 'Please check your email and confirm your account before signing in.'
       } else if (error.message.includes('Invalid login credentials')) {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.'
       } else if (error.message.includes('Too many requests')) {
@@ -100,24 +123,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Log successful login
-    await EventLogger.logAuthEvent(
-      data.user.id,
-      'login_successful',
-      {
-        email,
-        user_id: data.user.id,
-        login_method: 'email_password'
-      },
-      {
-        ip_address: clientIP,
-        user_agent: userAgent,
-        session_id: data.session?.access_token || undefined
-      }
-    )
-
-    // Set cookies for the session
-    const response = NextResponse.json(
+    // Return successful response
+    return NextResponse.json(
       { 
         success: true, 
         user: data.user,
@@ -126,42 +133,8 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     )
 
-    // Set auth cookies
-    if (data.session) {
-      response.cookies.set('sb-waddrfstpqkvdfwbxvfw-auth-token', data.session.access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: '/'
-      })
-      
-      response.cookies.set('sb-waddrfstpqkvdfwbxvfw-auth-token.0', data.session.refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        path: '/'
-      })
-    }
-
-    return response
-
   } catch (error) {
     console.error('Login route error:', error)
-    
-    // Log system error
-    await EventLogger.logSystemEvent(
-      'login_system_error',
-      {
-        error_message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      'error',
-      {
-        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
-        user_agent: request.headers.get('user-agent') || 'unknown'
-      }
-    )
 
     return NextResponse.json(
       { error: 'Internal server error' },
