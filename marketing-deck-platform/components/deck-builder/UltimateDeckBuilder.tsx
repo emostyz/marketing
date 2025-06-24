@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
@@ -229,14 +229,14 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
 
   // Auto-save intake form data to user account
-  const intakeSessionData = {
-    sessionId: `intake_${user?.id || 'guest'}_${Date.now()}`,
+  const intakeSessionData = useMemo(() => ({
+    sessionId: `intake_${user?.id || 'guest'}`,
     userId: user?.id,
     currentStep,
     intakeData,
     createdAt: new Date().toISOString(),
     lastModified: new Date().toISOString()
-  }
+  }), [user?.id, currentStep, intakeData]);
 
   // Save intake form progress
   const saveIntakeProgress = useCallback(async (data: typeof intakeSessionData) => {
