@@ -1161,10 +1161,10 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
           </div>
 
           {/* New Stepper - evenly spaced icons with clickable completed steps */}
-          <div className="mb-12 flex items-center w-full gap-8">
+          <div className="mb-12 flex items-center justify-center gap-8">
             {steps.map((step, index) => (
               <React.Fragment key={step.id}>
-                <div className="flex flex-col items-center text-center flex-1">
+                <div className="flex flex-col items-center text-center">
                   <button
                     onClick={() => {
                       // Allow clicking on completed steps to go back
