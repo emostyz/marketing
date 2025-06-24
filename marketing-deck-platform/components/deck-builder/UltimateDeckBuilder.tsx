@@ -231,14 +231,12 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   const [parsedData, setParsedData] = useState<any[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
 
-  // Auto-save intake form data to user account
+  // Memoize intakeSessionData to prevent infinite update loops
   const intakeSessionData = useMemo(() => ({
     sessionId: `intake_${user?.id || 'guest'}`,
     userId: user?.id,
     currentStep,
-    intakeData,
-    createdAt: new Date().toISOString(),
-    lastModified: new Date().toISOString()
+    intakeData
   }), [user?.id, currentStep, intakeData]);
 
   // Save intake form progress
