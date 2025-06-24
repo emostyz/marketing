@@ -6,7 +6,8 @@ import {
   ChevronLeft, ChevronRight, Play, Save, Download, Settings, Plus, Grid, Eye, EyeOff,
   ZoomIn, ZoomOut, Undo, Redo, Copy, ClipboardPaste, Delete, Move, Type, Image as ImageIcon,
   BarChart3, Circle, Square, Triangle, Palette, AlignLeft, AlignCenter, AlignRight,
-  Bold, Italic, Underline, MoreHorizontal, Maximize2, Minimize2, RefreshCw
+  Bold, Italic, Underline, MoreHorizontal, Maximize2, Minimize2, RefreshCw, MessageSquare, Users,
+  Brain
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -14,6 +15,8 @@ import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import EnhancedSlideRenderer from './EnhancedSlideRenderer'
+import WorldClassSlideRenderer from '@/components/slides/WorldClassSlideRenderer'
+import { EnhancedAutoSave, type AutoSaveState } from '@/lib/auto-save/enhanced-auto-save'
 
 interface SlideElement {
   id: string
@@ -94,6 +97,16 @@ export default function WorldClassPresentationEditor({
   const [clipboard, setClipboard] = useState<SlideElement | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isRegenerating, setIsRegenerating] = useState(false)
+  const [useWorldClassRenderer, setUseWorldClassRenderer] = useState(true)
+  const [worldClassSlides, setWorldClassSlides] = useState<any[]>([])
+  const [isCollaborativeMode, setIsCollaborativeMode] = useState(false)
+  const [collaborators, setCollaborators] = useState<Array<{id: string, name: string, avatar: string, cursor?: {x: number, y: number}}>>([])
+  const [comments, setComments] = useState<Array<{id: string, slideId: string, x: number, y: number, text: string, author: string, timestamp: number}>>([])
+  const [showComments, setShowComments] = useState(false)
+  
+  // Auto-save state
+  const [autoSaveInstance, setAutoSaveInstance] = useState<EnhancedAutoSave | null>(null)
+  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveState | null>(null)
 
   const slideCanvasRef = useRef<HTMLDivElement>(null)
   const editorRef = useRef<HTMLDivElement>(null)
@@ -241,6 +254,94 @@ export default function WorldClassPresentationEditor({
     }
   }, [onRegenerateSlide, currentSlideIndex, slides, addToHistory])
 
+  // Convert slides to WorldClassSlideRenderer format
+  const convertToWorldClassSlides = useCallback(() => {
+    return slides.map((slide, index) => ({
+      id: slide.id,
+      type: slide.title.toLowerCase().includes('title') || index === 0 ? 'title' : 
+            slide.title.toLowerCase().includes('summary') ? 'executive_summary' :
+            slide.title.toLowerCase().includes('data') || slide.title.toLowerCase().includes('overview') ? 'data_overview' :
+            slide.title.toLowerCase().includes('recommendation') ? 'recommendations' :
+            slide.aiInsights?.insightLevel === 'strategic' ? 'insight' :
+            slide.aiInsights?.insightLevel === 'trend' ? 'trend_analysis' :
+            slide.aiInsights?.insightLevel === 'anomaly' ? 'anomaly_detection' :
+            'insight',
+      title: slide.title,
+      subtitle: slide.subtitle,
+      content: {
+        narrative: slide.content?.summary || slide.content,
+        summary: slide.aiInsights?.dataStory || slide.content?.summary || slide.content,
+        keyMetrics: slide.aiInsights?.keyFindings?.map((finding: string, idx: number) => ({
+          name: `Metric ${idx + 1}`,
+          value: finding,
+          change: Math.random() > 0.5 ? `+${Math.floor(Math.random() * 20)}%` : `-${Math.floor(Math.random() * 10)}%`
+        })) || [],
+        recommendations: slide.aiInsights?.recommendations?.map((rec: string, idx: number) => ({
+          title: `Recommendation ${idx + 1}`,
+          description: rec,
+          impact: ['High', 'Medium', 'Low'][idx % 3],
+          timeline: ['Immediate', '1-3 months', '3-6 months'][idx % 3]
+        })) || [],
+        insights: slide.aiInsights ? [{
+          title: slide.title,
+          description: slide.aiInsights.dataStory || slide.content?.summary || 'Strategic insight',
+          businessImplication: slide.aiInsights.businessImpact || 'Strategic business value',
+          recommendation: slide.aiInsights.recommendations?.[0] || 'Take strategic action',
+          confidence: slide.aiInsights.confidence || 85,
+          evidence: {
+            dataPoints: slide.aiInsights.keyFindings || []
+          }
+        }] : [],
+        confidence: slide.aiInsights?.confidence || 85
+      },
+      charts: slide.charts?.map(chart => ({
+        id: chart.id || `chart_${Date.now()}`,
+        type: 'chart',
+        chartType: chart.type || 'bar',
+        title: chart.title || 'Data Visualization',
+        description: chart.insights?.[0] || 'Strategic data insights',
+        data: chart.data || [],
+        xAxis: chart.config?.xAxisKey || 'name',
+        yAxis: chart.config?.yAxisKey || 'value',
+        configuration: chart.config || {},
+        customization: {
+          style: 'modern',
+          visualUpgrades: ['gradient', 'shadow'],
+          interactivity: ['hover', 'tooltip'],
+          storytelling: [chart.hiddenPattern || 'Strategic insight'],
+          innovation: ['animated-reveal']
+        }
+      })) || [],
+      customization: {
+        visualStyle: slide.style === 'mckinsey' ? 'executive' : 'futuristic',
+        innovationLevel: 'advanced',
+        designComplexity: 'moderate',
+        layout: slide.layout || 'standard',
+        animations: slide.animation,
+        colorScheme: slide.customStyles?.accentColor ? [slide.customStyles.accentColor] : [],
+        enableAnimations: true,
+        enableInteractivity: true
+      },
+      metadata: {
+        slideNumber: index + 1,
+        narrativeRole: index === 0 ? 'setup' : 
+                     index < slides.length / 2 ? 'build' :
+                     index === Math.floor(slides.length * 0.7) ? 'climax' :
+                     index < slides.length - 1 ? 'resolve' : 'inspire',
+        visualImpact: slide.aiInsights?.insightLevel === 'strategic' ? 'dramatic' : 'moderate',
+        innovationScore: 85,
+        designComplexity: 'moderate'
+      }
+    }))
+  }, [slides])
+
+  // Update world class slides when slides change
+  useEffect(() => {
+    if (useWorldClassRenderer) {
+      setWorldClassSlides(convertToWorldClassSlides())
+    }
+  }, [slides, useWorldClassRenderer, convertToWorldClassSlides])
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -293,6 +394,77 @@ export default function WorldClassPresentationEditor({
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [undo, redo, copyElement, pasteElement, nextSlide, prevSlide, deleteElement, onSave, slides, isPlaying, isFullscreen])
+
+  // Initialize auto-save system
+  useEffect(() => {
+    if (presentationId) {
+      const autoSave = new EnhancedAutoSave({
+        debounceMs: 3000, // 3 seconds
+        maxRetries: 3,
+        saveOnVisibilityChange: true,
+        saveOnBeforeUnload: true,
+        enableVersionHistory: true
+      })
+      
+      autoSave.initialize(presentationId, setAutoSaveStatus)
+      setAutoSaveInstance(autoSave)
+      
+      return () => {
+        autoSave.destroy()
+      }
+    }
+  }, [presentationId])
+
+  // Auto-save when slides change
+  useEffect(() => {
+    if (autoSaveInstance && slides.length > 0) {
+      const presentationData = {
+        title: slides[0]?.title || 'Untitled Presentation',
+        slides: slides,
+        metadata: {
+          currentSlideIndex,
+          lastEditedAt: new Date().toISOString(),
+          slideCount: slides.length,
+          editingMode: useWorldClassRenderer ? 'world-class' : 'standard',
+          zoom,
+          fullscreen: isFullscreen
+        }
+      }
+      
+      autoSaveInstance.registerChange('slides_updated', presentationData)
+    }
+  }, [slides, autoSaveInstance, currentSlideIndex, useWorldClassRenderer, zoom, isFullscreen])
+
+  // Comment creation function
+  const createComment = useCallback((x: number, y: number) => {
+    if (!showComments || !currentSlide) return
+    
+    const commentText = prompt('Add a comment:')
+    if (commentText && commentText.trim()) {
+      const newComment = {
+        id: `comment_${Date.now()}`,
+        slideId: currentSlide.id,
+        x: x,
+        y: y,
+        text: commentText.trim(),
+        author: 'Current User', // In a real app, this would be the logged-in user
+        timestamp: Date.now()
+      }
+      setComments([...comments, newComment])
+    }
+  }, [showComments, currentSlide, comments])
+
+  // Handle slide canvas double-click for comments
+  const handleSlideDoubleClick = useCallback((event: React.MouseEvent) => {
+    if (!showComments) return
+    
+    const rect = slideCanvasRef.current?.getBoundingClientRect()
+    if (rect) {
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top
+      createComment(x, y)
+    }
+  }, [showComments, createComment])
 
   // Calculate slide scale to fit viewport
   const calculateSlideScale = useCallback(() => {
@@ -563,6 +735,57 @@ export default function WorldClassPresentationEditor({
                 <Button 
                   variant="ghost" 
                   size="sm"
+                  onClick={() => setUseWorldClassRenderer(!useWorldClassRenderer)}
+                  className={cn(
+                    "text-white hover:bg-gray-700",
+                    useWorldClassRenderer ? "bg-blue-600 hover:bg-blue-700" : ""
+                  )}
+                >
+                  <Brain className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Toggle World-Class AI Renderer</TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setIsCollaborativeMode(!isCollaborativeMode)}
+                  className={cn(
+                    "text-white hover:bg-gray-700",
+                    isCollaborativeMode ? "bg-green-600 hover:bg-green-700" : ""
+                  )}
+                >
+                  <Users className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Toggle Collaborative Mode</TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowComments(!showComments)}
+                  className={cn(
+                    "text-white hover:bg-gray-700",
+                    showComments ? "bg-yellow-600 hover:bg-yellow-700" : ""
+                  )}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Toggle Comments</TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
                   onClick={() => setIsFullscreen(!isFullscreen)}
                   className="text-white hover:bg-gray-700"
                 >
@@ -660,6 +883,7 @@ export default function WorldClassPresentationEditor({
                   height: SLIDE_HEIGHT * slideScale,
                   transformOrigin: 'center center'
                 }}
+                onDoubleClick={handleSlideDoubleClick}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -675,11 +899,42 @@ export default function WorldClassPresentationEditor({
                 />
 
                 {/* Enhanced Slide Content */}
-                <EnhancedSlideRenderer 
-                  slide={currentSlide}
-                  scale={slideScale}
-                  isActive={true}
-                />
+                {useWorldClassRenderer && worldClassSlides.length > 0 ? (
+                  <div className="absolute inset-0 overflow-hidden">
+                    <div 
+                      style={{ 
+                        transform: `scale(${slideScale})`,
+                        transformOrigin: 'top left',
+                        width: SLIDE_WIDTH,
+                        height: SLIDE_HEIGHT
+                      }}
+                    >
+                      <WorldClassSlideRenderer
+                        slides={worldClassSlides}
+                        currentSlide={currentSlideIndex}
+                        onSlideChange={goToSlide}
+                        onSlideEdit={(slideId, updates) => {
+                          // Update the corresponding slide in our slides array
+                          const slideIndex = slides.findIndex(s => s.id === slideId)
+                          if (slideIndex !== -1) {
+                            const newSlides = [...slides]
+                            newSlides[slideIndex] = { ...newSlides[slideIndex], ...updates }
+                            setSlides(newSlides)
+                            addToHistory(newSlides)
+                          }
+                        }}
+                        isEditable={false}
+                        className="w-full h-full"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <EnhancedSlideRenderer 
+                    slide={currentSlide}
+                    scale={slideScale}
+                    isActive={true}
+                  />
+                )}
 
                 {/* Draggable Elements Overlay */}
                 <div className="absolute inset-0 pointer-events-none">
@@ -735,6 +990,103 @@ export default function WorldClassPresentationEditor({
           </div>
         </div>
 
+        {/* Collaborative Features Panel */}
+        <AnimatePresence>
+          {isCollaborativeMode && (
+            <motion.div
+              className="fixed right-4 top-1/2 transform -translate-y-1/2 w-80 bg-gray-800 rounded-lg border border-gray-700 shadow-2xl z-50"
+              initial={{ x: 320, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 320, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <div className="p-4 border-b border-gray-700">
+                <h3 className="text-white font-semibold flex items-center space-x-2">
+                  <Users className="w-5 h-5" />
+                  <span>Collaborators</span>
+                </h3>
+              </div>
+              
+              <div className="p-4 max-h-60 overflow-y-auto">
+                {collaborators.length === 0 ? (
+                  <div className="text-gray-400 text-center py-8">
+                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No active collaborators</p>
+                    <p className="text-sm mt-1">Share this presentation to collaborate</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {collaborators.map((collaborator) => (
+                      <div key={collaborator.id} className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-medium">
+                          {collaborator.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-white text-sm font-medium">{collaborator.name}</div>
+                          <div className="text-gray-400 text-xs">
+                            {collaborator.cursor ? 'Active' : 'Viewing'}
+                          </div>
+                        </div>
+                        <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-4 border-t border-gray-700">
+                <Button 
+                  size="sm" 
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  onClick={() => {
+                    // Demo: Add a sample collaborator
+                    const sampleCollaborator = {
+                      id: `user_${Date.now()}`,
+                      name: `User ${collaborators.length + 1}`,
+                      avatar: '',
+                      cursor: { x: Math.random() * 800, y: Math.random() * 600 }
+                    }
+                    setCollaborators([...collaborators, sampleCollaborator])
+                  }}
+                >
+                  Invite Collaborator
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Comments Overlay */}
+        {showComments && (
+          <div className="absolute inset-0 pointer-events-none z-40">
+            {comments
+              .filter(comment => comment.slideId === currentSlide?.id)
+              .map((comment) => (
+                <motion.div
+                  key={comment.id}
+                  className="absolute pointer-events-auto"
+                  style={{
+                    left: `${comment.x}px`,
+                    top: `${comment.y}px`
+                  }}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <div className="bg-yellow-400 text-black p-2 rounded-lg shadow-lg max-w-xs">
+                    <div className="text-xs font-medium mb-1">{comment.author}</div>
+                    <div className="text-sm">{comment.text}</div>
+                    <div className="text-xs opacity-60 mt-1">
+                      {new Date(comment.timestamp).toLocaleTimeString()}
+                    </div>
+                  </div>
+                  {/* Comment pointer */}
+                  <div className="w-3 h-3 bg-yellow-400 transform rotate-45 -mt-1 ml-4"></div>
+                </motion.div>
+              ))}
+          </div>
+        )}
+
         {/* Status Bar */}
         <motion.div 
           className="bg-gray-800 border-t border-gray-700 px-4 py-2 flex items-center justify-between text-sm text-gray-400"
@@ -746,11 +1098,37 @@ export default function WorldClassPresentationEditor({
             <span>Slide {currentSlideIndex + 1} of {slides.length}</span>
             {selectedElement && <span>• Element selected</span>}
             {isDragging && <span>• Dragging</span>}
+            {isCollaborativeMode && <span>• Collaborative Mode</span>}
+            {collaborators.length > 0 && <span>• {collaborators.length} collaborator{collaborators.length === 1 ? '' : 's'}</span>}
           </div>
           
           <div className="flex items-center space-x-4">
             <span>Zoom: {Math.round(slideScale * 100)}%</span>
-            <span>• Ready</span>
+            {/* Auto-save status indicator */}
+            {autoSaveStatus && (
+              <div className="flex items-center space-x-2">
+                <span className={cn(
+                  "text-xs px-2 py-1 rounded flex items-center gap-1",
+                  autoSaveStatus.status === 'saving' && "bg-yellow-500/20 text-yellow-400",
+                  autoSaveStatus.status === 'saved' && "bg-green-500/20 text-green-400",
+                  autoSaveStatus.status === 'error' && "bg-red-500/20 text-red-400",
+                  autoSaveStatus.status === 'offline' && "bg-gray-500/20 text-gray-400",
+                  autoSaveStatus.status === 'idle' && "bg-blue-500/20 text-blue-400"
+                )}>
+                  {autoSaveStatus.status === 'saving' && '💾 Saving...'}
+                  {autoSaveStatus.status === 'saved' && '✅ Auto-saved'}
+                  {autoSaveStatus.status === 'error' && '❌ Save failed'}
+                  {autoSaveStatus.status === 'offline' && '📶 Offline'}
+                  {autoSaveStatus.status === 'idle' && '📝 Ready'}
+                </span>
+                {autoSaveStatus.lastSaved && autoSaveStatus.status === 'saved' && (
+                  <span className="text-xs text-gray-500">
+                    {new Date(autoSaveStatus.lastSaved).toLocaleTimeString()}
+                  </span>
+                )}
+              </div>
+            )}
+            {!autoSaveStatus && <span>• Ready</span>}
           </div>
         </motion.div>
       </div>
