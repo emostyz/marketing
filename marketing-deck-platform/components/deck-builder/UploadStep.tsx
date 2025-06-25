@@ -40,11 +40,8 @@ export const UploadStep: React.FC<UploadStepProps> = ({ files, setFiles, nextSte
   const allFilesEmpty = successfulFiles.length > 0 && successfulFiles.every(f => (f.parsedData?.rowCount || 0) === 0 || (f.parsedData?.columns?.length || 0) === 0)
   const showDataReady = successfulFiles.length > 0 && !allFilesEmpty
 
-  // Only allow proceed if at least one file has >0 rows and >0 columns
-  const canProceed = successfulFiles.length > 0 &&
-    successfulFiles.every(f => f.status === 'success') &&
-    (successfulFiles.some(f => (f.parsedData?.rowCount || 0) > 0 && (f.parsedData?.columns?.length || 0) > 0) || 
-     successfulFiles.length > 0) // Temporary: allow proceed if files uploaded successfully
+  // Allow proceed if at least one file uploaded successfully
+  const canProceed = successfulFiles.length > 0 && successfulFiles.every(f => f.status === 'success')
 
   // Debug logging
   console.log('🔍 UploadStep Debug:', {

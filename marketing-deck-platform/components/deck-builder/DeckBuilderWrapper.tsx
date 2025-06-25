@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Loader2, Brain, Sparkles } from 'lucide-react'
 import ErrorBoundary from '@/components/ui/ErrorBoundary'
 import { NotificationProvider } from '@/components/ui/NotificationSystem'
-import FunctionalDeckBuilder from './FunctionalDeckBuilder'
+import SimpleDeckViewer from './SimpleDeckViewer'
 
 interface DeckBuilderWrapperProps {
   presentationId?: string
@@ -209,10 +209,8 @@ export default function DeckBuilderWrapper({
             transition={{ duration: 0.5 }}
             className="min-h-screen bg-gray-50"
           >
-            <FunctionalDeckBuilder
-              presentationId={presentationId}
-              onSave={onSave}
-              onExport={onExport}
+            <SimpleDeckViewer
+              presentationId={presentationId || 'unknown'}
             />
           </motion.div>
         </Suspense>

@@ -127,49 +127,64 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalysisR
     let executiveSummary: ExecutiveSummary | null = null
     if (options?.includeExecutiveSummary !== false) {
       console.log('📋 Step 4: Executive summary...')
-      const summaryGenerator = new ExecutiveSummaryGenerator()
-      executiveSummary = await summaryGenerator.generateExecutiveSummary(
-        preparedData,
-        insightResults.insights,
-        context
-      )
-      console.log(`✅ Executive summary generated (${executiveSummary.wordCount} words, ${executiveSummary.confidence}% confidence)`)
+      try {
+        const summaryGenerator = new ExecutiveSummaryGenerator()
+        executiveSummary = await summaryGenerator.generateExecutiveSummary(
+          preparedData,
+          insightResults.insights,
+          context
+        )
+        console.log(`✅ Executive summary generated (${executiveSummary.wordCount} words, ${executiveSummary.confidence}% confidence)`)
+      } catch (summaryError) {
+        console.warn('⚠️ Executive summary generation failed, continuing without:', summaryError)
+        executiveSummary = null
+      }
     }
 
     // Step 5: Generate compelling narrative (if requested)
     let narrativeResult: NarrativeGenerationResult | null = null
     if (options?.includeNarrative !== false) {
       console.log('📖 Step 5: Creating compelling narrative...')
-      const narrativeEngine = new NarrativeGenerationEngine()
-      narrativeResult = await narrativeEngine.generateDataStory(
-        preparedData,
-        insightResults.insights,
-        chartRecommendations.recommendations,
-        {
-          ...context,
-          narrativeTone: options?.narrativeTone || 'confident'
-        }
-      )
-      console.log(`✅ Narrative created: ${narrativeResult.story.title} (engagement: ${narrativeResult.metadata.engagementScore}%)`)
+      try {
+        const narrativeEngine = new NarrativeGenerationEngine()
+        narrativeResult = await narrativeEngine.generateDataStory(
+          preparedData,
+          insightResults.insights,
+          chartRecommendations.recommendations,
+          {
+            ...context,
+            narrativeTone: options?.narrativeTone || 'confident'
+          }
+        )
+        console.log(`✅ Narrative created: ${narrativeResult.story.title} (engagement: ${narrativeResult.metadata.engagementScore}%)`)
+      } catch (narrativeError) {
+        console.warn('⚠️ Narrative generation failed, continuing without:', narrativeError)
+        narrativeResult = null
+      }
     }
 
-    // Step 6: Generate design innovations (if requested)
+    // Step 6: Generate design innovations (if requested) - Simplified
     let designInnovation: DesignInnovationResult | null = null
     if (options?.includeDesignInnovation !== false && narrativeResult) {
-      console.log('🎨 Step 6: Creating design innovations...')
-      const designEngine = new DesignInnovationEngine()
-      designInnovation = await designEngine.generateInnovativeDesigns(
-        preparedData,
-        insightResults.insights,
-        chartRecommendations.recommendations,
-        narrativeResult.story,
-        {
-          ...context,
-          innovationLevel: options?.innovationLevel || 'advanced',
-          designComplexity: options?.designComplexity || 'moderate'
-        }
-      )
-      console.log(`✅ Design innovations created: ${designInnovation.slideDesigns.length} slides (innovation score: ${designInnovation.metadata.innovationScore}%)`)
+      console.log('🎨 Step 6: Creating design innovations (simplified)...')
+      try {
+        const designEngine = new DesignInnovationEngine()
+        designInnovation = await designEngine.generateInnovativeDesigns(
+          preparedData,
+          insightResults.insights,
+          chartRecommendations.recommendations,
+          narrativeResult.story,
+          {
+            ...context,
+            innovationLevel: options?.innovationLevel || 'advanced',
+            designComplexity: options?.designComplexity || 'moderate'
+          }
+        )
+        console.log(`✅ Design innovations created: ${designInnovation.slideDesigns.length} slides (innovation score: ${designInnovation.metadata.innovationScore}%)`)
+      } catch (designError) {
+        console.warn('⚠️ Design innovation failed, continuing without:', designError)
+        designInnovation = null
+      }
     }
 
     // Step 7: Create enhanced slide structure
@@ -222,9 +237,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalysisR
         summary: preparedData,
         insights: insightResults,
         chartRecommendations,
-        executiveSummary: executiveSummary!,
-        narrative: narrativeResult!,
-        designInnovation: designInnovation!,
+        executiveSummary: executiveSummary || null,
+        narrative: narrativeResult || null,
+        designInnovation: designInnovation || null,
         slideStructure,
         visualExcellence,
         customizations,
@@ -258,7 +273,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalysisR
         dataQualityScore: 0,
         totalInsights: 0,
         highPriorityCharts: 0,
-        confidence: 0
+        confidence: 0,
+        innovationScore: 0,
+        narrativeEngagement: 0,
+        designComplexity: 0
       },
       error: error instanceof Error ? error.message : 'Analysis failed'
     }, { status: 500 })
