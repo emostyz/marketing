@@ -33,6 +33,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow access to dashboard and settings for authenticated users
+  if (
+    request.nextUrl.pathname.startsWith('/dashboard') ||
+    request.nextUrl.pathname.startsWith('/settings') ||
+    request.nextUrl.pathname.startsWith('/deck-builder')
+  ) {
+    // These routes require authentication - continue to auth check below
+    // Don't return early, let the auth verification happen
+  }
+
   // Allow access to demo deck URLs
   if (request.nextUrl.pathname.includes('/deck-builder/demo-deck-')) {
     return NextResponse.next();

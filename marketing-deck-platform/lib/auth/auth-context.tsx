@@ -214,9 +214,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Then set user profile
           await fetchAndSetUserProfile(session.user)
           
-          // Navigate to dashboard
-          console.log('🚀 Redirecting to dashboard...')
-          router.push('/dashboard')
+          // Navigate to intended destination or dashboard
+          console.log('🚀 Redirecting after successful login...')
+          const urlParams = new URLSearchParams(window.location.search)
+          const redirectTo = urlParams.get('redirect')
+          
+          if (redirectTo && redirectTo.startsWith('/')) {
+            console.log('🔗 Redirecting to intended destination:', redirectTo)
+            router.push(decodeURIComponent(redirectTo))
+          } else {
+            console.log('🏠 Redirecting to dashboard')
+            router.push('/dashboard')
+          }
         } else if (event === 'SIGNED_OUT') {
           console.log('🚪 User signed out, clearing state...')
           setUser(null)

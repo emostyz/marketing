@@ -169,43 +169,77 @@ export default function FunctionalDeckBuilder({
       if (data.success && data.data) {
         console.log('✅ Presentation loaded:', data.data)
         
-        // Convert API response to FunctionalDeckBuilder format
+        // Convert API response to FunctionalDeckBuilder format with better error handling
         const presentationData = data.data
+        
+        console.log('🔄 Converting presentation data:', {
+          id: presentationData.id,
+          title: presentationData.title,
+          slidesCount: presentationData.slides?.length || 0
+        })
+        
         const convertedPresentation: Presentation = {
           id: presentationData.id,
           title: presentationData.title || 'Untitled Presentation',
-          slides: presentationData.slides?.map((slide: any, index: number) => ({
-            id: slide.id || `slide-${index}`,
-            title: slide.title || `Slide ${index + 1}`,
-            content: slide.content?.map((element: any) => ({
-              id: element.id || `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              type: element.type || 'text',
-              position: {
-                x: element.position?.x || 0,
-                y: element.position?.y || 0,
-                width: element.position?.width || 200,
-                height: element.position?.height || 100,
-                rotation: element.position?.rotation || 0
-              },
-              style: element.style || {
-                fontSize: 16,
-                fontFamily: 'Inter',
-                color: '#1f2937'
-              },
-              content: element.content || { text: 'Default text' },
-              layer: element.layer || 1,
-              locked: element.locked || false,
-              hidden: element.hidden || false,
-              animations: element.animations || []
-            })) || [],
-            template: slide.template || 'blank',
-            notes: slide.notes || '',
-            duration: slide.duration || 5,
-            animations: slide.animations || [],
-            background: slide.background || { type: 'solid', color: '#ffffff' },
-            locked: slide.locked || false,
-            hidden: slide.hidden || false
-          })) || [createBlankSlide()],
+          slides: (presentationData.slides || []).map((slide: any, index: number) => {
+            console.log(`🔄 Converting slide ${index + 1}:`, {
+              id: slide.id,
+              title: slide.title,
+              contentLength: slide.content?.length || 0
+            })
+            
+            return {
+              id: slide.id || `slide-${index}`,
+              title: slide.title || `Slide ${index + 1}`,
+              content: (slide.content || []).map((element: any, elemIndex: number) => {
+                try {
+                  return {
+                    id: element.id || `element-${Date.now()}-${elemIndex}`,
+                    type: element.type || 'text',
+                    position: {
+                      x: element.position?.x || 0,
+                      y: element.position?.y || 0,
+                      width: element.position?.width || 200,
+                      height: element.position?.height || 100,
+                      rotation: element.position?.rotation || 0
+                    },
+                    style: element.style || {
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      color: '#1f2937'
+                    },
+                    content: element.content || { text: 'Default text' },
+                    layer: element.layer || 1,
+                    locked: element.locked || false,
+                    hidden: element.hidden || false,
+                    animations: element.animations || []
+                  }
+                } catch (elemError) {
+                  console.error(`❌ Error converting element ${elemIndex}:`, elemError)
+                  return {
+                    id: `fallback-element-${elemIndex}`,
+                    type: 'text',
+                    position: { x: 100, y: 100, width: 200, height: 100, rotation: 0 },
+                    style: { fontSize: 16, fontFamily: 'Inter', color: '#1f2937' },
+                    content: { text: 'Error loading content' },
+                    layer: 1,
+                    locked: false,
+                    hidden: false,
+                    animations: []
+                  }
+                }
+              }),
+              template: slide.template || 'blank',
+              notes: slide.notes || '',
+              duration: slide.duration || 5,
+              animations: slide.animations || [],
+              transition: slide.transition,
+              background: slide.background || { type: 'solid', color: '#ffffff' },
+              locked: slide.locked || false,
+              hidden: slide.hidden || false,
+              thumbnail: slide.thumbnail
+            }
+          }).concat((presentationData.slides || []).length === 0 ? [createBlankSlide()] : []),
           theme: {
             colors: {
               primary: '#2563eb',
@@ -235,9 +269,15 @@ export default function FunctionalDeckBuilder({
         undoRedoSystem.clear()
       } else {
         console.error('❌ Failed to load presentation:', data)
+        // Create a fallback presentation if loading fails
+        console.log('🔄 Creating fallback presentation due to load failure')
+        createNewPresentation()
       }
     } catch (error) {
       console.error('💥 Error loading presentation:', error)
+      // Create a fallback presentation if there's an error
+      console.log('🔄 Creating fallback presentation due to error')
+      createNewPresentation()
     }
   }
 

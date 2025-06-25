@@ -23,7 +23,7 @@ import WorldClassPresentationEditor from '@/components/editor/WorldClassPresenta
 import { useTierLimits } from '@/lib/hooks/useTierLimits'
 import UpgradePrompt from '@/components/ui/UpgradePrompt'
 import { useEnterpriseAccess } from '@/lib/hooks/useEnterpriseAccess'
-import { RealTimeAnalysisFlow } from './RealTimeAnalysisFlow'
+import { SimpleRealTimeFlow } from './SimpleRealTimeFlow'
 // import { Progress } from '@/components/ui/progress'
 
 // Helper function to convert file to base64
@@ -575,7 +575,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
         // Show the real-time analysis flow with insights approval and structure review
         if (analysisDatasetId && analysisContext) {
           return (
-            <RealTimeAnalysisFlow 
+            <SimpleRealTimeFlow 
               datasetId={analysisDatasetId}
               context={analysisContext}
               onComplete={(deckId: string) => {

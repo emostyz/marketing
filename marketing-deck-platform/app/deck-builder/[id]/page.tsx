@@ -4,11 +4,12 @@ import { UltimateDeckBuilder } from '@/components/deck-builder/UltimateDeckBuild
 export default function DeckBuilderPage({ params }: { params: { id: string } }) {
   const { id } = params;
 
-  // For demo, legacy, or new decks, use UltimateDeckBuilder
-  if (id.startsWith('demo-deck') || id.startsWith('presentation') || id === 'new') {
+  // Only show UltimateDeckBuilder for 'new' deck creation
+  if (id === 'new') {
     return <UltimateDeckBuilder />;
   }
 
-  // For all other IDs, use the DeckBuilderWrapper (which loads the deck by ID)
+  // For all other IDs (including demo-deck-*, presentation*, real deck IDs), 
+  // use DeckBuilderWrapper to load and display the generated deck
   return <DeckBuilderWrapper presentationId={id} />;
 } 

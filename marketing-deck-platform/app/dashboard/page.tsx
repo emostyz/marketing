@@ -59,7 +59,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <UnifiedLayout requireAuth={true}>
+    <UnifiedLayout requireAuth={false}>
       {/* Dashboard Sub-Header: Only Pro Plan, Usage, Notifications */}
       <div className="w-full bg-gradient-to-r from-blue-950 via-gray-900 to-purple-950 border-b border-gray-800 shadow-md py-5 px-8 flex flex-row items-center justify-between gap-6">
         {/* Center: Pro Plan and Usage - big and prominent */}

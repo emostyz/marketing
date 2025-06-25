@@ -21,6 +21,7 @@ export default function LoginPage() {
       // Check if we're not already redirecting to avoid loops
       const urlParams = new URLSearchParams(window.location.search)
       const isRedirecting = urlParams.get('redirecting') === 'true'
+      const redirectTo = urlParams.get('redirect')
       
       if (!isRedirecting) {
         // Add redirecting flag to URL to prevent loops
@@ -28,8 +29,12 @@ export default function LoginPage() {
         newUrl.searchParams.set('redirecting', 'true')
         window.history.replaceState({}, '', newUrl.toString())
         
-        // Navigate to dashboard
-        router.push('/dashboard')
+        // Navigate to the intended destination or dashboard
+        if (redirectTo && redirectTo.startsWith('/')) {
+          router.push(decodeURIComponent(redirectTo))
+        } else {
+          router.push('/dashboard')
+        }
       }
     }
   }, [user, authLoading, router])
