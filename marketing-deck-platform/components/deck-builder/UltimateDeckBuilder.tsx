@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
-import { ArrowRight, Brain, FileText, Palette, Settings, TrendingUp, Upload, AlertCircle } from 'lucide-react'
+import { ArrowRight, Brain, FileText, Palette, Settings, TrendingUp, Upload, AlertCircle, Zap, Shield, Target } from 'lucide-react'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { SaveStatusIndicator } from '@/components/ui/SaveStatusIndicator'
 import { DescribeDataStep } from './DataIntake'
@@ -20,6 +20,7 @@ import { TemplateStep, Template } from './TemplateStep'
 import { EnhancedBrainV2 } from '@/lib/ai/enhanced-brain-v2'
 import { UploadedFile } from '@/lib/types/upload'
 import WorldClassPresentationEditor from '@/components/editor/WorldClassPresentationEditor'
+import { PremiumChartSystem } from '@/components/charts/PremiumChartSystem'
 import { useTierLimits } from '@/lib/hooks/useTierLimits'
 import UpgradePrompt from '@/components/ui/UpgradePrompt'
 import { useEnterpriseAccess } from '@/lib/hooks/useEnterpriseAccess'
@@ -139,7 +140,7 @@ const AIAnalysisStep = ({ status, progress }: { status: string, progress: number
 );
 
 
-export function UltimateDeckBuilder({ className = '' }: { className?: string }) {
+export function UltimateDeckBuilder({ className = '', initialTemplate }: { className?: string, initialTemplate?: string }) {
   const router = useRouter()
   const { user, loading } = useAuth()
   const { checkLimit, incrementUsage, rollbackUsage, upgradePlan, subscription } = useTierLimits()
@@ -230,6 +231,128 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   const [error, setError] = useState<string | null>(null)
   const [parsedData, setParsedData] = useState<any[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
+
+  // Template mapping from template page IDs to deck builder Template objects
+  const templateMapping: Record<string, Template> = {
+    'executive-summary': {
+      id: 'executive-summary',
+      name: 'Executive Performance Dashboard',
+      description: 'Comprehensive C-suite ready performance overview with KPIs, trends, and strategic insights.',
+      category: 'business',
+      type: 'executive',
+      tags: ['Executive', 'KPIs', 'Strategy'],
+      slides: 12,
+      colors: ['#1e293b', '#3b82f6', '#64748b'],
+      fonts: ['Inter', 'Poppins'],
+      features: ['Executive Summary', 'KPI Dashboard', 'Strategic Roadmap', 'Financial Overview'],
+      preview: '/templates/executive-summary.png',
+      license: 'MIT',
+      author: 'DeckBuilder AI',
+      downloads: 0,
+      rating: 4.8,
+      reviews: 0,
+      lastUpdated: new Date().toISOString(),
+      compatibility: 'both',
+      dataTypes: ['financial', 'operational'],
+      chartTypes: ['bar', 'line', 'pie']
+    },
+    'business-plan': {
+      id: 'business-plan',
+      name: 'Modern Business Plan',
+      description: 'Investor-ready business plan template with market analysis, financial projections, and growth strategy.',
+      category: 'business',
+      type: 'investor',
+      tags: ['Business Plan', 'Investment', 'Strategy'],
+      slides: 18,
+      colors: ['#3730a3', '#7c3aed', '#1e40af'],
+      fonts: ['Inter', 'Poppins'],
+      features: ['Market Analysis', 'Financial Model', 'Competitive Landscape', 'Growth Strategy'],
+      preview: '/templates/business-plan.png',
+      license: 'MIT',
+      author: 'DeckBuilder AI',
+      downloads: 0,
+      rating: 4.9,
+      reviews: 0,
+      lastUpdated: new Date().toISOString(),
+      compatibility: 'both',
+      dataTypes: ['financial', 'market'],
+      chartTypes: ['bar', 'line', 'area']
+    },
+    'marketing-strategy': {
+      id: 'marketing-strategy',
+      name: 'Digital Marketing Strategy',
+      description: 'Comprehensive marketing strategy with channel analysis, customer journey, and ROI metrics.',
+      category: 'marketing',
+      type: 'sales',
+      tags: ['Marketing', 'Digital', 'ROI'],
+      slides: 14,
+      colors: ['#ea580c', '#ec4899', '#dc2626'],
+      fonts: ['Inter', 'Poppins'],
+      features: ['Channel Strategy', 'Customer Journey', 'Attribution Model', 'Campaign ROI'],
+      preview: '/templates/marketing-strategy.png',
+      license: 'MIT',
+      author: 'DeckBuilder AI',
+      downloads: 0,
+      rating: 4.7,
+      reviews: 0,
+      lastUpdated: new Date().toISOString(),
+      compatibility: 'both',
+      dataTypes: ['marketing', 'customer'],
+      chartTypes: ['funnel', 'bar', 'line']
+    },
+    'sales-performance': {
+      id: 'sales-performance',
+      name: 'Sales Performance Analytics',
+      description: 'Sales team performance review with pipeline analysis, conversion metrics, and forecasting.',
+      category: 'business',
+      type: 'sales',
+      tags: ['Sales', 'Pipeline', 'Forecasting'],
+      slides: 11,
+      colors: ['#0891b2', '#06b6d4', '#0e7490'],
+      fonts: ['Inter', 'Poppins'],
+      features: ['Pipeline Analysis', 'Conversion Rates', 'Sales Forecasting', 'Team Leaderboard'],
+      preview: '/templates/sales-performance.png',
+      license: 'MIT',
+      author: 'DeckBuilder AI',
+      downloads: 0,
+      rating: 4.6,
+      reviews: 0,
+      lastUpdated: new Date().toISOString(),
+      compatibility: 'both',
+      dataTypes: ['sales', 'performance'],
+      chartTypes: ['pipeline', 'bar', 'line']
+    },
+    'financial-overview': {
+      id: 'financial-overview',
+      name: 'Financial Performance Dashboard',
+      description: 'Comprehensive financial analysis with P&L, cash flow, profitability metrics, and budget variance.',
+      category: 'financial',
+      type: 'report',
+      tags: ['Finance', 'P&L', 'Analytics'],
+      slides: 16,
+      colors: ['#059669', '#10b981', '#047857'],
+      fonts: ['Inter', 'Poppins'],
+      features: ['P&L Analysis', 'Cash Flow', 'Budget Variance', 'Profitability Metrics'],
+      preview: '/templates/financial-overview.png',
+      license: 'MIT',
+      author: 'DeckBuilder AI',
+      downloads: 0,
+      rating: 4.8,
+      reviews: 0,
+      lastUpdated: new Date().toISOString(),
+      compatibility: 'both',
+      dataTypes: ['financial', 'accounting'],
+      chartTypes: ['waterfall', 'bar', 'line']
+    }
+  }
+
+  // Handle initial template selection
+  useEffect(() => {
+    if (initialTemplate && templateMapping[initialTemplate]) {
+      setSelectedTemplate(templateMapping[initialTemplate])
+      console.log('Initial template selected:', templateMapping[initialTemplate])
+    }
+  }, [initialTemplate])
 
   // Memoize intakeSessionData to prevent infinite update loops
   const intakeSessionData = useMemo(() => ({
@@ -383,19 +506,23 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   }, [])
 
   const steps = [
-    { id: 1, title: 'Context', icon: <FileText /> },
-    { id: 2, title: 'Period', icon: <TrendingUp /> },
-    { id: 3, title: 'Factors', icon: <TrendingUp /> },
-    { id: 4, title: 'Upload', icon: <Upload /> },
-    { id: 5, title: 'AI', icon: <Brain /> },
-    { id: 6, title: 'Template', icon: <Palette /> },
-    { id: 7, title: 'Customize', icon: <Settings /> },
+    { id: 1, title: 'Context', icon: <FileText />, subtext: 'Business context', subtext2: 'Describe your business or project' },
+    { id: 2, title: 'Period', icon: <TrendingUp />, subtext: 'Time period', subtext2: 'Select the analysis timeframe' },
+    { id: 3, title: 'Factors', icon: <Target />, subtext: 'Influencing factors', subtext2: 'External or internal drivers' },
+    { id: 4, title: 'Upload', icon: <Upload />, subtext: 'Upload your data', subtext2: 'CSV, Excel, or JSON' },
+    { id: 5, title: 'AI', icon: <Brain />, subtext: 'AI Insights', subtext2: '\u00A0' },
+    { id: 6, title: 'Template', icon: <Palette />, subtext: 'Choose template', subtext2: '\u00A0' },
+    { id: 7, title: 'Customize', icon: <Settings />, subtext: 'Customize deck', subtext2: '\u00A0' },
   ]
 
   const nextStep = () => {
     setCurrentStep(prev => {
-      const next = prev + 1;
+      // Skip template step (6) if template is already selected
+      const next = (prev === 5 && selectedTemplate) ? 7 : prev + 1;
       console.log('[UltimateDeckBuilder] nextStep called, advancing from', prev, 'to', next);
+      if (prev === 5 && selectedTemplate) {
+        console.log('[UltimateDeckBuilder] Skipping template step, template already selected:', selectedTemplate.name);
+      }
       return next;
     });
   }
@@ -481,19 +608,28 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
 
   const performAnalysis = async () => {
     console.log('🚀 performAnalysis called!')
+    console.log('📊 Analysis state check:', { 
+      isAnalyzing, 
+      currentStep, 
+      filesCount: intakeData.files.length,
+      user: user?.email 
+    })
     
     // Prevent multiple simultaneous analyses
     if (isAnalyzing) {
-      console.warn('Analysis already in progress')
+      console.warn('❌ Analysis already in progress, aborting')
       toast('Analysis already in progress', { icon: '⚠️', style: { background: '#facc15', color: '#1e293b' } })
       return
     }
 
     // Check tier limits and immediately increment usage to prevent race conditions
     try {
+      console.log('🔍 Checking tier limits...')
       const limitCheck = await checkLimit('presentations')
+      console.log('📊 Limit check result:', limitCheck)
       
       if (!limitCheck.canPerform) {
+        console.log('❌ Tier limit exceeded, showing upgrade prompt')
         setUpgradePromptData({
           limitType: 'presentations',
           currentUsage: limitCheck.currentUsage,
@@ -504,13 +640,17 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
       }
 
       // CRITICAL: Immediately increment usage counter to prevent race conditions
+      console.log('🔢 Incrementing usage counter...')
       const usageIncremented = await incrementUsage('presentations')
+      console.log('📊 Usage increment result:', usageIncremented)
+      
       if (!usageIncremented) {
+        console.log('❌ Failed to increment usage, aborting')
         setError('Failed to track usage. Please try again.')
         return
       }
     } catch (error) {
-      console.error('Error checking limits:', error)
+      console.error('❌ Error checking limits:', error)
       // Continue anyway for demo purposes
     }
 
@@ -641,7 +781,17 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
       const aiEndpoint = getAIEndpoint()
       const aiConfig = getAIConfig()
       
-      console.log('🏢 Using AI endpoint:', isEnterprise ? 'Enterprise' : 'Standard', aiEndpoint)
+      console.log('🏢 AI BRAIN ROUTING:', {
+        userType: isEnterprise ? 'Enterprise' : 'Standard',
+        endpoint: aiEndpoint,
+        isEnterpriseAIActive: isEnterpriseAIEnabled(),
+        aiConfig: aiConfig ? { 
+          provider: aiConfig.provider, 
+          endpoint: aiConfig.endpoint,
+          model: aiConfig.model 
+        } : null,
+        switchedAt: new Date().toISOString()
+      })
       
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
       
@@ -753,9 +903,20 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
         // ACTUALLY GENERATE A DECK using our fixed API
         try {
           console.log('🎯 GENERATING DECK with real data...')
+          console.log('📊 Available datasetIds:', datasetIds)
+          console.log('📊 processedFiles:', processedFiles.map(f => ({ name: f.name, datasetId: f.datasetId, status: f.status })))
           
-          // Get the first dataset ID if available
-          const datasetId = datasetIds.length > 0 ? datasetIds[0] : null
+          // Get the first dataset ID from processed files or datasetIds array
+          let datasetId = datasetIds.length > 0 ? datasetIds[0] : null
+          
+          // Fallback: try to get dataset ID from processed files
+          if (!datasetId && processedFiles.length > 0) {
+            const firstSuccessfulFile = processedFiles.find(f => f.status === 'success' && f.datasetId)
+            if (firstSuccessfulFile) {
+              datasetId = firstSuccessfulFile.datasetId
+              console.log('📊 Using datasetId from processed file:', datasetId)
+            }
+          }
           
           if (datasetId) {
             console.log('📊 Using dataset ID:', datasetId)
@@ -782,8 +943,12 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
               }),
             })
 
+            console.log('📊 Deck generation response status:', deckResponse.status)
+
             if (!deckResponse.ok) {
-              throw new Error('Failed to generate deck')
+              const errorText = await deckResponse.text()
+              console.error('❌ Deck generation failed:', errorText)
+              throw new Error(`Failed to generate deck: ${deckResponse.status} - ${errorText}`)
             }
 
             const deckResult = await deckResponse.json()
@@ -802,9 +967,48 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
               // ACTUALLY NAVIGATE TO THE GENERATED DECK
               router.push(`/deck-builder/${deckResult.deckId}`)
               return // Exit here - we're navigating away
+            } else {
+              console.error('❌ Deck generation returned success=false or no deckId:', deckResult)
+              throw new Error(deckResult.error || 'Deck generation failed')
             }
           } else {
-            console.warn('⚠️ No dataset ID available, using legacy flow')
+            console.warn('⚠️ No dataset ID available, trying with demo dataset...')
+            
+            // Try with demo dataset as fallback
+            try {
+              const demoDatasetId = 'demo-dataset-fallback'
+              console.log('📊 Using demo dataset fallback:', demoDatasetId)
+              
+              const deckResponse = await fetch('/api/deck/generate', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  datasetId: demoDatasetId,
+                  context: {
+                    audience: 'executives',
+                    goal: 'analyze data',
+                    timeLimit: 15,
+                    industry: 'business',
+                    decision: 'improve performance'
+                  }
+                }),
+              })
+
+              if (deckResponse.ok) {
+                const deckResult = await deckResponse.json()
+                if (deckResult.success && deckResult.deckId) {
+                  toast.success(`Demo deck generated! Created ${deckResult.slideCount} slides.`)
+                  router.push(`/deck-builder/${deckResult.deckId}`)
+                  return
+                }
+              }
+            } catch (demoError) {
+              console.error('❌ Demo fallback also failed:', demoError)
+            }
+            
+            toast.error('No dataset ID found. Please try uploading your file again.')
           }
           
           // Fallback: Save to presentations table (legacy)
@@ -865,6 +1069,13 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
     setSelectedTemplate(template)
     console.log('Selected template:', template)
   }
+
+  // Allow clicking on completed steps to go back
+  const handleStepClick = (stepId: number) => {
+    if (stepId < currentStep) {
+      setCurrentStep(stepId);
+    }
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -947,37 +1158,70 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
                 }
               }
 
-              // Validate and process charts
-              const validatedCharts = slideData.charts?.filter(validateChartData).map((chart: any, chartIndex: number) => ({
-                id: `chart_${Date.now()}_${chartIndex}`,
-                type: ['area', 'bar', 'line', 'scatter', 'pie'].includes(chart.type) ? chart.type : 'area',
-                title: chart.message || chart.title || 'Data Visualization',
-                data: Array.isArray(parsedData[0]?.data) ? parsedData[0].data : [],
-                config: {
-                  xAxisKey: parsedData[0]?.columns?.[0] || 'Date',
-                  yAxisKey: parsedData[0]?.columns?.[1] || 'Revenue',
-                  showAnimation: true,
+              // Validate and process charts with premium quality
+              const validatedCharts = slideData.charts?.filter(validateChartData).map((chart: any, chartIndex: number) => {
+                // Determine professional theme based on template
+                const premiumTheme = selectedTemplate?.name?.toLowerCase().includes('mckinsey') ? 'mckinsey' :
+                                   selectedTemplate?.name?.toLowerCase().includes('bcg') ? 'bcg' :
+                                   selectedTemplate?.name?.toLowerCase().includes('bain') ? 'bain' :
+                                   selectedTemplate?.category === 'business' ? 'corporate' : 'startup'
+
+                return {
+                  id: `chart_${Date.now()}_${chartIndex}`,
+                  type: ['area', 'bar', 'line', 'scatter', 'pie'].includes(chart.type) ? chart.type : 'area',
+                  title: chart.message || chart.title || 'Data Visualization',
+                  subtitle: chart.hiddenPattern ? `Key Insight: ${chart.hiddenPattern}` : undefined,
+                  data: Array.isArray(parsedData[0]?.data) ? parsedData[0].data : [],
+                  xAxis: parsedData[0]?.columns?.[0] || 'Date',
+                  yAxis: parsedData[0]?.columns?.slice(1) || ['Revenue'],
+                  colors: selectedTemplate?.colors || ['#003366', '#0066CC', '#FFD700', '#00A86B', '#FF6B35'],
+                  theme: premiumTheme,
+                  showGrid: true,
                   showLegend: true,
-                  showGridLines: true,
-                  colors: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'],
-                  valueFormatter: (value: number) => {
-                    try {
-                      return new Intl.NumberFormat('en-US', {
-                        notation: 'compact',
-                        maximumFractionDigits: 1,
-                        style: 'currency',
-                        currency: 'USD'
-                      }).format(value)
-                    } catch {
-                      return String(value)
+                  showTrendline: chart.type === 'line' || chart.type === 'area',
+                  annotations: chart.hiddenPattern ? [{
+                    type: 'point' as const,
+                    value: chart.annotationValue || 0,
+                    label: chart.hiddenPattern,
+                    color: selectedTemplate?.colors?.[2] || '#FFD700'
+                  }] : [],
+                  insights: [{
+                    id: `insight_${chartIndex}`,
+                    type: 'trend' as const,
+                    title: chart.hiddenPattern || chart.callout || 'Strategic Insight',
+                    description: chart.dataStory || 'Data reveals strategic implications for business performance',
+                    confidence: 85,
+                    impact: 'high' as const,
+                    novelty: 80,
+                    evidence: [],
+                    recommendations: ['Leverage this insight for strategic advantage'],
+                    businessImplication: chart.hiddenPattern || 'Strategic value creation opportunity'
+                  }],
+                  config: {
+                    xAxisKey: parsedData[0]?.columns?.[0] || 'Date',
+                    yAxisKey: parsedData[0]?.columns?.[1] || 'Revenue',
+                    showAnimation: true,
+                    showLegend: true,
+                    showGridLines: true,
+                    colors: selectedTemplate?.colors || ['#003366', '#0066CC', '#FFD700'],
+                    valueFormatter: (value: number) => {
+                      try {
+                        return new Intl.NumberFormat('en-US', {
+                          notation: 'compact',
+                          maximumFractionDigits: 1,
+                          style: 'currency',
+                          currency: 'USD'
+                        }).format(value)
+                      } catch {
+                        return String(value)
+                      }
                     }
-                  }
-                },
-                insights: [chart.hiddenPattern || chart.callout || 'Strategic insight from data visualization'],
-                source: chart.dataSource || 'Strategic Analysis Data',
-                hiddenPattern: chart.hiddenPattern,
-                dataStory: chart.dataStory
-              })) || []
+                  },
+                  source: chart.dataSource || 'Strategic Analysis Data',
+                  hiddenPattern: chart.hiddenPattern,
+                  dataStory: chart.dataStory
+                }
+              }) || []
 
               // Create elements from AI insights for this slide
               const slideInsights = analysisResult.insights?.filter((insight: any) => 
@@ -1025,17 +1269,26 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
                 },
                 elements: generatedElements, // Pre-populate with AI insights
                 background: { 
-                  type: 'mckinsey', 
+                  type: premiumTheme, 
                   value: '', 
-                  gradient: { from: '#0f172a', to: '#1e293b', direction: '135deg' } 
+                  gradient: { 
+                    from: selectedTemplate.colors?.[0] || '#0f172a', 
+                    to: selectedTemplate.colors?.[1] || '#1e293b', 
+                    direction: '135deg' 
+                  } 
                 },
-                style: 'mckinsey',
-                layout: 'mckinsey_pyramid',
+                style: premiumTheme,
+                layout: `${premiumTheme}_pyramid`,
                 animation: { enter: 'fadeIn', exit: 'fadeOut', duration: 0.8 },
                 customStyles: {
                   backgroundColor: selectedTemplate.colors?.[0] || '#0f172a',
                   textColor: '#ffffff',
-                  accentColor: selectedTemplate.colors?.[1] || '#3b82f6',
+                  accentColor: selectedTemplate.colors?.[2] || '#3b82f6',
+                  primaryColor: selectedTemplate.colors?.[0] || '#003366',
+                  secondaryColor: selectedTemplate.colors?.[1] || '#0066CC',
+                  fontSize: premiumTheme === 'mckinsey' ? '16px' : premiumTheme === 'bcg' ? '15px' : '14px',
+                  fontFamily: 'Inter',
+                  borderRadius: premiumTheme === 'startup' ? '12px' : '8px'
                 }
               }
             }) || []
@@ -1059,17 +1312,26 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
               },
               elements: [],
               background: { 
-                type: 'mckinsey', 
+                type: 'corporate', 
                 value: '', 
-                gradient: { from: '#0f172a', to: '#1e293b', direction: '135deg' } 
+                gradient: { 
+                  from: selectedTemplate.colors?.[0] || '#0f172a', 
+                  to: selectedTemplate.colors?.[1] || '#1e293b', 
+                  direction: '135deg' 
+                } 
               },
-              style: 'mckinsey',
+              style: 'corporate',
               layout: 'default',
               animation: { enter: 'fadeIn', exit: 'fadeOut', duration: 0.8 },
               customStyles: {
                 backgroundColor: selectedTemplate.colors?.[0] || '#0f172a',
                 textColor: '#ffffff',
-                accentColor: selectedTemplate.colors?.[1] || '#3b82f6',
+                accentColor: selectedTemplate.colors?.[2] || '#3b82f6',
+                primaryColor: selectedTemplate.colors?.[0] || '#1E3A8A',
+                secondaryColor: selectedTemplate.colors?.[1] || '#3B82F6',
+                fontSize: '16px',
+                fontFamily: 'Inter',
+                borderRadius: '8px'
               }
             })
           }
@@ -1228,17 +1490,17 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
     <div className="min-h-screen flex flex-col bg-gray-950 text-white py-8 px-4">
       <div className="flex-1 flex flex-col justify-center">
         <div className="max-w-6xl mx-auto w-full flex flex-col justify-center items-center gap-8">
-          {/* Page Header */}
+          {/* Main page header */}
           <div className="mb-12 w-full text-center relative">
-            <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              Create a New Presentation
-            </h2>
-            <p className="mt-4 text-lg text-gray-400">
-              Follow the steps below to generate a stunning, AI-powered deck.
-            </p>
+            <h1 className="text-4xl font-bold text-center mb-2">Create a New Presentation</h1>
+            <p className="text-lg text-gray-400 text-center mb-4">Start by providing context and uploading your data. Our AI will do the rest.</p>
             
-            {/* Auto-save status in top right */}
-            <div className="absolute top-0 right-0">
+            {/* Centered AI Brain and SaveStatusIndicator below header */}
+            <div className="flex flex-col items-center justify-center gap-2 mb-8">
+              <div className="flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">
+                <Brain className="w-3 h-3" />
+                <span>AI Brain</span>
+              </div>
               <SaveStatusIndicator
                 status={intakeAutoSave.isSaving ? 'saving' : intakeAutoSave.saveError ? 'error' : 'saved'}
                 lastSaved={intakeAutoSave.lastSaved}
@@ -1248,44 +1510,35 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
             </div>
           </div>
 
-          {/* New Stepper - evenly spaced icons with clickable completed steps */}
-          <div className="mb-12 flex items-center w-full gap-8">
-            {steps.map((step, index) => (
-              <React.Fragment key={step.id}>
-                <div className="flex flex-col items-center text-center flex-1">
-                  <button
-                    onClick={() => {
-                      // Allow clicking on completed steps to go back
-                      if (currentStep > step.id) {
-                        setCurrentStep(step.id)
-                      }
-                    }}
-                    disabled={currentStep <= step.id}
-                    className={`
-                      w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                      ${currentStep > step.id 
-                        ? 'bg-blue-600 border-blue-500 hover:bg-blue-700 hover:border-blue-400 cursor-pointer' 
-                        : currentStep === step.id 
-                        ? 'bg-blue-600 border-blue-500' 
-                        : 'bg-gray-800 border-gray-700'
-                      }
-                      ${currentStep > step.id ? 'hover:scale-105' : ''}
-                    `}
-                    title={currentStep > step.id ? `Click to go back to ${step.title}` : step.title}
-                  >
-                    {React.cloneElement(step.icon, { 
-                      className: `w-6 h-6 ${currentStep >= step.id ? 'text-white' : 'text-gray-500'}` 
-                    })}
-                  </button>
-                  <p className={`mt-2 text-sm font-medium ${currentStep >= step.id ? 'text-white' : 'text-gray-500'}`}>
-                    {step.title}
-                  </p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className="h-0.5 mx-2 flex-grow bg-gradient-to-r from-gray-700 to-gray-700" />
-                )}
-              </React.Fragment>
-            ))}
+          {/* Enhanced Professional Stepper */}
+          <div className="mb-12 w-full">
+            <div className="flex items-center justify-between relative">
+              {steps.map((step, index) => (
+                <React.Fragment key={step.id}>
+                  <div className="flex flex-col items-center text-center relative z-10">
+                    <button
+                      className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors mb-2 ${
+                        currentStep === step.id
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : currentStep > step.id
+                            ? 'bg-green-600 border-green-600 text-white'
+                            : 'border-gray-600 text-gray-400'
+                      }`}
+                      onClick={() => handleStepClick(step.id)}
+                      disabled={currentStep < step.id - 1}
+                    >
+                      {step.icon}
+                    </button>
+                    <span className={`text-xs font-semibold ${currentStep === step.id ? 'text-blue-400' : 'text-gray-400'}`}>{step.title}</span>
+                    <span className="text-xs text-gray-500 mt-1">{step.subtext || '\u00A0'}</span>
+                    <span className="text-xs text-gray-500">{step.subtext2 || '\u00A0'}</span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className="flex-1 h-0.5 bg-gray-700 absolute top-1/2 left-full right-0 -translate-y-1/2 z-0" />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
 
           <main className="w-full flex flex-col items-center">
