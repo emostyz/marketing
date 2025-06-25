@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Brain, Mail, Phone, MapPin, Send } from 'lucide-react'
-import PublicPageLayout from '@/components/layout/PublicPageLayout'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -62,7 +62,7 @@ export default function ContactPage() {
   }
 
   return (
-    <PublicPageLayout>
+    <UnifiedLayout>
       {/* Hero Section */}
       <section className="px-6 py-20">
         <div className="max-w-4xl mx-auto text-center">
@@ -266,6 +266,6 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-    </PublicPageLayout>
+    </UnifiedLayout>
   )
 }

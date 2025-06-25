@@ -356,13 +356,7 @@ export function AdvancedPresentationEditor({
 
         {/* Enhanced Deck Builder */}
         <div className="flex-1 overflow-auto">
-          <FunctionalDeckBuilder
-            initialData={enhancedBuilderData.data}
-            userRequirements={enhancedBuilderData.userRequirements}
-            userGoals={enhancedBuilderData.userGoals}
-            onComplete={handleEnhancedDeckComplete}
-            onSave={handleSave}
-          />
+          <FunctionalDeckBuilder onSave={handleSave} />
         </div>
       </div>
     )

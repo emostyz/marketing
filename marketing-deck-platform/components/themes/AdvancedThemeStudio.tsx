@@ -332,7 +332,7 @@ export function AdvancedThemeStudio({
             id="theme-import"
           />
           <label htmlFor="theme-import">
-            <Button size="sm" variant="outline" asChild>
+            <Button size="sm" variant="outline">
               <span>
                 <Upload className="w-4 h-4 mr-1" />
                 Import

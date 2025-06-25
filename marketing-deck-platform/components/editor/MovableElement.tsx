@@ -52,7 +52,6 @@ export default function MovableElement({
       
       // Snap to grid
       snappable: true,
-      snapCenter: true,
       snapThreshold: 5,
       isDisplaySnapDigit: true,
       
@@ -63,7 +62,6 @@ export default function MovableElement({
       renderDirections: ['nw', 'ne', 'sw', 'se', 'n', 'e', 's', 'w'],
       
       // Visual guidelines
-      guidelines: [],
       elementGuidelines: [],
       
       // Throttle for performance

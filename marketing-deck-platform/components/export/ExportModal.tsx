@@ -170,7 +170,7 @@ export function ExportModal({ isOpen, onClose, presentationId, presentationTitle
               <h2 className="text-2xl font-bold text-white">Export Presentation</h2>
               <p className="text-gray-400 mt-1">Download your presentation as PowerPoint or PDF</p>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="w-5 h-5" />
             </Button>
           </div>

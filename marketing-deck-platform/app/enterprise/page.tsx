@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import PublicPageLayout from '@/components/layout/PublicPageLayout'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 
 export default function EnterprisePage() {
   const [contactForm, setContactForm] = useState({
@@ -120,7 +120,7 @@ export default function EnterprisePage() {
   ]
 
   return (
-    <PublicPageLayout className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
+    <UnifiedLayout className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
       {/* Hero Section */}
       <div className="container mx-auto px-6 pt-20 pb-16">
         <motion.div
@@ -415,6 +415,6 @@ export default function EnterprisePage() {
           </div>
         </div>
       </div>
-    </PublicPageLayout>
+    </UnifiedLayout>
   )
 }

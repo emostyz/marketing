@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   BarChart3, LineChart, PieChart, TrendingUp, Palette, Settings,
-  Download, Refresh, Edit, Copy, Trash2, Play, Pause
+  Download, RefreshCw, Edit, Copy, Trash2, Play, Pause
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'

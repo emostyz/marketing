@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Brain, Users, Award, Globe, Zap, Shield, Star, CheckCircle, ArrowRight, Rocket, Target, Heart, Lightbulb, TrendingUp, Clock, Users2, Code, Database, Cloud, Smartphone, Monitor, BarChart3, Lock, Headphones, Palette } from 'lucide-react'
-import PublicPageLayout from '@/components/layout/PublicPageLayout'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 
 const team = [
   {
@@ -158,7 +158,7 @@ const whySection = {
 
 export default function AboutPage() {
   return (
-    <PublicPageLayout>
+    <UnifiedLayout>
 
       {/* Hero Section */}
       <section className="px-6 py-20">
@@ -420,6 +420,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-    </PublicPageLayout>
+    </UnifiedLayout>
   )
 } 

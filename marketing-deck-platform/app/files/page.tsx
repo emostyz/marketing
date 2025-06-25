@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/auth-context'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 import { 
   Grid3X3, List, Search, Filter, ChevronDown, Plus, Upload, 
   Folder, FileText, Clock, Star, Trash2, MoreVertical,
@@ -19,8 +20,6 @@ import { ModernButton } from '@/components/ui/ModernButton'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { pageTransitions } from '@/lib/animations/transitions'
-import PublicNavigation from '@/components/navigation/PublicNavigation'
-import PublicFooter from '@/components/navigation/PublicFooter'
 import { getPresentations, formatRelativeTime, type Presentation } from '@/lib/services/presentations'
 
 // Use shared Presentation type for consistency
@@ -90,22 +89,8 @@ export default function FilesPage() {
     )
   }, [decks, searchQuery])
 
-  if (loading || isLoadingDecks) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">
-            {loading ? 'Loading...' : 'Loading your presentations...'}
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <>
-      <PublicNavigation />
+    <UnifiedLayout requireAuth={true}>
       
       <motion.div 
         className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950"
@@ -296,9 +281,7 @@ export default function FilesPage() {
           </CommandDialog>
         </div>
       </motion.div>
-      
-      <PublicFooter />
-    </>
+    </UnifiedLayout>
   )
 }
 

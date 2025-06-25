@@ -4,8 +4,9 @@ import React, { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Type, Palette, Shapes, AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  Bold, Italic, Underline, MoreHorizontal, RotateCw, Move, Resize,
-  Copy, Trash2, Lock, Unlock, Eye, EyeOff, Layers
+  Bold, Italic, Underline, MoreHorizontal, RotateCw, Move, Copy, Trash2,
+  Lock, Unlock, Eye, EyeOff, Layers, Star, Heart, Zap, Download, Upload,
+  ChevronDown, Search, FileImage, Sparkles, Wand2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'

@@ -180,7 +180,7 @@ export class ChartRecommendationEngine {
         },
         businessValue: trend ? `Identify ${trend.trend} trends for strategic planning` : 'Monitor performance over time',
         insights: [
-          `${data.summary.timeRange.frequency.charAt(0).toUpperCase() + data.summary.timeRange.frequency.slice(1)} data pattern`,
+          `${data.summary.timeRange?.frequency?.charAt(0).toUpperCase() + (data.summary.timeRange?.frequency?.slice(1) ?? '')} data pattern`,
           trend ? `Currently ${trend.trend}` : 'Trend analysis available',
           `${data.summary.totalRows} data points for analysis`
         ]

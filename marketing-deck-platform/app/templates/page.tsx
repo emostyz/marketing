@@ -21,7 +21,7 @@ import {
   Award
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/auth-context'
-import PublicPageLayout from '@/components/layout/PublicPageLayout'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 import Link from 'next/link'
 
 const templates = [
@@ -136,7 +136,7 @@ export default function TemplatesPage({
   }
 
   return (
-    <PublicPageLayout>
+    <UnifiedLayout>
       <main className="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e293b] py-12 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-4xl font-bold text-white mb-6">Template Library</h1>
@@ -241,6 +241,6 @@ export default function TemplatesPage({
           </div>
         </div>
       </main>
-    </PublicPageLayout>
+    </UnifiedLayout>
   )
 } 

@@ -77,57 +77,18 @@ export interface SlideData {
 }
 
 export interface ElementData {
-  id: string
-  type: 'text' | 'shape' | 'image' | 'chart' | 'icon' | 'container'
+  id?: string
+  type?: string
   content?: string
-  position: { x: number; y: number }
-  size: { width: number; height: number }
-  rotation: number
-  style: {
-    // Text styles
-    font_family?: string
-    font_size?: number
-    font_weight?: string | number
-    font_style?: string
-    text_align?: string
-    text_decoration?: string
-    line_height?: number
-    letter_spacing?: string
-    color?: string
-    
-    // Shape/container styles
-    fill?: string
-    stroke?: string
-    stroke_width?: number
-    background_color?: string
-    border?: string
-    border_color?: string
-    border_width?: string
-    border_radius?: string
-    
-    // Effects
-    opacity?: number
-    box_shadow?: string
-    filter?: string
-    transform?: string
-    
-    // Layout
-    display?: string
-    justify_content?: string
-    align_items?: string
-    padding?: string
-    margin?: string
-  }
+  position?: { x?: number; y?: number }
+  size?: { width?: number; height?: number }
+  rotation?: number
+  style?: { [key: string]: any }
   is_locked?: boolean
   is_visible?: boolean
   z_index?: number
-  metadata: {
-    template_id?: string
-    source: 'manual' | 'ai_generated' | 'template'
-    created_at: string
-    updated_at: string
-    customizations: string[]
-  }
+  metadata?: { [key: string]: any }
+  [key: string]: any
 }
 
 export interface ChartData {

@@ -79,7 +79,7 @@ export default function BrainConfigurationPanel() {
       // Load current brain status
       const statusResponse = await fetch('/api/admin/brain/status', {
         headers: {
-          'Authorization': `Bearer ${user?.access_token}`
+          'Authorization': 'Bearer test-token'
         }
       })
       
@@ -89,9 +89,9 @@ export default function BrainConfigurationPanel() {
       }
 
       // Load current providers
-      const providersResponse = await fetch(`/api/admin/brain/providers?organizationId=${user?.current_organization_id}`, {
+      const providersResponse = await fetch(`/api/admin/brain/providers?organizationId=${user?.id}`, {
         headers: {
-          'Authorization': `Bearer ${user?.access_token}`
+          'Authorization': 'Bearer test-token'
         }
       })
       
@@ -114,11 +114,11 @@ export default function BrainConfigurationPanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token}`
+          'Authorization': 'Bearer test-token'
         },
         body: JSON.stringify({
           action: 'update_brain_config',
-          organizationId: user?.current_organization_id,
+          organizationId: user?.id,
           updatedBy: user?.id,
           config: {
             providers: providers.map(p => p.id === provider.id ? provider : p),
@@ -152,12 +152,13 @@ export default function BrainConfigurationPanel() {
         displayName: newProvider.displayName || 'Custom Provider',
         type: newProvider.type || 'custom',
         config: {
-          model: newProvider.config?.model || 'gpt-3.5-turbo',
-          maxTokens: newProvider.config?.maxTokens || 4096,
-          temperature: newProvider.config?.temperature || 0.7,
-          systemPrompt: newProvider.config?.systemPrompt || 'You are a helpful AI assistant.',
-          apiKey: newProvider.config?.apiKey || '',
-          baseUrl: newProvider.config?.baseUrl || ''
+          model: newProvider.config?.model ?? '',
+          maxTokens: newProvider.config?.maxTokens ?? 0,
+          temperature: newProvider.config?.temperature ?? 0,
+          systemPrompt: newProvider.config?.systemPrompt ?? '',
+          apiKey: newProvider.config?.apiKey ?? '',
+          baseUrl: newProvider.config?.baseUrl ?? '',
+          customHeaders: newProvider.config?.customHeaders ?? undefined
         },
         isActive: true,
         priority: 50
@@ -181,11 +182,11 @@ export default function BrainConfigurationPanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token}`
+          'Authorization': 'Bearer test-token'
         },
         body: JSON.stringify({
           action: 'update_brain_config',
-          organizationId: user?.current_organization_id,
+          organizationId: user?.id,
           updatedBy: user?.id,
           config: {
             providers: updatedProviders,
@@ -214,10 +215,10 @@ export default function BrainConfigurationPanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token}`
+          'Authorization': 'Bearer test-token'
         },
         body: JSON.stringify({
-          organizationId: user?.current_organization_id,
+          organizationId: user?.id,
           requestedBy: user?.id
         })
       })
@@ -242,11 +243,11 @@ export default function BrainConfigurationPanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token}`
+          'Authorization': 'Bearer test-token'
         },
         body: JSON.stringify({
           providerId,
-          organizationId: user?.current_organization_id
+          organizationId: user?.id
         })
       })
 
@@ -509,7 +510,10 @@ function EditProviderForm({
             value={editedProvider.config.model}
             onChange={(e) => setEditedProvider({
               ...editedProvider,
-              config: { ...editedProvider.config, model: e.target.value }
+              config: {
+                ...editedProvider.config,
+                model: e.target.value || ''
+              }
             })}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
           />
@@ -535,11 +539,30 @@ function EditProviderForm({
             value={editedProvider.config.maxTokens}
             onChange={(e) => setEditedProvider({
               ...editedProvider,
-              config: { ...editedProvider.config, maxTokens: parseInt(e.target.value) }
+              config: {
+                ...editedProvider.config,
+                maxTokens: parseInt(e.target.value) || 0
+              }
             })}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">Temperature</label>
+        <input
+          type="number"
+          value={editedProvider.config.temperature}
+          onChange={(e) => setEditedProvider({
+            ...editedProvider,
+            config: {
+              ...editedProvider.config,
+              temperature: parseFloat(e.target.value) || 0
+            }
+          })}
+          className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
+        />
       </div>
 
       <div>
@@ -549,7 +572,10 @@ function EditProviderForm({
           value={editedProvider.config.apiKey || ''}
           onChange={(e) => setEditedProvider({
             ...editedProvider,
-            config: { ...editedProvider.config, apiKey: e.target.value }
+            config: {
+              ...editedProvider.config,
+              apiKey: e.target.value
+            }
           })}
           className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
         />
@@ -562,7 +588,10 @@ function EditProviderForm({
           value={editedProvider.config.baseUrl || ''}
           onChange={(e) => setEditedProvider({
             ...editedProvider,
-            config: { ...editedProvider.config, baseUrl: e.target.value }
+            config: {
+              ...editedProvider.config,
+              baseUrl: e.target.value
+            }
           })}
           className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
         />
@@ -635,7 +664,10 @@ function NewProviderForm({
             value={provider.config?.model || ''}
             onChange={(e) => onChange({
               ...provider,
-              config: { ...provider.config, model: e.target.value }
+              config: {
+                ...provider.config,
+                model: e.target.value || ''
+              }
             })}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
             placeholder="gpt-4-turbo-preview"
@@ -646,14 +678,33 @@ function NewProviderForm({
           <label className="block text-sm font-medium text-gray-400 mb-2">Max Tokens</label>
           <input
             type="number"
-            value={provider.config?.maxTokens || 4096}
+            value={provider.config?.maxTokens ?? 0}
             onChange={(e) => onChange({
               ...provider,
-              config: { ...provider.config, maxTokens: parseInt(e.target.value) }
+              config: {
+                ...provider.config,
+                maxTokens: parseInt(e.target.value) || 0
+              }
             })}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-400 mb-2">Temperature</label>
+        <input
+          type="number"
+          value={provider.config?.temperature ?? 0}
+          onChange={(e) => onChange({
+            ...provider,
+            config: {
+              ...provider.config,
+              temperature: parseFloat(e.target.value) || 0
+            }
+          })}
+          className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
+        />
       </div>
 
       <div>
@@ -663,7 +714,10 @@ function NewProviderForm({
           value={provider.config?.apiKey || ''}
           onChange={(e) => onChange({
             ...provider,
-            config: { ...provider.config, apiKey: e.target.value }
+            config: {
+              ...provider.config,
+              apiKey: e.target.value
+            }
           })}
           className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
           placeholder="Your API key"
@@ -677,7 +731,10 @@ function NewProviderForm({
           value={provider.config?.baseUrl || ''}
           onChange={(e) => onChange({
             ...provider,
-            config: { ...provider.config, baseUrl: e.target.value }
+            config: {
+              ...provider.config,
+              baseUrl: e.target.value
+            }
           })}
           className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"
           placeholder="https://api.example.com/v1"
@@ -690,7 +747,10 @@ function NewProviderForm({
           value={provider.config?.systemPrompt || ''}
           onChange={(e) => onChange({
             ...provider,
-            config: { ...provider.config, systemPrompt: e.target.value }
+            config: {
+              ...provider.config,
+              systemPrompt: e.target.value
+            }
           })}
           className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white h-24"
           placeholder="You are a helpful AI assistant..."

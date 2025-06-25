@@ -225,7 +225,11 @@ export class DesignInnovationEngine {
 
     } catch (error) {
       console.error('❌ Design innovation generation failed:', error)
-      throw new Error(`Design innovation failed: ${error.message}`)
+      if (error instanceof Error) {
+        throw new Error(`Design innovation failed: ${error.message}`);
+      } else {
+        throw new Error('Design innovation failed: Unknown error');
+      }
     }
   }
 
@@ -383,7 +387,7 @@ Return JSON format with detailed design concept.`
    * Generate layout innovation for slide
    */
   private generateLayoutInnovation(narrativeSlide: any, visualSlide: any, slideIndex: number) {
-    const layoutTypes = {
+    const layoutTypes: { [key: string]: string } = {
       setup: 'magnetic', // Elements naturally arrange around focal points
       build: 'organic',  // Flowing, natural arrangements
       reveal: 'geometric', // Strong geometric emphasis
@@ -392,7 +396,7 @@ Return JSON format with detailed design concept.`
       inspire: 'narrative' // Story-driven arrangement
     }
 
-    const layouts = {
+    const layouts: { [key: string]: any } = {
       magnetic: {
         type: 'magnetic',
         description: 'Elements naturally arrange around magnetic focal points',
@@ -582,7 +586,14 @@ Return JSON format with detailed design concept.`
     const relevantCharts = charts.slice(0, 2) // Maximum 2 charts per slide for clarity
     
     return relevantCharts.map((chart, index) => {
-      const integrationStyles = ['embedded', 'overlaid', 'background', 'interactive', 'morphing']
+      const integrationStyles: { [key: string]: string[] } = {
+        embedded: ['embedded'],
+        overlaid: ['overlaid'],
+        background: ['background'],
+        interactive: ['interactive'],
+        morphing: ['morphing']
+      }
+      const styleMap: { [key: string]: string[] } = integrationStyles;
       const selectedStyle = this.selectOptimalIntegrationStyle(chart, narrativeSlide.role, index)
       
       return {
@@ -608,7 +619,7 @@ Return JSON format with detailed design concept.`
    * Select optimal integration style for chart
    */
   private selectOptimalIntegrationStyle(chart: ChartRecommendation, role: string, index: number): any {
-    const styleMap = {
+    const styleMap: { [key: string]: string[] } = {
       setup: ['embedded', 'background'],
       build: ['interactive', 'overlaid'],
       reveal: ['morphing', 'interactive'],
@@ -632,7 +643,7 @@ Return JSON format with detailed design concept.`
       'Subtle shadows'
     ]
     
-    const styleSpecificUpgrades = {
+    const styleSpecificUpgrades: { [key: string]: string[] } = {
       embedded: ['Seamless borders', 'Contextual styling'],
       overlaid: ['Transparency effects', 'Layered depth'],
       background: ['Subtle presence', 'Atmospheric effects'],
@@ -647,7 +658,7 @@ Return JSON format with detailed design concept.`
    * Generate interactivity boosts
    */
   private generateInteractivityBoosts(chart: ChartRecommendation, integrationStyle: string): string[] {
-    const boosts = {
+    const boosts: { [key: string]: string[] } = {
       embedded: ['Tooltip enhancements', 'Data filtering'],
       overlaid: ['Layer toggling', 'Focus interactions'],
       background: ['Subtle feedback', 'Ambient responses'],
@@ -675,7 +686,7 @@ Return JSON format with detailed design concept.`
    * Generate innovation elements
    */
   private generateInnovationElements(chart: ChartRecommendation, integrationStyle: string): string[] {
-    const innovations = {
+    const innovations: { [key: string]: string[] } = {
       embedded: ['Smart responsive scaling', 'Contextual theming'],
       overlaid: ['Multi-layer storytelling', 'Depth perception'],
       background: ['Ambient data presence', 'Subliminal reinforcement'],
@@ -710,7 +721,7 @@ Return JSON format with detailed design concept.`
     const features: UniqueFeature[] = []
 
     // Role-specific unique features
-    const roleFeatures = {
+    const roleFeatures: { [key: string]: { name: string; description: string; visualImpact: string; implementation: string; noveltyScore: number } } = {
       setup: {
         name: 'Magnetic Introduction',
         description: 'Elements magnetically arrange to draw audience attention',
@@ -783,13 +794,13 @@ Return JSON format with detailed design concept.`
     layoutInnovation: any,
     chartIntegrations: ChartIntegration[]
   ): DesignInnovation {
-    const innovationLevels = {
+    const innovationLevels: { [key: string]: 'evolutionary' | 'revolutionary' | 'breakthrough' } = {
       setup: 'evolutionary',
       build: 'evolutionary',
       reveal: 'revolutionary',
       climax: 'breakthrough',
       resolve: 'evolutionary',
-      inspire: 'revolutionary'
+      inspire: 'revolutionary',
     }
 
     return {
@@ -815,8 +826,8 @@ Return JSON format with detailed design concept.`
    * Calculate visual impact score
    */
   private calculateVisualImpact(role: string, impact: string): number {
-    const roleScores = { setup: 60, build: 70, reveal: 85, climax: 95, resolve: 75, inspire: 90 }
-    const impactScores = { subtle: 0, moderate: 10, dramatic: 20 }
+    const roleScores: { [key: string]: number } = { setup: 60, build: 70, reveal: 85, climax: 95, resolve: 75, inspire: 90 }
+    const impactScores: { [key: string]: number } = { subtle: 0, moderate: 10, dramatic: 20 }
     
     return (roleScores[role] || 70) + (impactScores[impact] || 10)
   }
@@ -959,7 +970,7 @@ Return JSON format with detailed design concept.`
   }
 
   private getInspirationSource(role: string): string {
-    const sources = {
+    const sources: { [key: string]: string } = {
       setup: 'Apple keynote introductions',
       build: 'TED talk progressions',
       reveal: 'Data journalism breakthroughs',

@@ -58,7 +58,7 @@ export interface UniversalBrainResponse {
 }
 
 export class UniversalBrain {
-  private brainController: AIBrainController
+  private brainController!: AIBrainController
   private configManager: BrainConfigManager
   private deepInsightEngine: DeepInsightEngine | null = null
 

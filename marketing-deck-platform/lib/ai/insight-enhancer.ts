@@ -162,7 +162,7 @@ export class InsightEnhancer {
     // Generate C-suite level actions based on insight type
     const insightType = this.classifyInsight(insight)
     
-    const actions = {
+    const actions: { [key: string]: { action: string; owner: string; timeline: string } } = {
       growth: {
         action: "Allocate resources to scale this initiative",
         owner: "Chief Growth Officer",
@@ -222,7 +222,7 @@ export class InsightEnhancer {
   private generateImplementationPlan(insight: EnhancedInsight, context: any) {
     const insightType = this.classifyInsight(insight)
     
-    const plans = {
+    const plans: { [key: string]: { steps: string[]; resources: string[]; timeline: string } } = {
       growth: {
         steps: [
           "Conduct market research validation",
@@ -271,7 +271,7 @@ export class InsightEnhancer {
   private identifyRisks(insight: EnhancedInsight, context: any) {
     const insightType = this.classifyInsight(insight)
     
-    const riskProfiles = {
+    const riskProfiles: { [key: string]: { risks: string[]; mitigations: string[] } } = {
       growth: {
         risks: [
           "Market conditions may change",

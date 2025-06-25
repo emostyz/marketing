@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth/auth-context'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 import { 
   User, 
   Building2, 
@@ -52,11 +53,6 @@ export default function SettingsPage() {
     }
   }, [user])
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/login')
-    }
-  }, [user, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -116,23 +112,9 @@ export default function SettingsPage() {
     )
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading your profile...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white p-6">
+    <UnifiedLayout requireAuth={true} className="bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
+      <div className="p-6">
       <Toaster position="top-right" />
       
       <div className="max-w-4xl mx-auto">
@@ -326,6 +308,7 @@ export default function SettingsPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </UnifiedLayout>
   )
 }

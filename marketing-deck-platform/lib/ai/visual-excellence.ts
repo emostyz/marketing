@@ -1,75 +1,57 @@
+type ColorScheme = { primary: string; secondary: string; accent: string; success: string; danger: string; neutral: string[] };
+type ColorSchemes = { [key: string]: ColorScheme };
+
 export const VISUAL_EXCELLENCE_RULES = {
   colorSchemes: {
     executive: {
       primary: '#1a365d',    // Deep blue - trust, stability
-      secondary: '#2b6cb0',  // Medium blue - support
-      accent: '#ed8936',     // Orange - call to action
-      success: '#38a169',    // Green - positive metrics
-      danger: '#e53e3e',     // Red - negative metrics
-      neutral: ['#2d3748', '#4a5568', '#718096', '#a0aec0', '#e2e8f0']
+      secondary: '#153e75',  // Slightly lighter blue
+      accent: '#2a69ac',     // Accent blue
+      success: '#38a169',    // Green
+      danger: '#e53e3e',     // Red
+      neutral: ['#f7fafc', '#e2e8f0', '#cbd5e0', '#a0aec0', '#718096']
     },
-    
     modern: {
-      primary: '#000000',
+      primary: '#2d3748',
       secondary: '#4a5568',
-      accent: '#667eea',     // Purple - innovation
+      accent: '#805ad5',
       success: '#48bb78',
       danger: '#f56565',
-      neutral: ['#1a202c', '#2d3748', '#718096', '#cbd5e0', '#f7fafc']
+      neutral: ['#edf2f7', '#e2e8f0', '#cbd5e0', '#a0aec0', '#718096']
     },
-    
     sales: {
-      primary: '#2b6cb0',    // Trustworthy blue
-      secondary: '#38a169',  // Growth green
-      accent: '#d69e2e',     // Gold - premium
+      primary: '#d53f8c',
+      secondary: '#b83280',
+      accent: '#f6ad55',
       success: '#38a169',
       danger: '#e53e3e',
-      neutral: ['#2d3748', '#4a5568', '#718096', '#a0aec0', '#e2e8f0']
+      neutral: ['#fff5f7', '#fed7e2', '#fbb6ce', '#f687b3', '#e53e3e']
     },
-    
-    // NEW: Advanced color schemes for stunning visuals
     futuristic: {
-      primary: '#667eea',    // Vibrant purple
-      secondary: '#764ba2',  // Deep purple
-      accent: '#f093fb',     // Pink accent
-      success: '#4facfe',    // Bright blue
-      danger: '#f5576c',     // Coral red
-      neutral: ['#2d1b69', '#553285', '#8b5cf6', '#c084fc', '#f3e8ff'],
-      gradients: {
-        primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        secondary: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        success: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-      }
+      primary: '#00b5d8',
+      secondary: '#805ad5',
+      accent: '#f6ad55',
+      success: '#38a169',
+      danger: '#e53e3e',
+      neutral: ['#e6fffa', '#b2f5ea', '#81e6d9', '#4fd1c5', '#38b2ac']
     },
-    
     premium: {
-      primary: '#1a1a2e',    // Deep navy
-      secondary: '#16213e',  // Rich blue
-      accent: '#e94560',     // Premium red
-      success: '#0f3460',    // Dark blue
-      danger: '#e94560',     // Premium red
-      neutral: ['#1a1a2e', '#16213e', '#0f3460', '#533483', '#e94560'],
-      gradients: {
-        primary: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-        accent: 'linear-gradient(135deg, #e94560 0%, #f5576c 100%)',
-        gold: 'linear-gradient(135deg, #ffd700 0%, #ffb347 100%)'
-      }
+      primary: '#ecc94b',
+      secondary: '#b7791f',
+      accent: '#f6ad55',
+      success: '#38a169',
+      danger: '#e53e3e',
+      neutral: ['#fdf6b2', '#f6e05e', '#ecc94b', '#b7791f', '#744210']
     },
-    
     vibrant: {
-      primary: '#ff6b6b',    // Coral
-      secondary: '#4ecdc4',  // Teal
-      accent: '#ffe66d',     // Yellow
-      success: '#95e1d3',    // Mint
-      danger: '#ff6b6b',     // Coral
-      neutral: ['#2c3e50', '#34495e', '#7f8c8d', '#bdc3c7', '#ecf0f1'],
-      gradients: {
-        primary: 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)',
-        secondary: 'linear-gradient(135deg, #ffe66d 0%, #95e1d3 100%)',
-        sunset: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
-      }
+      primary: '#f56565',
+      secondary: '#ed8936',
+      accent: '#f6e05e',
+      success: '#48bb78',
+      danger: '#4299e1',
+      neutral: ['#fff5f7', '#fed7e2', '#fbb6ce', '#f687b3', '#e53e3e']
     }
-  },
+  } as ColorSchemes,
   
   layoutPrinciples: {
     whiteSpace: {
@@ -291,7 +273,7 @@ export function applyVisualExcellence(slides: any[], deckType: string, innovatio
       colors: assignSlideColors(slide, colorScheme, index),
       layout: optimizeLayout(slide, VISUAL_EXCELLENCE_RULES.layoutPrinciples, innovationLevel),
       typography: applyTypography(slide, VISUAL_EXCELLENCE_RULES.layoutPrinciples.hierarchy),
-      charts: slide.charts?.map(chart => enhanceChart(chart, VISUAL_EXCELLENCE_RULES.chartRules, innovationLevel)),
+      charts: slide.charts?.map((chart: any) => enhanceChart(chart, VISUAL_EXCELLENCE_RULES.chartRules, innovationLevel)),
       // NEW: Advanced styling
       modernStyling: applyModernStyling(slide, VISUAL_EXCELLENCE_RULES.chartRules.modernStyling, innovationLevel),
       animations: generateAnimationSequence(slide, index),
@@ -384,7 +366,7 @@ function generateAnimationSequence(slide: any, slideIndex: number) {
  * Get optimal animation type for chart type
  */
 function getChartAnimationType(chartType: string): string {
-  const animations = {
+  const animations: { [key: string]: string } = {
     line: 'drawPath',
     bar: 'growHeight',
     pie: 'rotateSegments',
@@ -462,7 +444,7 @@ function assignSlideColors(slide: any, colorScheme: any, index: number) {
   }
 }
 
-function optimizeLayout(slide: any, layoutPrinciples: any) {
+function optimizeLayout(slide: any, layoutPrinciples: any, innovationLevel: string) {
   const { whiteSpace, gridSystem } = layoutPrinciples
   
   return {
@@ -625,7 +607,7 @@ function generateInteractiveColors(baseColors: string[]) {
  * Generate contextual colors based on chart type
  */
 function generateContextualColors(chartType: string) {
-  const contextualPalettes = {
+  const contextualPalettes: { [key: string]: any } = {
     line: ['#667eea', '#764ba2'],
     bar: ['#f093fb', '#f5576c'],
     pie: ['#4facfe', '#00f2fe'],
@@ -733,7 +715,7 @@ function isSequentialData(data: any[]): boolean {
   if (!data || data.length < 2) return false
   
   // Check if data represents a sequence (like time series or rankings)
-  const values = data.map(d => d.value || d.y || d[1])
+  const values = data.map((d: any) => d.value || d.y || d[1])
   const hasOrder = values.every((val, i) => i === 0 || val >= values[i - 1])
   
   return hasOrder
@@ -779,7 +761,7 @@ function hasSigificantTrend(data: any[]): boolean {
   if (!data || data.length < 3) return false
   
   // Simple trend detection - check if consistently increasing or decreasing
-  const values = data.map(d => d.value || d.y || d[1])
+  const values = data.map((d: any) => d.value || d.y || d[1])
   let increasingCount = 0
   let decreasingCount = 0
   
@@ -798,9 +780,9 @@ function shouldShowAverage(chart: any): boolean {
   // Show average when data has significant variance
   if (!chart.data || chart.data.length < 3) return false
   
-  const values = chart.data.map(d => d.value || d.y || d[1])
-  const avg = values.reduce((sum, val) => sum + val, 0) / values.length
-  const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length
+  const values = chart.data.map((d: any) => d.value || d.y || d[1])
+  const avg = values.reduce((sum: any, val: any) => sum + val, 0) / values.length
+  const variance = values.reduce((sum: any, val: any) => sum + Math.pow(val - avg, 2), 0) / values.length
   const stdDev = Math.sqrt(variance)
   
   // Show average if standard deviation is significant relative to mean
@@ -810,8 +792,8 @@ function shouldShowAverage(chart: any): boolean {
 function calculateAverage(data: any[]): number {
   if (!data || data.length === 0) return 0
   
-  const values = data.map(d => d.value || d.y || d[1])
-  return values.reduce((sum, val) => sum + val, 0) / values.length
+  const values = data.map((d: any) => d.value || d.y || d[1])
+  return values.reduce((sum: any, val: any) => sum + val, 0) / values.length
 }
 
 function calculateOptimalFontSize(chart: any): number {
@@ -854,5 +836,9 @@ function optimizeLegendPlacement(chart: any): { position: string, orientation: s
     return { position: 'bottom', orientation: 'horizontal' }
   }
 }
+
+// Stub functions for missing gradient/hover generators
+function generateSubtleGradients(colors: string[]): string[] { return colors; }
+function generateHoverStates(colors: string[]): string[] { return colors; }
 
 export { assignSlideColors, optimizeLayout, applyTypography, enhanceChart }

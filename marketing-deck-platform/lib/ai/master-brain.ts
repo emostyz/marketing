@@ -13,7 +13,7 @@ export interface BrainProvider {
   config: {
     apiKey?: string;
     baseUrl?: string;
-    model: string;
+    model?: string;
     maxTokens: number;
     temperature: number;
     systemPrompt: string;
@@ -26,7 +26,7 @@ export interface BrainProvider {
 export interface BrainRequest {
   userId: string;
   organizationId?: string;
-  data: any[];
+  data: any;
   context: {
     industry: string;
     targetAudience: string;
@@ -44,11 +44,11 @@ export interface BrainResponse {
   result?: any;
   error?: string;
   metadata?: {
-    provider: string;
-    model: string;
-    tokensUsed: number;
-    cost: number;
-    processingTime: number;
+    provider?: string;
+    model?: string;
+    tokensUsed?: number;
+    cost?: number;
+    processingTime?: number;
     fallbackUsed?: boolean;
   };
 }
@@ -144,6 +144,9 @@ export class MasterBrain {
       error: lastError?.message || 'All AI providers failed',
       metadata: {
         provider: 'none',
+        model: '',
+        tokensUsed: 0,
+        cost: 0,
         processingTime: Date.now() - startTime,
         fallbackUsed: true
       }
@@ -258,7 +261,14 @@ export class MasterBrain {
     configuration: any;
   }> {
     try {
-      const providerStatus = [];
+      const providerStatus: Array<{
+        id: string;
+        name: string;
+        status: 'active' | 'inactive' | 'error';
+        lastUsed?: Date;
+        usage24h: number;
+        avgResponseTime: number;
+      }> = [];
 
       for (const [id, provider] of this.providers) {
         // Get usage stats for last 24h
@@ -268,14 +278,14 @@ export class MasterBrain {
           .eq('provider_id', id)
           .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
 
-      const usage24h = usage?.length || 0;
-      const avgResponseTime = usage?.reduce((sum, u) => sum + (u.response_time || 0), 0) / (usage?.length || 1);
+        const usage24h = usage?.length || 0;
+        const avgResponseTime = Array.isArray(usage) ? usage.reduce((sum, u) => sum + (typeof u.response_time === 'number' ? u.response_time : 0), 0) / (usage.length || 1) : 0;
 
         providerStatus.push({
           id,
           name: provider.displayName,
           status: provider.isActive ? 'active' : 'inactive',
-          lastUsed: usage?.[0] ? new Date(usage[0].created_at) : undefined,
+          lastUsed: Array.isArray(usage) && usage[0] && typeof usage[0].created_at === 'string' ? new Date(usage[0].created_at) : undefined,
           usage24h,
           avgResponseTime
         });
@@ -351,12 +361,14 @@ export class MasterBrain {
         .eq('organization_id', organizationId)
         .single();
 
-      if (config?.config?.providers) {
-        for (const provider of config.config.providers) {
-          this.providers.set(provider.id, {
-            ...provider,
-            id: `org_${organizationId}_${provider.id}`
-          });
+      if (config && typeof config === 'object' && (config as any).config?.providers) {
+        for (const provider of (config as any).config.providers) {
+          if (provider && typeof provider === 'object' && provider.id) {
+            this.providers.set(provider.id, {
+              ...provider,
+              id: `org_${organizationId}_${provider.id}`
+            });
+          }
         }
       }
 
@@ -367,20 +379,24 @@ export class MasterBrain {
         .eq('organization_id', organizationId)
         .eq('is_active', true);
 
-      for (const aiConfig of aiConfigs || []) {
+      for (const aiConfig of Array.isArray(aiConfigs) ? aiConfigs : []) {
+        const providerId = typeof aiConfig.provider_id === 'string' ? aiConfig.provider_id : '';
+        const configObj: Record<string, any> = typeof aiConfig.config === 'object' && aiConfig.config !== null ? aiConfig.config as Record<string, any> : {};
         const provider: BrainProvider = {
-          id: `ai_${aiConfig.provider_id}`,
-          name: aiConfig.provider_id,
-          displayName: `${aiConfig.provider_id} (Organization)`,
-          type: aiConfig.provider_id as any,
+          id: `ai_${providerId}`,
+          name: providerId,
+          displayName: `${providerId} (Organization)`,
+          type: providerId as any,
           config: {
-            ...aiConfig.config,
+            ...configObj,
+            model: typeof configObj.model === 'string' ? configObj.model : '',
+            maxTokens: typeof configObj.maxTokens === 'number' ? configObj.maxTokens : 4096,
+            temperature: typeof configObj.temperature === 'number' ? configObj.temperature : 0.7,
             systemPrompt: this.getDefaultSystemPrompt()
           },
           isActive: true,
           priority: 90
         };
-
         this.providers.set(provider.id, provider);
       }
 
@@ -391,15 +407,17 @@ export class MasterBrain {
         .eq('organization_id', organizationId)
         .eq('status', 'active');
 
-      for (const localConfig of localConfigs || []) {
+      for (const localConfig of Array.isArray(localConfigs) ? localConfigs : []) {
+        const modelName = typeof localConfig.model_name === 'string' ? localConfig.model_name : '';
+        const serverUrl = typeof localConfig.server_url === 'string' ? localConfig.server_url : '';
         const provider: BrainProvider = {
-          id: `local_${localConfig.model_name}`,
-          name: localConfig.model_name,
-          displayName: `${localConfig.model_name} (Local)`,
+          id: `local_${modelName}`,
+          name: modelName,
+          displayName: `${modelName} (Local)`,
           type: 'local',
           config: {
-            baseUrl: localConfig.server_url,
-            model: localConfig.model_name,
+            baseUrl: serverUrl,
+            model: modelName,
             maxTokens: 4096,
             temperature: 0.7,
             systemPrompt: this.getDefaultSystemPrompt()
@@ -407,7 +425,6 @@ export class MasterBrain {
           isActive: true,
           priority: 95 // Local LLMs get high priority for enterprise
         };
-
         this.providers.set(provider.id, provider);
       }
 
@@ -462,13 +479,13 @@ export class MasterBrain {
         case 'openai':
           result = await this.processWithOpenAI(provider, request);
           tokensUsed = result.usage?.total_tokens || 0;
-          cost = this.calculateOpenAICost(tokensUsed, provider.config.model);
+          cost = this.calculateOpenAICost(tokensUsed, provider.config.model || '');
           break;
 
         case 'anthropic':
           result = await this.processWithAnthropic(provider, request);
           tokensUsed = result.usage?.input_tokens + result.usage?.output_tokens || 0;
-          cost = this.calculateAnthropicCost(tokensUsed, provider.config.model);
+          cost = this.calculateAnthropicCost(tokensUsed, provider.config.model || '');
           break;
 
         case 'local':
@@ -492,7 +509,7 @@ export class MasterBrain {
         result: result.content || result,
         metadata: {
           provider: provider.name,
-          model: provider.config.model,
+          model: provider.config.model || '',
           tokensUsed,
           cost,
           processingTime: Date.now() - startTime
@@ -523,7 +540,7 @@ export class MasterBrain {
     ];
 
     const response = await openai.chat.completions.create({
-      model: provider.config.model,
+      model: provider.config.model || 'gpt-3.5-turbo',
       messages,
       max_tokens: provider.config.maxTokens,
       temperature: provider.config.temperature,
@@ -546,7 +563,7 @@ export class MasterBrain {
         ...provider.config.customHeaders
       },
       body: JSON.stringify({
-        model: provider.config.model,
+        model: provider.config.model || 'claude-3-sonnet-20240229',
         max_tokens: provider.config.maxTokens,
         temperature: provider.config.temperature,
         system: provider.config.systemPrompt,
@@ -577,7 +594,7 @@ export class MasterBrain {
         ...provider.config.customHeaders
       },
       body: JSON.stringify({
-        model: provider.config.model,
+        model: provider.config.model || 'local_llm',
         prompt: `${provider.config.systemPrompt}\n\nUser: ${this.buildPrompt(request)}\n\nAssistant:`,
         stream: false,
         options: {
@@ -608,7 +625,7 @@ export class MasterBrain {
         ...provider.config.customHeaders
       },
       body: JSON.stringify({
-        model: provider.config.model,
+        model: provider.config.model || 'custom_provider',
         messages: [
           { role: 'system', content: provider.config.systemPrompt },
           { role: 'user', content: this.buildPrompt(request) }

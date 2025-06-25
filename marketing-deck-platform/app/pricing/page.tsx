@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Check, Star, Zap, Crown, Users, BarChart3, Shield, Globe, ArrowRight, TrendingUp, Brain, Award, Clock, Sparkles, Rocket, Target, Infinity, Lock, Headphones, Palette, Code, Database, Cloud, Smartphone, Monitor, Users2 } from 'lucide-react'
-import PublicPageLayout from '@/components/layout/PublicPageLayout'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 
 const pricingTiers = [
   {
@@ -182,7 +182,7 @@ export default function PricingPage() {
   }
 
   return (
-    <PublicPageLayout>
+    <UnifiedLayout>
 
       {/* Header */}
       <section className="px-6 py-20 text-center">
@@ -463,7 +463,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-    </PublicPageLayout>
+    </UnifiedLayout>
   )
 }
 

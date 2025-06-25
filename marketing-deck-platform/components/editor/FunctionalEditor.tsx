@@ -382,7 +382,7 @@ export function FunctionalEditor({ deckId }: { deckId?: string }) {
     const x = (e.clientX - rect.left) * (100 / zoom)
     const y = (e.clientY - rect.top) * (100 / zoom)
     
-    if (tool !== 'select') {
+    if (tool && ['text', 'chart', 'image', 'shape'].includes(tool)) {
       addElement(tool as Exclude<SlideElementType, 'select'>, { x, y })
     }
   }, [tool, zoom, addElement])

@@ -51,17 +51,18 @@ export interface SlideData {
 }
 
 export interface ElementData {
-  id: string;
-  type: 'text' | 'chart' | 'image' | 'shape' | 'data_table';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  id?: string;
+  type?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
   content?: string;
   fontSize?: number;
   fontFamily?: string;
   chartConfig?: any;
   src?: string;
+  [key: string]: any;
 }
 
 export interface ThemeData {

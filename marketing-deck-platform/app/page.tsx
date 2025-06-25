@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Brain, Zap, Shield, Users, BarChart3, CheckCircle, ArrowRight, Star, Play, Globe, Award, TrendingUp, Mail, User, Building } from 'lucide-react'
-import PublicPageLayout from '@/components/layout/PublicPageLayout'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 
 export default function HomePage() {
   const [email, setEmail] = useState('')
@@ -52,7 +52,7 @@ export default function HomePage() {
 
   if (success) {
     return (
-      <PublicPageLayout className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      <UnifiedLayout className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
         <div className="flex items-center justify-center min-h-screen py-20">
           <div className="max-w-md mx-auto text-center p-8">
             <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -76,12 +76,12 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </PublicPageLayout>
+      </UnifiedLayout>
     )
   }
 
   return (
-    <PublicPageLayout showComingSoonBar={true}>
+    <UnifiedLayout showComingSoonBar={true}>
 
       {/* Hero Section */}
       <section className="relative px-6 py-20">
@@ -365,6 +365,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-    </PublicPageLayout>
+    </UnifiedLayout>
   )
 }

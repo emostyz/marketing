@@ -60,7 +60,7 @@ export const FactorsStep: React.FC<FactorsStepProps> = ({ dataContext, setDataCo
                 value={factor}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFactorChange(index, e.target.value)}
               />
-              <Button variant="ghost" size="icon" onClick={() => handleRemoveFactor(index)} disabled={(dataContext.factors || ['']).length <= 1}>
+              <Button variant="ghost" size="sm" onClick={() => handleRemoveFactor(index)} disabled={(dataContext.factors || ['']).length <= 1}>
                 <X className="w-4 h-4" />
               </Button>
             </div>

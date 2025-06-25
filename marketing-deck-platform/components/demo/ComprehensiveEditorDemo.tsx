@@ -31,7 +31,58 @@ interface Template {
   style: 'modern' | 'classic' | 'minimal' | 'bold' | 'elegant'
 }
 
-const DEMO_SLIDES = [
+interface SlideElement {
+  id: string;
+  type: 'text' | 'image' | 'chart' | 'shape';
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  rotation: number;
+  opacity?: number;
+  zIndex?: number;
+  locked?: boolean;
+  visible?: boolean;
+  content: any;
+  style: {
+    background?: string;
+    border?: string;
+    borderRadius?: number;
+    shadow?: string;
+    fontFamily?: string;
+    fontSize?: number;
+    fontWeight?: string;
+    color?: string;
+    textAlign?: 'left' | 'center' | 'right' | 'justify';
+    padding?: number;
+    [key: string]: any;
+  };
+  animation?: {
+    entrance?: string;
+    exit?: string;
+    emphasis?: string;
+    duration?: number;
+    delay?: number;
+  };
+  interactions?: {
+    onClick?: string;
+    onHover?: string;
+    link?: string;
+  };
+  metadata?: any;
+}
+
+const DEMO_SLIDES: Array<{
+  id: string;
+  number: number;
+  title: string;
+  subtitle?: string;
+  content?: any;
+  keyTakeaways?: string[];
+  charts?: any[];
+  elements: SlideElement[];
+  background?: any;
+  customStyles?: any;
+  aiInsights?: any;
+}> = [
   {
     id: 'slide_1',
     number: 1,
@@ -85,15 +136,17 @@ const DEMO_SLIDES = [
           fontWeight: 'bold',
           color: '#ffffff',
           backgroundColor: 'rgba(59, 130, 246, 0.15)',
-          padding: '16px',
-          borderRadius: '12px',
+          padding: 16,
+          borderRadius: 12,
           border: '2px solid rgba(59, 130, 246, 0.4)'
         },
         metadata: {
           source: 'ai_insight',
           confidence: 94,
           insightType: 'breakthrough'
-        }
+        },
+        locked: false,
+        visible: true
       }
     ],
     background: {
@@ -125,7 +178,7 @@ const DEMO_SLIDES = [
 export default function ComprehensiveEditorDemo() {
   const [currentView, setCurrentView] = useState<'template' | 'editor'>('template')
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
-  const [currentSlides, setCurrentSlides] = useState(DEMO_SLIDES)
+  const [currentSlides, setCurrentSlides] = useState<typeof DEMO_SLIDES>(DEMO_SLIDES)
   const [selectedElements, setSelectedElements] = useState<string[]>([])
   const [showElementsLibrary, setShowElementsLibrary] = useState(true)
   const [showCustomizationPanel, setShowCustomizationPanel] = useState(true)
@@ -140,7 +193,7 @@ export default function ComprehensiveEditorDemo() {
   }, [])
 
   const handleTemplatePreview = useCallback((template: Template) => {
-    toast.info(`Previewing template: ${template.name}`)
+    toast.success(`Previewing template: ${template.name}`)
   }, [])
 
   // Element management
@@ -190,9 +243,9 @@ export default function ComprehensiveEditorDemo() {
     const newSlides = [...currentSlides]
     const elementIndex = newSlides[0].elements.findIndex(el => el.id === elementId)
     if (elementIndex !== -1) {
-      newSlides[0].elements[elementIndex].isLocked = !newSlides[0].elements[elementIndex].isLocked
+      newSlides[0].elements[elementIndex].locked = !newSlides[0].elements[elementIndex].locked
       setCurrentSlides(newSlides)
-      toast.success(newSlides[0].elements[elementIndex].isLocked ? 'Element locked' : 'Element unlocked')
+      toast.success(newSlides[0].elements[elementIndex].locked ? 'Element locked' : 'Element unlocked')
     }
   }, [currentSlides])
 
@@ -200,9 +253,9 @@ export default function ComprehensiveEditorDemo() {
     const newSlides = [...currentSlides]
     const elementIndex = newSlides[0].elements.findIndex(el => el.id === elementId)
     if (elementIndex !== -1) {
-      newSlides[0].elements[elementIndex].isVisible = !newSlides[0].elements[elementIndex].isVisible
+      newSlides[0].elements[elementIndex].visible = !newSlides[0].elements[elementIndex].visible
       setCurrentSlides(newSlides)
-      toast.success(newSlides[0].elements[elementIndex].isVisible ? 'Element shown' : 'Element hidden')
+      toast.success(newSlides[0].elements[elementIndex].visible ? 'Element shown' : 'Element hidden')
     }
   }, [currentSlides])
 
@@ -246,8 +299,8 @@ export default function ComprehensiveEditorDemo() {
               opacity: el.style?.opacity,
               box_shadow: el.style?.boxShadow
             },
-            is_locked: el.isLocked || false,
-            is_visible: el.isVisible !== false,
+            is_locked: el.locked || false,
+            is_visible: el.visible !== false,
             z_index: el.zIndex || 0,
             metadata: {
               template_id: el.metadata?.templateId,

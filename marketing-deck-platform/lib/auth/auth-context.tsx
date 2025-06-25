@@ -133,22 +133,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (error) {
           console.error('❌ Error getting session:', error)
-          setLoading(false)
-          setInitialized(true)
-          return
-        }
-
-        if (session?.user) {
+          // Still try to check for cached auth via API
+        } else if (session?.user) {
           console.log('✅ Active session found for user:', session.user.email)
           
-          // Sync session with server-side cookie
+          // Sync session with server-side cookie IMMEDIATELY
           try {
-            await fetch('/api/auth/set-cookie', {
+            const cookieResponse = await fetch('/api/auth/set-cookie', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ access_token: session.access_token })
             })
-            console.log('🍪 Session synced with server cookie')
+            
+            if (cookieResponse.ok) {
+              console.log('🍪 Session synced with server cookie for persistence')
+            } else {
+              console.warn('⚠️ Failed to sync session cookie:', cookieResponse.status)
+            }
           } catch (syncError) {
             console.warn('⚠️ Failed to sync session with server:', syncError)
           }
@@ -235,7 +236,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🧹 Cleaning up auth state change listener...')
       subscription.unsubscribe()
     }
-  }, [])
+  }, [router])
+
+  // Separate useEffect for cookie refresh to avoid dependency issues
+  useEffect(() => {
+    if (!user || user.demo) return
+
+    const cookieRefreshInterval = setInterval(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) {
+          await fetch('/api/auth/set-cookie', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: session.access_token })
+          })
+          console.log('🍪 Periodic cookie refresh completed')
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to refresh cookie:', error)
+      }
+    }, 5 * 60 * 1000) // Refresh every 5 minutes
+
+    return () => {
+      clearInterval(cookieRefreshInterval)
+    }
+  }, [user?.id]) // Only re-run if user ID changes, not on every user update
 
   const fetchAndSetUserProfile = async (authUser: any) => {
     try {

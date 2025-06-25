@@ -59,16 +59,24 @@ export async function middleware(request: NextRequest) {
     'supabase.auth.token'
   ]
   
+  const allCookies = request.cookies.getAll()
+  console.log('🔍 All cookies in middleware:', allCookies.map(c => ({ name: c.name, hasValue: !!c.value, length: c.value?.length })))
+  
   const hasAuthCookie = cookieNames.some(name => {
     const cookie = request.cookies.get(name)?.value
-    // More robust cookie validation - check it's not empty and looks like a JWT
-    return cookie && cookie.length > 20 && cookie.includes('.')
+    const isValid = cookie && cookie.length > 20 && cookie.includes('.')
+    if (cookie) {
+      console.log(`🔍 Checking cookie ${name}: length=${cookie.length}, hasValue=${!!cookie}, isValid=${isValid}`)
+    }
+    return isValid
   })
   
   if (hasAuthCookie) {
     console.log('✅ Valid auth cookie found, allowing access')
     return NextResponse.next();
   }
+  
+  console.log('❌ No valid auth cookie found');
 
   // No valid session, redirect to login
   return NextResponse.redirect(new URL('/auth/login', request.url));

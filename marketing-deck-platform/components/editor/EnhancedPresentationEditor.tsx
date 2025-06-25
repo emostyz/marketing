@@ -138,7 +138,7 @@ export default function EnhancedPresentationEditor({
     isSelected
   } = useMultiSelection({
     elements: currentSlide?.elements || [],
-    containerRef: canvasRef,
+    containerRef: canvasRef as React.RefObject<HTMLElement>,
     onSelectionChange: (ids) => {
       // Selection changed
     },
@@ -335,7 +335,7 @@ export default function EnhancedPresentationEditor({
       <EditorToolbar
         selectedElements={selectedElements}
         onUpdateElements={({ elementIds, updates }) => {
-          elementIds.forEach(id => handleUpdateElement(id, updates))
+          elementIds.forEach((id: any) => handleUpdateElement(id, updates))
         }}
         onDeleteElements={handleDeleteElements}
         onDuplicateElements={handleDuplicateElements}
@@ -347,7 +347,7 @@ export default function EnhancedPresentationEditor({
         zoom={zoom}
         onZoomChange={setZoom}
         tool={tool}
-        onToolChange={setTool}
+        onToolChange={(tool: string) => setTool(tool as any)}
         snapToGrid={snapToGrid}
         onSnapToGridChange={setSnapToGrid}
         showGrid={showGrid}
@@ -439,7 +439,7 @@ export default function EnhancedPresentationEditor({
                     onUpdate={(updates) => handleUpdateElement(element.id, updates)}
                     onDelete={() => handleDeleteElements([element.id])}
                     onDuplicate={() => handleDuplicateElements([element.id])}
-                    containerRef={canvasRef}
+                    containerRef={canvasRef as React.RefObject<HTMLElement>}
                     guidelines={{
                       horizontal: [0, 150, 300, 450, 600],
                       vertical: [0, 200, 400, 600, 800]

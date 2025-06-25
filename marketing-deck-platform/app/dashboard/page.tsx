@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/auth-context'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { 
@@ -21,8 +22,6 @@ import {
   HelpCircle,
   Upload
 } from 'lucide-react'
-import PublicNavigation from '@/components/navigation/PublicNavigation'
-import PublicFooter from '@/components/navigation/PublicFooter'
 import { FileBrowserModule } from '@/components/dashboard/FileBrowserModule'
 import Link from 'next/link'
 
@@ -41,28 +40,6 @@ export default function DashboardPage() {
     else setGreeting('Good evening')
   }, [])
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    console.log('🔄 Dashboard auth check - loading:', loading, 'user:', user?.email)
-    
-    // Only redirect if auth context has finished loading and there's no user
-    if (!loading && !user) {
-      console.log('🔄 No authenticated user found, redirecting to login')
-      // Use window.location.href to avoid race conditions
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/login'
-      } else {
-        router.push('/auth/login')
-      }
-    } else if (!loading && user) {
-      console.log('✅ User authenticated, showing dashboard for:', user.name)
-    } else if (loading) {
-      console.log('⏳ Auth still loading...')
-    }
-  }, [user, loading, router])
-
-  // Prevent multiple redirects
-  const [hasRedirected, setHasRedirected] = useState(false)
 
   // Mock user/plan/usage data for dashboard sub-header demo
   const dashboardUser = { plan: 'Pro', usage: 7, usageLimit: 10, notifications: 2 }
@@ -72,21 +49,6 @@ export default function DashboardPage() {
     { id: '2', title: 'Customer Insights', status: 'Processing', link: '/presentation/2/preview' }
   ]
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
-        <div className="text-center">
-          <Brain className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold text-white mb-2">Loading Dashboard</h2>
-          <p className="text-gray-400">Preparing your workspace...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null // Will redirect in useEffect
-  }
 
   const handleSignOut = async () => {
     try {
@@ -97,8 +59,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <>
-      <PublicNavigation />
+    <UnifiedLayout requireAuth={true}>
       {/* Dashboard Sub-Header: Only Pro Plan, Usage, Notifications */}
       <div className="w-full bg-gradient-to-r from-blue-950 via-gray-900 to-purple-950 border-b border-gray-800 shadow-md py-5 px-8 flex flex-row items-center justify-between gap-6">
         {/* Center: Pro Plan and Usage - big and prominent */}
@@ -322,7 +283,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      <PublicFooter />
-    </>
+    </UnifiedLayout>
   )
 }

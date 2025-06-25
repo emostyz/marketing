@@ -172,8 +172,8 @@ export class DataAnalyzer {
   private detectColumnType(values: any[]): DataSchema[string]['type'] {
     if (values.length === 0) return 'string';
     
-    const numericCount = values.filter(v => !isNaN(parseFloat(v))).length;
-    const booleanCount = values.filter(v => typeof v === 'boolean' || 
+    const numericCount = values.filter((v: any) => !isNaN(parseFloat(v))).length;
+    const booleanCount = values.filter((v: any) => typeof v === 'boolean' || 
       (typeof v === 'string' && ['true', 'false', 'yes', 'no', '1', '0'].includes(v.toLowerCase()))).length;
     
     const numericRatio = numericCount / values.length;

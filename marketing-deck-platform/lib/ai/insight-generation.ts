@@ -117,7 +117,11 @@ export class InsightGenerationEngine {
 
     } catch (error) {
       console.error('❌ Insight generation failed:', error)
-      throw new Error(`Insight generation failed: ${error.message}`)
+      if (error instanceof Error) {
+        throw new Error(`Insight generation failed: ${error.message}`);
+      } else {
+        throw new Error('Insight generation failed: Unknown error');
+      }
     }
   }
 
@@ -731,7 +735,7 @@ Return JSON with strategic insights that would impress a board of directors.`
     const insights: Insight[] = []
 
     // Advanced pattern detection
-    const patterns = this.detectAdvancedPatterns(data)
+    const patterns: any[] = this.detectAdvancedPatterns(data)
     
     patterns.forEach((pattern, index) => {
       insights.push({
@@ -759,7 +763,7 @@ Return JSON with strategic insights that would impress a board of directors.`
    * Detect advanced patterns in data
    */
   private detectAdvancedPatterns(data: AIReadyData): any[] {
-    const patterns = []
+    const patterns: any[] = []
 
     // Seasonality detection for time-based data
     if (data.summary.timeRange) {
@@ -769,7 +773,7 @@ Return JSON with strategic insights that would impress a board of directors.`
         description: `Data shows ${data.summary.timeRange.frequency} cyclical patterns with potential seasonality effects`,
         impact: 'medium' as const,
         confidence: 75,
-        evidence: [`Time span: ${data.summary.timeRange.range}`, `Frequency: ${data.summary.timeRange.frequency}`],
+        evidence: [`Time span: ${'range' in data.summary.timeRange ? data.summary.timeRange.range : 'N/A'}`, `Frequency: ${data.summary.timeRange.frequency}`],
         calculations: ['Time series decomposition analysis'],
         businessImplication: 'Seasonal patterns can be leveraged for predictive planning and resource allocation',
         recommendation: 'Develop seasonal forecasting models and adjust strategy timing',
@@ -793,7 +797,7 @@ Return JSON with strategic insights that would impress a board of directors.`
    * Analyze data concentration patterns
    */
   private analyzeDataConcentration(data: AIReadyData): any[] {
-    const patterns = []
+    const patterns: any[] = []
 
     data.summary.categories.forEach((category, index) => {
       if (category.categories.length >= 3) {
@@ -827,7 +831,7 @@ Return JSON with strategic insights that would impress a board of directors.`
    * Analyze value distribution patterns
    */
   private analyzeValueDistributions(data: AIReadyData): any[] {
-    const patterns = []
+    const patterns: any[] = []
 
     data.summary.columns.filter(c => c.type === 'numeric' && c.stats).forEach((column, index) => {
       const stats = column.stats!

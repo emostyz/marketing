@@ -51,7 +51,7 @@ export class BrainConfigManager {
     
     // Create configuration
     const config: BrainConfig = {
-      defaultProvider: this.determineDefaultProvider(userPrefs),
+      defaultProvider: this.determineDefaultProvider(userPrefs ?? undefined),
       userApiKeys: userPrefs?.customApiKeys || {},
       modelPreferences: userPrefs?.modelPreferences || {},
       customEndpoints: userPrefs?.customEndpoints || {},
@@ -60,8 +60,8 @@ export class BrainConfigManager {
         maxChunkSize: 25000, // Conservative for OpenAI 30k limit
         overlapTokens: 200
       },
-      fallbackProviders: this.determineFallbackProviders(userPrefs),
-      enterpriseMode: this.isEnterpriseUser(userPrefs)
+      fallbackProviders: this.determineFallbackProviders(userPrefs ?? undefined),
+      enterpriseMode: this.isEnterpriseUser(userPrefs ?? undefined)
     }
 
     this.configs.set(configKey, config)

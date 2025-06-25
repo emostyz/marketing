@@ -17,25 +17,14 @@ export interface UserProfile {
   id?: string
   companyName?: string
   logoUrl?: string
-  brandColors?: {
-    primary: string
-    secondary: string
-  }
+  brandColors?: { [key: string]: any }
   industry?: string
   targetAudience?: string
   businessContext?: string
   keyMetrics?: string[]
-  dataPreferences?: {
-    chartStyles: string[]
-    colorSchemes: string[]
-    narrativeStyle: string
-  }
-  presentationHistory?: Array<{
-    id: string
-    title: string
-    createdAt: Date
-    dataTypes: string[]
-  }>
+  dataPreferences?: { [key: string]: any }
+  presentationHistory?: Array<{ [key: string]: any }>
+  [key: string]: any
 }
 
 export interface AuthSession {

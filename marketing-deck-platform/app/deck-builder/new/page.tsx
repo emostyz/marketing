@@ -4,8 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UltimateDeckBuilder } from '@/components/deck-builder/UltimateDeckBuilder'
 import { useAuth } from '@/lib/auth/auth-context'
-import PublicFooter from '@/components/navigation/PublicFooter'
-import PublicNavigation from '@/components/navigation/PublicNavigation'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 
 export default function NewDeckBuilderPage() {
   const { user, loading } = useAuth()
@@ -13,34 +12,8 @@ export default function NewDeckBuilderPage() {
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/auth/login')
-      } else {
-        setIsLoading(false)
-      }
-    }
-  }, [user, loading, router])
-
-  if (loading || isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-300">Creating new deck...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null // Will redirect to login
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-gray-950 text-white">
-      <PublicNavigation />
+    <UnifiedLayout requireAuth={false} className="bg-gray-950 text-white">
       <main className="flex-1 flex flex-col justify-center mt-8 mb-8">
         <Suspense fallback={
           <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -53,7 +26,6 @@ export default function NewDeckBuilderPage() {
           <UltimateDeckBuilder />
         </Suspense>
       </main>
-      <PublicFooter />
-    </div>
+    </UnifiedLayout>
   )
 } 

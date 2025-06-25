@@ -152,11 +152,11 @@ export class EnhancedDataProcessor {
   
   // Clean and normalize data
   private static cleanData(rawData: any[]): any[] {
-    return rawData.filter(row => {
+    return rawData.filter((row: any) => {
       // Remove completely empty rows
-      const values = Object.values(row).filter(val => val !== null && val !== undefined && val !== '')
+      const values = Object.values(row).filter((val: any) => val !== null && val !== undefined && val !== '')
       return values.length > 0
-    }).map(row => {
+    }).map((row: any) => {
       // Clean individual values
       const cleaned: any = {}
       for (const [key, value] of Object.entries(row)) {

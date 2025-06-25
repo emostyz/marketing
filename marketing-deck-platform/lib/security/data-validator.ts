@@ -363,7 +363,7 @@ export class DataValidator {
   private static extractAllStrings(obj: any): string[] {
     const strings: string[] = [];
     
-    function extract(value: any) {
+    function extract(value: any): void {
       if (typeof value === 'string') {
         strings.push(value);
       } else if (Array.isArray(value)) {

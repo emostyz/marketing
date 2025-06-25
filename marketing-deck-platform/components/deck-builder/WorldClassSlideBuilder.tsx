@@ -64,7 +64,7 @@ interface WorldClassSlideBuilderProps {
 }
 
 // Professional color palettes
-const COLOR_PALETTES = {
+const COLOR_PALETTES: { [key: string]: { name: string; colors: string[] } } = {
   corporate: {
     name: 'Corporate Blue',
     colors: ['#1e3a8a', '#3b82f6', '#60a5fa', '#93c5fd', '#dbeafe', '#f8fafc']

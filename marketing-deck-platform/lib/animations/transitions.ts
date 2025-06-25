@@ -1,8 +1,10 @@
+import { easeOut } from 'framer-motion'
+
 export const pageTransitions = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
-  transition: { duration: 0.2, ease: 'easeOut' }
+  transition: { duration: 0.2, ease: easeOut }
 }
 
 export const slideTransitions = {
@@ -35,26 +37,26 @@ export const elementAnimations = {
   fadeIn: {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
-    transition: { duration: 0.5, ease: 'easeOut' }
+    transition: { duration: 0.5, ease: easeOut }
   },
   
   slideUp: {
     initial: { y: 50, opacity: 0 },
     animate: { y: 0, opacity: 1 },
-    transition: { duration: 0.5, ease: 'easeOut' }
+    transition: { duration: 0.5, ease: easeOut }
   },
   
   bounceIn: {
     initial: { scale: 0 },
     animate: { 
       scale: [0, 1.2, 0.9, 1.05, 1],
-      transition: { duration: 0.6, ease: 'easeOut' }
+      transition: { duration: 0.6, ease: easeOut }
     }
   },
   
   typewriter: {
     initial: { width: 0 },
     animate: { width: '100%' },
-    transition: { duration: 2, ease: 'linear' }
+    transition: { duration: 2, ease: (t: number) => t }
   }
 }

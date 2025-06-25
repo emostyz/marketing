@@ -189,7 +189,7 @@ export class FileParser {
   }
 
   private static analyzeColumn(columnName: string, data: any[]): ParsedDataColumn {
-    const values = data.map(row => row[columnName]).filter(val => val !== null && val !== undefined && val !== '')
+    const values = data.map((row: any) => row[columnName]).filter((val: any) => val !== null && val !== undefined && val !== '')
     const nonNullCount = values.length
     const nullCount = data.length - nonNullCount
     
@@ -204,8 +204,8 @@ export class FileParser {
     }
 
     // Type detection
-    const numericValues = values.filter(val => !isNaN(Number(val)) && isFinite(Number(val)))
-    const dateValues = values.filter(val => this.isDateLike(val))
+    const numericValues = values.filter((val: any) => !isNaN(Number(val)) && isFinite(Number(val)))
+    const dateValues = values.filter((val: any) => this.isDateLike(val))
     
     let type: 'number' | 'string' | 'date' | 'boolean'
     
@@ -213,7 +213,7 @@ export class FileParser {
       type = 'date'
     } else if (numericValues.length > values.length * 0.8) {
       type = 'number'
-    } else if (values.every(val => typeof val === 'boolean' || val === 'true' || val === 'false' || val === 1 || val === 0)) {
+    } else if (values.every((val: any) => typeof val === 'boolean' || val === 'true' || val === 'false' || val === 1 || val === 0)) {
       type = 'boolean'
     } else {
       type = 'string'

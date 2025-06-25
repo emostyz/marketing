@@ -129,7 +129,11 @@ export class NarrativeGenerationEngine {
 
     } catch (error) {
       console.error('❌ Narrative generation failed:', error)
-      throw new Error(`Narrative generation failed: ${error.message}`)
+      if (error instanceof Error) {
+        throw new Error(`Narrative generation failed: ${error.message}`);
+      } else {
+        throw new Error('Narrative generation failed: Unknown error');
+      }
     }
   }
 
@@ -160,7 +164,7 @@ export class NarrativeGenerationEngine {
 
     // Analyze chart storytelling potential
     charts.forEach(chart => {
-      if (chart.visualInnovation?.noveltyScore > 80) potential.transformation += 10
+      if ((chart.visualInnovation?.noveltyScore ?? 0) > 80) potential.transformation += 10
       if (chart.chartType === 'timeline') potential.transformation += 20
       if (chart.chartType === 'funnel') potential.tension += 15
     })
@@ -341,7 +345,7 @@ Return JSON format with acts, pacing, and key story elements.`
    * Determine visual emphasis points
    */
   private determineVisualEmphasis(role: string): string[] {
-    const emphasisMap = {
+    const emphasisMap: { [key: string]: string[] } = {
       setup: ['context', 'baseline', 'orientation'],
       build: ['patterns', 'trends', 'evidence'],
       reveal: ['anomalies', 'surprises', 'discoveries'],
@@ -374,7 +378,7 @@ Return JSON format with acts, pacing, and key story elements.`
    * Determine visual impact level
    */
   private determineVisualImpact(role: string): 'subtle' | 'moderate' | 'dramatic' {
-    const impactMap = {
+    const impactMap: { [key: string]: string } = {
       setup: 'subtle',
       build: 'moderate',
       reveal: 'dramatic',
@@ -383,7 +387,9 @@ Return JSON format with acts, pacing, and key story elements.`
       inspire: 'dramatic'
     }
 
-    return impactMap[role] || 'moderate'
+    const allowed: Array<'subtle' | 'moderate' | 'dramatic'> = ['subtle', 'moderate', 'dramatic'];
+    const value = impactMap[role];
+    return allowed.includes(value as any) ? (value as 'subtle' | 'moderate' | 'dramatic') : 'moderate';
   }
 
   /**
@@ -478,17 +484,27 @@ Return JSON format.`
     return {
       acts: {
         setup: [
-          { title: 'Current State Analysis', narrative: 'Understanding where we are today' },
-          { title: 'Key Performance Indicators', narrative: 'Measuring what matters most' }
+          { slideNumber: 1, role: 'setup', title: 'Current State Analysis', narrative: 'Understanding where we are today', purpose: 'Establish context', transition: 'Intro to KPIs', visualFocus: 'Overview', emotionalNote: 'Curiosity' },
+          { slideNumber: 2, role: 'build', title: 'Key Performance Indicators', narrative: 'Measuring what matters most', purpose: 'Highlight KPIs', transition: 'To challenges', visualFocus: 'KPIs', emotionalNote: 'Interest' },
+          { slideNumber: 3, role: 'reveal', title: 'Challenges Identified', narrative: 'Critical issues requiring attention', purpose: 'Expose challenges', transition: 'To opportunities', visualFocus: 'Problems', emotionalNote: 'Concern' },
+          { slideNumber: 4, role: 'build', title: 'Opportunity Analysis', narrative: 'Hidden potential in the data', purpose: 'Show opportunities', transition: 'To turning point', visualFocus: 'Opportunities', emotionalNote: 'Hope' },
+          { slideNumber: 5, role: 'climax', title: 'The Turning Point', narrative: 'Key insight that changes everything', purpose: 'Deliver insight', transition: 'To solutions', visualFocus: 'Insight', emotionalNote: 'Excitement' },
+          { slideNumber: 6, role: 'resolve', title: 'Strategic Solutions', narrative: 'Clear path to improvement', purpose: 'Present solutions', transition: 'To next steps', visualFocus: 'Solutions', emotionalNote: 'Confidence' },
+          { slideNumber: 7, role: 'inspire', title: 'Next Steps', narrative: 'Actionable recommendations', purpose: 'Motivate action', transition: 'Conclusion', visualFocus: 'Action', emotionalNote: 'Motivation' },
+          { slideNumber: 8, role: 'build', title: 'Challenge Deep Dive', narrative: 'Exploring the root causes', purpose: 'Analyze challenges', transition: 'To recommendations', visualFocus: 'Root causes', emotionalNote: 'Seriousness' },
+          { slideNumber: 9, role: 'resolve', title: 'Strategic Recommendations', narrative: 'Proposed solutions and next steps', purpose: 'Present recommendations', transition: 'To outcomes', visualFocus: 'Recommendations', emotionalNote: 'Optimism' },
+          { slideNumber: 10, role: 'inspire', title: 'Expected Outcomes', narrative: 'Anticipated results and impact', purpose: 'Show outcomes', transition: 'To closing', visualFocus: 'Outcomes', emotionalNote: 'Excitement' },
+          { slideNumber: 11, role: 'inspire', title: 'Closing Thoughts', narrative: 'Final remarks and call to action', purpose: 'Conclude', transition: 'To Q&A', visualFocus: 'Conclusion', emotionalNote: 'Closure' },
+          { slideNumber: 12, role: 'inspire', title: 'Q&A', narrative: 'Open floor for questions', purpose: 'Engage audience', transition: 'End', visualFocus: 'Q&A', emotionalNote: 'Engagement' }
         ],
         conflict: [
-          { title: 'Challenges Identified', narrative: 'Critical issues requiring attention' },
-          { title: 'Opportunity Analysis', narrative: 'Hidden potential in the data' },
-          { title: 'The Turning Point', narrative: 'Key insight that changes everything' }
+          { slideNumber: 13, role: 'build', title: 'Conflict Slide 1', narrative: 'Conflict narrative 1', purpose: 'Describe conflict 1', transition: 'To next conflict', visualFocus: 'Conflict 1', emotionalNote: 'Tension' },
+          { slideNumber: 14, role: 'build', title: 'Conflict Slide 2', narrative: 'Conflict narrative 2', purpose: 'Describe conflict 2', transition: 'To next conflict', visualFocus: 'Conflict 2', emotionalNote: 'Tension' },
+          { slideNumber: 15, role: 'climax', title: 'Conflict Slide 3', narrative: 'Conflict narrative 3', purpose: 'Describe climax', transition: 'To resolution', visualFocus: 'Climax', emotionalNote: 'Peak tension' },
         ],
         resolution: [
-          { title: 'Strategic Solutions', narrative: 'Clear path to improvement' },
-          { title: 'Next Steps', narrative: 'Actionable recommendations' }
+          { slideNumber: 16, role: 'resolve', title: 'Resolution Slide 1', narrative: 'Resolution narrative 1', purpose: 'Describe resolution 1', transition: 'To next resolution', visualFocus: 'Resolution 1', emotionalNote: 'Relief' },
+          { slideNumber: 17, role: 'inspire', title: 'Resolution Slide 2', narrative: 'Resolution narrative 2', purpose: 'Describe final inspiration', transition: 'End', visualFocus: 'Resolution 2', emotionalNote: 'Inspiration' }
         ]
       },
       pacing: 'medium',

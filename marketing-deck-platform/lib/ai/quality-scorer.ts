@@ -16,7 +16,7 @@ export interface QualityScore {
 }
 
 export class DeckQualityScorer {
-  private criteria = {
+  private criteria: { [key: string]: { weight: number; checks: string[] } } = {
     clarity: {
       weight: 0.25,
       checks: [
@@ -61,7 +61,7 @@ export class DeckQualityScorer {
   async scoreDeck(deck: any): Promise<QualityScore> {
     console.log('🔍 Starting deck quality assessment...')
     
-    const scores = {}
+    const scores: { [key: string]: any } = {}
     const details = {
       strengths: [] as string[],
       improvements: [] as string[],
@@ -81,7 +81,7 @@ export class DeckQualityScorer {
     
     // Calculate overall score
     const totalScore = Object.entries(scores).reduce((total, [cat, score]) => {
-      return total + (score * this.criteria[cat].weight)
+      return total + ((typeof score === 'number' ? score : 0) * (this.criteria[cat]?.weight ?? 1))
     }, 0)
     
     const grade = this.assignGrade(totalScore)
@@ -190,7 +190,7 @@ export class DeckQualityScorer {
   private checkOneMessagePerSlide(slides: any[]) {
     const multiMessageSlides = slides.filter(slide => {
       const contentItems = slide.content?.length || 0
-      const elements = slide.elements?.filter(e => e.type === 'text')?.length || 0
+      const elements = slide.elements?.filter((e: any) => e.type === 'text')?.length || 0
       return contentItems + elements > 5
     })
     
@@ -357,7 +357,7 @@ export class DeckQualityScorer {
     
     // Basic check - ensure charts have data
     const validCharts = chartSlides.every(slide => 
-      slide.charts.every(chart => chart.data || chart.type)
+      slide.charts.every((chart: any) => chart.data || chart.type)
     )
     
     return {
@@ -373,7 +373,7 @@ export class DeckQualityScorer {
     // Check if typography rules are applied
     const hasTypography = slides.some(slide => 
       slide.design?.typography || 
-      slide.elements?.some(e => e.style?.fontSize)
+      slide.elements?.some((e: any) => e.style?.fontSize)
     )
     
     return {
@@ -389,7 +389,7 @@ export class DeckQualityScorer {
     // Check if professional color scheme is applied
     const hasColors = slides.some(slide => 
       slide.design?.colors || 
-      slide.elements?.some(e => e.style?.color)
+      slide.elements?.some((e: any) => e.style?.color)
     )
     
     return {
@@ -509,11 +509,11 @@ export class DeckQualityScorer {
     
     // Add specific improvements from critical issues
     if (details.criticalIssues.length > 0) {
-      recommendations.push(...details.criticalIssues.map(issue => `Critical: ${issue}`))
+      recommendations.push(...(details.criticalIssues as any[]).map((issue: any) => `Critical: ${issue}`))
     }
     
     // If score is high, provide advanced tips
-    if (Object.values(scores).every(score => score >= 0.8)) {
+    if (Object.values(scores).every((score: any) => typeof score === 'number' && score >= 0.8)) {
       recommendations.push("Consider adding executive coaching notes for presentation delivery")
       recommendations.push("Add industry benchmarks or competitive context where relevant")
     }

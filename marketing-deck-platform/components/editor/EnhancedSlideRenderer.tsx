@@ -49,7 +49,7 @@ export default function EnhancedSlideRenderer({ slide, scale, isActive = true }:
                   border: '1px solid rgba(59, 130, 246, 0.3)',
                   borderRadius: '8px'
                 }}
-                formatter={config.valueFormatter ? [config.valueFormatter] : undefined}
+                formatter={config.valueFormatter || undefined}
               />
               {config.showLegend && <Legend />}
               <Line 
@@ -92,7 +92,7 @@ export default function EnhancedSlideRenderer({ slide, scale, isActive = true }:
                   border: '1px solid rgba(59, 130, 246, 0.3)',
                   borderRadius: '8px'
                 }}
-                formatter={config.valueFormatter ? [config.valueFormatter] : undefined}
+                formatter={config.valueFormatter || undefined}
               />
               {config.showLegend && <Legend />}
               <Area 
@@ -129,7 +129,7 @@ export default function EnhancedSlideRenderer({ slide, scale, isActive = true }:
                   border: '1px solid rgba(59, 130, 246, 0.3)',
                   borderRadius: '8px'
                 }}
-                formatter={config.valueFormatter ? [config.valueFormatter] : undefined}
+                formatter={config.valueFormatter || undefined}
               />
               {config.showLegend && <Legend />}
               <Bar 
@@ -167,7 +167,7 @@ export default function EnhancedSlideRenderer({ slide, scale, isActive = true }:
                   border: '1px solid rgba(59, 130, 246, 0.3)',
                   borderRadius: '8px'
                 }}
-                formatter={config.valueFormatter ? [config.valueFormatter] : undefined}
+                formatter={config.valueFormatter || undefined}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -197,7 +197,7 @@ export default function EnhancedSlideRenderer({ slide, scale, isActive = true }:
                   border: '1px solid rgba(59, 130, 246, 0.3)',
                   borderRadius: '8px'
                 }}
-                formatter={config.valueFormatter ? [config.valueFormatter] : undefined}
+                formatter={config.valueFormatter || undefined}
               />
               {config.showLegend && <Legend />}
               <Scatter 

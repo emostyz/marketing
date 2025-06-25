@@ -64,7 +64,7 @@ export function EditableElement({
 
     const container = containerRef?.current || document.querySelector('.slide-canvas') || document.body
     
-    const moveable = new Moveable(container, {
+    const moveable = new Moveable(container as HTMLElement, {
       target: isSelected ? elementRef.current : null,
       
       // Core features
@@ -74,7 +74,6 @@ export function EditableElement({
       
       // Snapping
       snappable: snapToGrid,
-      snapCenter: true,
       snapThreshold: 5,
       snapGridWidth: gridSize,
       snapGridHeight: gridSize,

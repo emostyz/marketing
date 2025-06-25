@@ -1,4 +1,4 @@
-export const WORLD_CLASS_PROMPTS = {
+const WORLD_CLASS_PROMPTS: { [key: string]: any } = {
   executiveDeck: {
     system: `You are a senior McKinsey partner creating a board-level presentation. 
     Your insights must be:

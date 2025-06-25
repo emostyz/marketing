@@ -15,7 +15,6 @@ import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Toggle } from '@/components/ui/toggle'
 import { Badge } from '@/components/ui/badge'
 import { useHistory } from '@/stores/history-store'
 import { toast } from 'react-hot-toast'
@@ -47,7 +46,7 @@ interface ToolbarButtonProps {
   disabled?: boolean
   active?: boolean
   tooltip: string
-  size?: 'sm' | 'default'
+  size?: 'sm' | 'default' | 'lg'
   variant?: 'default' | 'outline' | 'ghost'
 }
 
@@ -524,25 +523,19 @@ export function EditorToolbar({
 
       {/* View Options */}
       <ToolbarGroup>
-        <Toggle
-          pressed={snapToGrid}
-          onPressedChange={onSnapToGridChange}
-          aria-label="Snap to Grid"
-          className="w-8 h-8 p-0"
-          title="Snap to Grid"
-        >
-          <Grid className="w-4 h-4" />
-        </Toggle>
+        <ToolbarButton
+          icon={Grid}
+          onClick={() => onSnapToGridChange(!snapToGrid)}
+          active={snapToGrid}
+          tooltip="Snap to Grid"
+        />
         
-        <Toggle
-          pressed={showGrid}
-          onPressedChange={onShowGridChange}
-          aria-label="Show Grid"
-          className="w-8 h-8 p-0"
-          title="Show Grid"
-        >
-          <Grid className="w-4 h-4" />
-        </Toggle>
+        <ToolbarButton
+          icon={Grid}
+          onClick={() => onShowGridChange(!showGrid)}
+          active={showGrid}
+          tooltip="Show Grid"
+        />
       </ToolbarGroup>
 
       <Separator orientation="vertical" className="h-6" />
