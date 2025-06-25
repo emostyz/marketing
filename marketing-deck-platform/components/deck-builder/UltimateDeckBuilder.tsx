@@ -23,6 +23,7 @@ import WorldClassPresentationEditor from '@/components/editor/WorldClassPresenta
 import { useTierLimits } from '@/lib/hooks/useTierLimits'
 import UpgradePrompt from '@/components/ui/UpgradePrompt'
 import { useEnterpriseAccess } from '@/lib/hooks/useEnterpriseAccess'
+import { RealTimeAnalysisFlow } from './RealTimeAnalysisFlow'
 // import { Progress } from '@/components/ui/progress'
 
 // Helper function to convert file to base64
@@ -226,6 +227,8 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   const [progress, setProgress] = useState(0)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisProgress, setAnalysisProgress] = useState(0)
+  const [analysisDatasetId, setAnalysisDatasetId] = useState<string | null>(null)
+  const [analysisContext, setAnalysisContext] = useState<any>(null)
   const [analysisStatus, setAnalysisStatus] = useState('Initializing Analysis...')
   const [error, setError] = useState<string | null>(null)
   const [parsedData, setParsedData] = useState<any[]>([])
@@ -481,385 +484,50 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
 
   const performAnalysis = async () => {
     console.log('🚀 performAnalysis called!')
+    console.log('📊 Current files:', intakeData.files)
+    console.log('📊 Detailed files debug:', intakeData.files.map(f => ({
+      name: f.name,
+      status: f.status,
+      datasetId: f.datasetId,
+      parsedData: f.parsedData,
+      url: f.url
+    })))
     
-    // Prevent multiple simultaneous analyses
-    if (isAnalyzing) {
-      console.warn('Analysis already in progress')
-      toast('Analysis already in progress', { icon: '⚠️', style: { background: '#facc15', color: '#1e293b' } })
+    // Check if we have files
+    const successfulFiles = intakeData.files.filter(f => f.status === 'success')
+    if (successfulFiles.length === 0) {
+      toast.error('Please upload at least one file before proceeding to analysis.')
       return
     }
-
-    // Check tier limits and immediately increment usage to prevent race conditions
-    try {
-      const limitCheck = await checkLimit('presentations')
-      
-      if (!limitCheck.canPerform) {
-        setUpgradePromptData({
-          limitType: 'presentations',
-          currentUsage: limitCheck.currentUsage,
-          limit: limitCheck.limit as number
-        })
-        setShowUpgradePrompt(true)
-        return
-      }
-
-      // CRITICAL: Immediately increment usage counter to prevent race conditions
-      const usageIncremented = await incrementUsage('presentations')
-      if (!usageIncremented) {
-        setError('Failed to track usage. Please try again.')
-        return
-      }
-    } catch (error) {
-      console.error('Error checking limits:', error)
-      // Continue anyway for demo purposes
-    }
-
-    console.log('✅ Starting analysis...')
-    setIsAnalyzing(true)
-    setAnalysisStatus('Initializing Analysis...')
-    setAnalysisProgress(10)
     
-    // Move to the analysis step visually
+    console.log('✅ Starting real-time analysis flow...')
+    
+    // Get the first successful file's dataset ID
+    const firstFile = successfulFiles[0]
+    const datasetId = firstFile.datasetId || `demo-dataset-${Date.now()}`
+    
+    console.log('📊 Using dataset ID:', datasetId, 'from file:', firstFile.name)
+    
+    // Prepare context from intake data
+    const context = {
+      audience: intakeData.context?.targetAudience || 'executives',
+      goal: intakeData.context?.businessContext || 'analyze data',
+      timeLimit: 15,
+      industry: intakeData.context?.industry || 'business',
+      decision: intakeData.context?.keyMetrics || 'improve performance',
+      businessContext: intakeData.context?.businessContext || 'analyze data',
+      description: intakeData.context?.description || 'Data analysis presentation'
+    }
+    
+    console.log('✨ Using context:', context)
+    
+    // Store dataset ID and context for the real-time flow
+    setAnalysisDatasetId(datasetId)
+    setAnalysisContext(context)
+    
+    // Move to the real-time analysis step
     setCurrentStep(5)
-
-    // Simulate progress updates for a better UX
-    console.log('🔄 Starting progress updates...')
-    const progressUpdates = [
-      { progress: 25, status: 'Analyzing Data Patterns...' },
-      { progress: 50, status: 'Generating Novel Insights...' },
-      { progress: 75, status: 'Crafting Narrative Arc...' },
-      { progress: 90, status: 'Designing Slide Structure...' },
-    ];
-
-    for (const update of progressUpdates) {
-      console.log('🔄 Progress update:', update)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setAnalysisProgress(update.progress);
-      setAnalysisStatus(update.status);
-      console.log('✅ Progress set to:', update.progress, update.status)
-    }
-    
-    try {
-      // Process uploaded files from cloud storage
-      const processedFiles = intakeData.files.filter(f => f.status === 'success')
-      
-      // Store uploaded files in state
-      setUploadedFiles(processedFiles)
-
-      let allData: any[] = []
-      let datasetIds: string[] = []
-
-      if (processedFiles.length > 0) {
-        // Process uploaded files to extract real data
-        for (const file of processedFiles) {
-          if (file.parsedData && file.parsedData.data && Array.isArray(file.parsedData.data)) {
-            // Use real parsed data from the file
-            allData = allData.concat(file.parsedData.data)
-            if (file.datasetId) {
-              datasetIds.push(file.datasetId)
-            }
-            console.log(`✅ Using real data from ${file.name}: ${file.parsedData.data.length} rows`)
-          } else if (file.parsedData && file.parsedData.rows && Array.isArray(file.parsedData.rows)) {
-            // Alternative structure for parsed data  
-            allData = allData.concat(file.parsedData.rows)
-            if (file.datasetId) {
-              datasetIds.push(file.datasetId)
-            }
-            console.log(`✅ Using real data from ${file.name}: ${file.parsedData.rows.length} rows`)
-          } else {
-            console.warn(`⚠️ No valid data found in ${file.name}, generating sample data`)
-            allData = allData.concat(mockDataFromFile(file.name, ''))
-          }
-        }
-      }
-
-      // If no real data was extracted, use sample data
-      if (allData.length === 0) {
-        console.warn('⚠️ No real data extracted from files, using sample data')
-        allData = mockDataFromFile('sample', '')
-      }
-
-      // Store the data for API call
-      setParsedData([{
-        fileName: 'Combined Dataset',
-        data: allData,
-        rowCount: allData.length,
-        datasetIds: datasetIds
-      }])
-
-      console.log(`📊 Final data for analysis: ${allData.length} rows from ${processedFiles.length} files`)
-
-      const requestData = {
-        data: allData, // Use the real extracted data
-        datasetIds: datasetIds, // Include dataset IDs for database retrieval
-        context: {
-          industry: intakeData.context.industry || 'Technology',
-          targetAudience: intakeData.context.targetAudience || 'Executives',
-          businessContext: intakeData.context.businessContext || 'Business presentation',
-          description: intakeData.context.description || 'Data analysis presentation',
-          factors: intakeData.context.factors || []
-        },
-        timeFrame: {
-          start: intakeData.timeFrame.start,
-          end: intakeData.timeFrame.end,
-          dataFrequency: intakeData.timeFrame.granularity || 'monthly',
-          analysisType: intakeData.timeFrame.analysisType || 'trend',
-          comparisons: intakeData.timeFrame.comparisons || [],
-          granularity: intakeData.timeFrame.granularity || 'monthly',
-          focusPeriods: intakeData.timeFrame.focusPeriods || []
-        },
-        requirements: {
-          slidesCount: intakeData.requirements.slidesCount || 12,
-          presentationDuration: intakeData.requirements.presentationDuration || 15,
-          focusAreas: ['Key Insights', 'Trends', 'Recommendations', 'Time Comparisons'],
-          style: intakeData.requirements.style || 'modern',
-          includeCharts: true,
-          includeExecutiveSummary: true,
-          includeComparisons: intakeData.requirements.includeComparisons || false,
-          comparisonTypes: intakeData.requirements.comparisonTypes || []
-        }
-      }
-
-      // Helper function to create mock structured data from file content
-      function mockDataFromFile(fileName: string, _content: string) {
-        // In production, this would parse actual CSV/Excel data
-        const baseData = []
-        for (let i = 0; i < 12; i++) {
-          baseData.push({
-            period: `2024-${String(i + 1).padStart(2, '0')}`,
-            revenue: Math.floor(Math.random() * 100000) + 50000,
-            growth: (Math.random() * 20) - 5,
-            category: ['Product A', 'Product B', 'Product C'][i % 3],
-            customers: Math.floor(Math.random() * 1000) + 500
-          })
-        }
-        return baseData
-      }
-
-      // Use the enhanced AI analysis endpoint with world-class features
-      // For enterprise users, use their configured endpoint
-      const aiEndpoint = getAIEndpoint()
-      const aiConfig = getAIConfig()
-      
-      console.log('🏢 Using AI endpoint:', isEnterprise ? 'Enterprise' : 'Standard', aiEndpoint)
-      
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      
-      // Add enterprise headers if configured
-      if (isEnterprise && aiConfig.headers) {
-        Object.assign(headers, aiConfig.headers)
-      }
-      
-      const response = await fetch(aiEndpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          data: allData,
-          datasetIds: datasetIds,
-          context: {
-            industry: requestData.context.industry,
-            businessContext: requestData.context.businessContext,
-            targetAudience: requestData.context.targetAudience,
-            description: requestData.context.description,
-            audience: requestData.context.targetAudience,
-            goal: requestData.context.businessContext,
-            timeLimit: requestData.requirements.presentationDuration,
-            decision: requestData.context.factors?.join(', ') || 'optimize performance'
-          },
-          options: {
-            includeChartRecommendations: true,
-            includeExecutiveSummary: true,
-            includeNarrative: true,
-            includeDesignInnovation: true,
-            maxInsights: isEnterprise ? 15 : 10, // More insights for enterprise
-            confidenceThreshold: 0.7,
-            innovationLevel: isEnterprise ? 'revolutionary' : 'advanced', // Higher innovation for enterprise
-            visualStyle: 'futuristic',
-            chartComplexity: 'moderate',
-            narrativeTone: 'confident',
-            designComplexity: isEnterprise ? 'complex' : 'moderate', // More complex designs for enterprise
-            enableInteractivity: true,
-            enableAnimations: true,
-            // Enterprise-specific options
-            ...(isEnterprise && {
-              enterpriseMode: true,
-              maxTokens: aiConfig.maxTokens,
-              temperature: aiConfig.temperature,
-              model: aiConfig.model
-            })
-          }
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Analysis failed with status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('🎉 Enhanced AI analysis complete!', {
-        insights: result.data?.insights?.insights?.length || 0,
-        slides: result.data?.slideStructure?.length || 0,
-        confidence: result.metadata?.confidence || 0,
-        narrative: result.data?.narrative?.story?.title || 'N/A',
-        designInnovation: result.data?.designInnovation?.slideDesigns?.length || 0
-      });
-      
-      if (result.success && result.data) {
-        // Transform enhanced AI analysis result to compatible format
-        const transformedResult = {
-          insights: result.data.insights?.insights || [],
-          slideStructure: result.data.slideStructure || [],
-          narrative: {
-            theme: result.data.narrative?.story?.theme || 'Data-driven insights',
-            keyMessages: result.data.narrative?.story?.keyMessages || [],
-            title: result.data.narrative?.story?.title || 'Data Analysis Presentation',
-            story: result.data.narrative?.story || {}
-          },
-          chartRecommendations: result.data.chartRecommendations?.recommendations || [],
-          executiveSummary: result.data.executiveSummary || {},
-          designInnovation: result.data.designInnovation || {},
-          visualExcellence: result.data.visualExcellence || {},
-          customizations: result.data.customizations || {},
-          metadata: {
-            confidence: result.metadata?.confidence || 85,
-            totalInsights: result.metadata?.totalInsights || 0,
-            innovationScore: result.metadata?.innovationScore || 0,
-            narrativeEngagement: result.metadata?.narrativeEngagement || 0
-          }
-        };
-
-        setAnalysisResult(transformedResult);
-        setAnalysisStatus('Analysis Complete!');
-        setAnalysisProgress(100);
-        
-        // Show different success message for enterprise vs standard users
-        if (isEnterprise && getAIConfig().endpoint !== '/api/ai/analyze') {
-          toast.success(`🏢 Enterprise AI Analysis Complete! Generated ${transformedResult.slideStructure?.length || 0} slides with ${transformedResult.insights?.length || 0} insights using your on-premise LLM (${Math.round((transformedResult.metadata?.confidence || 0.85) * 100)}% confidence)`, { 
-            duration: 8000,
-            icon: '🧠'
-          });
-        } else {
-          toast.success(`🎯 Analysis complete! Generated ${transformedResult.slideStructure?.length || 0} slides with ${transformedResult.insights?.length || 0} insights (${Math.round((transformedResult.metadata?.confidence || 0.85) * 100)}% confidence)`, { duration: 6000 });
-        }
-        
-        setProgress(100)
-        console.log('Universal analysis result:', transformedResult)
-        console.log('Real insights count:', transformedResult.insights?.length || 0)
-        console.log('Slides count:', transformedResult.slideStructure?.length || 0)
-
-        // Usage already incremented at start to prevent race conditions
-
-        // ACTUALLY GENERATE A DECK using our fixed API
-        try {
-          console.log('🎯 GENERATING DECK with real data...')
-          
-          // Get the first dataset ID if available
-          const datasetId = datasetIds.length > 0 ? datasetIds[0] : null
-          
-          if (datasetId) {
-            console.log('📊 Using dataset ID:', datasetId)
-            
-            // Prepare world-class context from intake data
-            const worldClassContext = {
-              audience: intakeData.context?.targetAudience || 'executives',
-              goal: intakeData.context?.businessContext || 'analyze data',
-              timeLimit: 15, // Default presentation time
-              industry: intakeData.context?.industry || 'business',
-              decision: intakeData.context?.keyMetrics || 'improve performance'
-            }
-            
-            console.log('✨ Using world-class context:', worldClassContext)
-            
-            const deckResponse = await fetch('/api/deck/generate', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                datasetId: datasetId,
-                context: worldClassContext
-              }),
-            })
-
-            if (!deckResponse.ok) {
-              throw new Error('Failed to generate deck')
-            }
-
-            const deckResult = await deckResponse.json()
-            console.log('✅ DECK GENERATED:', deckResult)
-            
-            if (deckResult.success && deckResult.deckId) {
-              console.log('🚀 NAVIGATING TO DECK:', deckResult.deckId)
-              
-              // Show quality feedback if world-class generation was used
-              if (deckResult.worldClass && deckResult.qualityGrade) {
-                toast.success(`${deckResult.qualityGrade} deck generated! Created ${deckResult.slideCount} slides from ${deckResult.dataRows} data points.`)
-              } else {
-                toast.success(`Deck generated! Created ${deckResult.slideCount} slides.`)
-              }
-              
-              // ACTUALLY NAVIGATE TO THE GENERATED DECK
-              router.push(`/deck-builder/${deckResult.deckId}`)
-              return // Exit here - we're navigating away
-            }
-          } else {
-            console.warn('⚠️ No dataset ID available, using legacy flow')
-          }
-          
-          // Fallback: Save to presentations table (legacy)
-          const response = await fetch('/api/presentations', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              title: intakeData.context.description || 'AI-Generated Presentation',
-              status: 'draft',
-              isPublic: false,
-              intakeData: intakeData,
-              analysisResult: transformedResult,
-              slideStructure: transformedResult.slideStructure
-            }),
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to save presentation')
-          }
-
-          const savedPresentation = await response.json()
-          console.log('Presentation saved (legacy):', savedPresentation)
-        } catch (error) {
-          console.error('Error generating/saving deck:', error)
-          setError('There was an error generating your deck.')
-        }
-
-        // Move to the template selection step (legacy flow)
-        setIsAnalyzing(false);
-        setIsLoading(false);
-        nextStep();
-      } else {
-        throw new Error(result.error || 'Unknown error during analysis');
-      }
-
-    } catch (error: any) {
-      console.error("Analysis Error:", error);
-      toast.error(error.message || 'Something went wrong');
-      setError(error.message || 'An unexpected error occurred. Please try again.');
-      setIsAnalyzing(false);
-      setIsLoading(false);
-      setCurrentStep(4); // Go back to upload step on error
-      
-      // Rollback usage counter for failed analysis
-      const rollbackSuccess = await rollbackUsage('presentations', `Analysis failed: ${error.message}`)
-      if (rollbackSuccess) {
-        console.log('Successfully rolled back usage counter')
-      } else {
-        console.error('Failed to rollback usage counter')
-      }
-    }
-  };
-
+  }
 
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template)
@@ -904,9 +572,33 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
           />
         )
       case 5:
-        return (
-          <AIAnalysisStep status={analysisStatus} progress={analysisProgress} />
-        )
+        // Show the real-time analysis flow with insights approval and structure review
+        if (analysisDatasetId && analysisContext) {
+          return (
+            <RealTimeAnalysisFlow 
+              datasetId={analysisDatasetId}
+              context={analysisContext}
+              onComplete={(deckId: string) => {
+                console.log('🎉 Real-time analysis complete, navigating to deck:', deckId)
+                router.push(`/deck-builder/${deckId}`)
+              }}
+              onBack={() => {
+                setCurrentStep(4) // Go back to upload step
+                setAnalysisDatasetId(null)
+                setAnalysisContext(null)
+              }}
+            />
+          )
+        } else {
+          // Fallback - should not happen but just in case
+          return (
+            <Card className="p-8 text-center">
+              <h2 className="text-2xl font-bold text-white mb-2">Analysis Setup</h2>
+              <p className="text-gray-400 mb-8">Setting up analysis...</p>
+              <Button onClick={() => setCurrentStep(4)}>Back to Upload</Button>
+            </Card>
+          )
+        }
       case 6:
         return (
           <TemplateStep
