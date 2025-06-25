@@ -40,9 +40,9 @@ export async function createServerSupabaseClient() {
   )
 }
 
-// Synchronous version for compatibility with existing code (no cookies)
-export function createServerClient() {
-  const cookieStore = cookies()
+// Async version for Next.js App Router compatibility
+export async function createServerClient() {
+  const cookieStore = await cookies()
   return createClient(
     supabaseUrl,
     supabaseAnonKey,

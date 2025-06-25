@@ -5,12 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  ScatterChart, Scatter, AreaChart, Area, RadarChart, PolarGrid,
-  PolarAngleAxis, PolarRadiusAxis, Radar, Treemap, Sankey
+  ScatterChart, Scatter, AreaChart, Area, ComposedChart,
+  ReferenceLine, ReferenceArea
 } from 'recharts'
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip as ChartTooltip, Legend as ChartLegend, LineElement, PointElement, ArcElement } from 'chart.js'
-import { Bar as ChartJSBar, Line as ChartJSLine, Pie as ChartJSPie, Doughnut } from 'react-chartjs-2'
-import * as d3 from 'd3'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,11 +16,9 @@ import { Separator } from '@/components/ui/separator'
 import { 
   TrendingUp, TrendingDown, BarChart3, PieChart as PieChartIcon, 
   LineChart as LineChartIcon, Activity, Target, AlertTriangle,
-  Lightbulb, ArrowRight, CheckCircle, XCircle, Clock
+  Lightbulb, ArrowRight, CheckCircle, XCircle, Clock, Zap,
+  Award, Users, DollarSign, Percent, Eye, Star
 } from 'lucide-react'
-
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, ChartTooltip, ChartLegend)
 
 export interface SlideData {
   id: string
@@ -48,1035 +43,718 @@ export interface SlideData {
       recommendations?: string[]
     }
     keyColumns?: Array<{ name: string; type: string; uniqueValues: number }>
-    theme?: string
-    confidence?: number
+    keyTakeaways?: string[]
   }
-  charts?: ChartConfig[]
-  design?: {
-    concept?: any
-    layout?: any
-    uniqueFeatures?: any[]
-    storytellingEnhancement?: any
+  charts?: any[]
+  elements?: any[]
+  background?: {
+    type: 'solid' | 'gradient' | 'pattern'
+    color?: string
+    gradient?: string[]
   }
-  visualNarrative?: {
-    impact?: string
-    emphasis?: string[]
-    connections?: string[]
-    narrative?: string
-  }
-  customization?: {
-    visualStyle?: string
-    innovationLevel?: string
-    designComplexity?: string
-    layout?: string
-    animations?: any
-    interactivity?: any
-    colorScheme?: string[]
-    enableAnimations?: boolean
-    enableInteractivity?: boolean
-  }
-  metadata?: {
-    narrativeRole?: string
-    visualImpact?: string
-    innovationScore?: number
-    designComplexity?: string
-    slideNumber?: number
-  }
-}
-
-export interface ChartConfig {
-  id: string
-  type: string
-  chartType: string
-  title: string
-  description?: string
-  data: any[]
-  xAxis?: string
-  yAxis?: string
-  configuration?: any
-  customization?: {
-    style?: string
-    visualUpgrades?: string[]
-    interactivity?: string[]
-    storytelling?: string[]
-    innovation?: string[]
-  }
-  integration?: any
-  enhancement?: any
-  businessValue?: string
-  insights?: string[]
-  visualInnovation?: {
-    noveltyScore?: number
-    designElements?: string[]
-    interactivity?: string[]
-    storytelling?: string
-  }
+  style?: string
+  layout?: string
+  keyTakeaways?: string[]
+  aiInsights?: any
+  notes?: string
 }
 
 interface WorldClassSlideRendererProps {
-  slides: SlideData[]
-  currentSlide: number
-  onSlideChange: (index: number) => void
-  onSlideEdit?: (slideId: string, updates: Partial<SlideData>) => void
-  isEditable?: boolean
+  slide: SlideData
+  isActive?: boolean
+  onInteraction?: (type: string, data: any) => void
   className?: string
 }
 
-const COLORS: { [key: string]: string[] } = {
-  futuristic: [
-    '#6366f1', // Indigo
-    '#06b6d4', // Cyan
-    '#a21caf', // Fuchsia
-    '#f59e42', // Orange
-    '#f43f5e', // Rose
-  ],
-  executive: [
-    '#1e293b', // Slate
-    '#64748b', // Gray
-    '#fbbf24', // Amber
-    '#10b981', // Emerald
-    '#f87171', // Red
-  ],
-  premium: [
-    '#f59e42', // Orange
-    '#6366f1', // Indigo
-    '#06b6d4', // Cyan
-    '#a21caf', // Fuchsia
-    '#f43f5e', // Rose
-  ],
-  vibrant: [
-    '#f43f5e', // Rose
-    '#f59e42', // Orange
-    '#10b981', // Emerald
-    '#6366f1', // Indigo
-    '#a21caf', // Fuchsia
-  ],
+// Professional color palettes
+const PROFESSIONAL_COLORS = {
+  executive: {
+    primary: ['#1e40af', '#3b82f6', '#60a5fa', '#93c5fd'],
+    gradients: ['linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)'],
+    accent: '#f59e0b',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444'
+  },
+  modern: {
+    primary: ['#7c3aed', '#a855f7', '#c084fc', '#ddd6fe'],
+    gradients: ['linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'],
+    accent: '#06b6d4',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444'
+  },
+  premium: {
+    primary: ['#1f2937', '#374151', '#6b7280', '#9ca3af'],
+    gradients: ['linear-gradient(135deg, #434343 0%, #000000 100%)', 'linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%)'],
+    accent: '#d97706',
+    success: '#059669',
+    warning: '#d97706',
+    error: '#dc2626'
+  }
 }
 
-export default function WorldClassSlideRenderer({
-  slides,
-  currentSlide,
-  onSlideChange,
-  onSlideEdit,
-  isEditable = false,
+const WorldClassSlideRenderer: React.FC<WorldClassSlideRendererProps> = ({
+  slide,
+  isActive = false,
+  onInteraction,
   className = ''
-}: WorldClassSlideRendererProps) {
-  const [isAnimating, setIsAnimating] = useState(false)
-  const slideRef = useRef<HTMLDivElement>(null)
-  
-  const currentSlideData = slides[currentSlide]
+}) => {
+  const [chartAnimations, setChartAnimations] = useState(true)
+  const [colorPalette, setColorPalette] = useState(PROFESSIONAL_COLORS.executive)
   
   useEffect(() => {
-    setIsAnimating(true)
-    const timer = setTimeout(() => setIsAnimating(false), 800)
-    return () => clearTimeout(timer)
-  }, [currentSlide])
+    // Set color palette based on slide style
+    if (slide.style === 'modern') {
+      setColorPalette(PROFESSIONAL_COLORS.modern)
+    } else if (slide.style === 'premium') {
+      setColorPalette(PROFESSIONAL_COLORS.premium)
+    } else {
+      setColorPalette(PROFESSIONAL_COLORS.executive)
+    }
+  }, [slide.style])
 
-  if (!currentSlideData) {
+  const renderExecutiveChart = (chart: any, index: number) => {
+    const chartId = `chart_${slide.id}_${index}`
+    
     return (
-      <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
-        <p className="text-gray-500">No slide data available</p>
+      <motion.div
+        key={chartId}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.2, duration: 0.8 }}
+        className="relative"
+      >
+        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+          {/* Chart Header */}
+          <div className="mb-6">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{chart.title}</h3>
+            <div className="flex items-center space-x-4">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <TrendingUp className="w-4 h-4 mr-1" />
+                {chart.insights?.[0] || 'Key Insight'}
+              </Badge>
+              {chart.confidence && (
+                <div className="flex items-center text-sm text-gray-600">
+                  <Star className="w-4 h-4 mr-1 text-yellow-500" />
+                  {chart.confidence}% Confidence
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Professional Chart Container */}
+          <div className="h-96 relative">
+            {chart.type === 'line' && renderProfessionalLineChart(chart, chartId)}
+            {chart.type === 'bar' && renderProfessionalBarChart(chart, chartId)}
+            {chart.type === 'pie' && renderProfessionalPieChart(chart, chartId)}
+            {chart.type === 'area' && renderProfessionalAreaChart(chart, chartId)}
+            {chart.type === 'combo' && renderProfessionalComboChart(chart, chartId)}
+          </div>
+
+          {/* Chart Annotations */}
+          {chart.annotations && (
+            <div className="mt-6 space-y-3">
+              {chart.annotations.map((annotation: any, i: number) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: (index + 1) * 0.2 + i * 0.1 }}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className={`w-3 h-3 rounded-full ${getAnnotationColor(annotation.type)}`} />
+                  <span className="text-sm font-medium text-gray-700">{annotation.text}</span>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    )
+  }
+
+  const renderProfessionalLineChart = (chart: any, chartId: string) => {
+    const data = chart.data || generateSampleTrendData()
+    
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <defs>
+            <linearGradient id={`gradient_${chartId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colorPalette.primary[0]} stopOpacity={0.8}/>
+              <stop offset="95%" stopColor={colorPalette.primary[0]} stopOpacity={0.1}/>
+            </linearGradient>
+            <linearGradient id={`gradient2_${chartId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colorPalette.primary[1]} stopOpacity={0.8}/>
+              <stop offset="95%" stopColor={colorPalette.primary[1]} stopOpacity={0.1}/>
+            </linearGradient>
+          </defs>
+          
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis 
+            dataKey="period" 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+          />
+          <YAxis 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            tickFormatter={(value) => `${value}`}
+          />
+          
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              border: 'none',
+              borderRadius: '12px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              fontSize: '14px'
+            }}
+          />
+          
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={colorPalette.primary[0]}
+            strokeWidth={3}
+            fill={`url(#gradient_${chartId})`}
+            animationDuration={chartAnimations ? 2000 : 0}
+          />
+          
+          {chart.showTrendline && (
+            <Line
+              type="monotone"
+              dataKey="trend"
+              stroke={colorPalette.accent}
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={false}
+              animationDuration={chartAnimations ? 2500 : 0}
+            />
+          )}
+          
+          {/* Key milestone annotations */}
+          {chart.milestones?.map((milestone: any, i: number) => (
+            <ReferenceLine 
+              key={i}
+              x={milestone.period} 
+              stroke={colorPalette.warning}
+              strokeWidth={2}
+              strokeDasharray="2 2"
+            />
+          ))}
+        </ComposedChart>
+      </ResponsiveContainer>
+    )
+  }
+
+  const renderProfessionalBarChart = (chart: any, chartId: string) => {
+    const data = chart.data || generateSampleBarData()
+    
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <defs>
+            <linearGradient id={`barGradient_${chartId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colorPalette.primary[0]} stopOpacity={1}/>
+              <stop offset="95%" stopColor={colorPalette.primary[1]} stopOpacity={0.8}/>
+            </linearGradient>
+          </defs>
+          
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis 
+            dataKey="category" 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+          />
+          <YAxis 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+          />
+          
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              border: 'none',
+              borderRadius: '12px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              fontSize: '14px'
+            }}
+          />
+          
+          <Bar 
+            dataKey="value" 
+            fill={`url(#barGradient_${chartId})`}
+            radius={[8, 8, 0, 0]}
+            animationDuration={chartAnimations ? 1500 : 0}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    )
+  }
+
+  const renderProfessionalPieChart = (chart: any, chartId: string) => {
+    const data = chart.data || generateSamplePieData()
+    
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <defs>
+            {colorPalette.primary.map((color, i) => (
+              <linearGradient key={i} id={`pieGradient${i}_${chartId}`} x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity={1}/>
+                <stop offset="100%" stopColor={color} stopOpacity={0.7}/>
+              </linearGradient>
+            ))}
+          </defs>
+          
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={140}
+            innerRadius={60}
+            paddingAngle={2}
+            animationDuration={chartAnimations ? 1000 : 0}
+          >
+            {data.map((entry: any, index: number) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={`url(#pieGradient${index % colorPalette.primary.length}_${chartId})`}
+              />
+            ))}
+          </Pie>
+          
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              border: 'none',
+              borderRadius: '12px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              fontSize: '14px'
+            }}
+          />
+          
+          <Legend 
+            verticalAlign="bottom" 
+            height={36}
+            iconType="circle"
+            wrapperStyle={{ fontSize: '14px', color: '#6b7280' }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    )
+  }
+
+  const renderProfessionalAreaChart = (chart: any, chartId: string) => {
+    const data = chart.data || generateSampleAreaData()
+    
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <defs>
+            <linearGradient id={`areaGradient_${chartId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colorPalette.primary[0]} stopOpacity={0.8}/>
+              <stop offset="95%" stopColor={colorPalette.primary[0]} stopOpacity={0.1}/>
+            </linearGradient>
+          </defs>
+          
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis 
+            dataKey="period" 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+          />
+          <YAxis 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+          />
+          
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              border: 'none',
+              borderRadius: '12px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              fontSize: '14px'
+            }}
+          />
+          
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={colorPalette.primary[0]}
+            strokeWidth={3}
+            fill={`url(#areaGradient_${chartId})`}
+            animationDuration={chartAnimations ? 2000 : 0}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    )
+  }
+
+  const renderProfessionalComboChart = (chart: any, chartId: string) => {
+    const data = chart.data || generateSampleComboData()
+    
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <defs>
+            <linearGradient id={`comboGradient_${chartId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colorPalette.primary[0]} stopOpacity={0.8}/>
+              <stop offset="95%" stopColor={colorPalette.primary[0]} stopOpacity={0.1}/>
+            </linearGradient>
+            <linearGradient id={`comboBarGradient_${chartId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={colorPalette.primary[1]} stopOpacity={1}/>
+              <stop offset="95%" stopColor={colorPalette.primary[2]} stopOpacity={0.8}/>
+            </linearGradient>
+          </defs>
+          
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis 
+            dataKey="period" 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+          />
+          <YAxis 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+          />
+          
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              border: 'none',
+              borderRadius: '12px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              fontSize: '14px'
+            }}
+          />
+          
+          <Bar 
+            dataKey="volume" 
+            fill={`url(#comboBarGradient_${chartId})`}
+            radius={[4, 4, 0, 0]}
+            animationDuration={chartAnimations ? 1500 : 0}
+          />
+          
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={colorPalette.primary[0]}
+            strokeWidth={3}
+            fill={`url(#comboGradient_${chartId})`}
+            animationDuration={chartAnimations ? 2000 : 0}
+          />
+          
+          <Line
+            type="monotone"
+            dataKey="target"
+            stroke={colorPalette.warning}
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={{ fill: colorPalette.warning, strokeWidth: 2, r: 4 }}
+            animationDuration={chartAnimations ? 2500 : 0}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+    )
+  }
+
+  const renderMetricCards = (metrics: any[]) => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {metrics.map((metric, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1, duration: 0.6 }}
+            className="relative overflow-hidden"
+          >
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              {/* Gradient background */}
+              <div 
+                className="absolute inset-0 opacity-5"
+                style={{ background: colorPalette.gradients[0] }}
+              />
+              
+              <div className="relative">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${getMetricIconBg(metric.type)}`}>
+                    {getMetricIcon(metric.type)}
+                  </div>
+                  {metric.trend && (
+                    <div className={`flex items-center space-x-1 ${getTrendColor(metric.trend)}`}>
+                      {getTrendIcon(metric.trend)}
+                      <span className="text-sm font-medium">{metric.change}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <p className="text-3xl font-bold text-gray-900">{metric.value}</p>
+                  <p className="text-sm font-medium text-gray-600">{metric.label}</p>
+                  {metric.subtitle && (
+                    <p className="text-xs text-gray-500">{metric.subtitle}</p>
+                  )}
+                </div>
+                
+                {metric.progress && (
+                  <div className="mt-4">
+                    <Progress 
+                      value={metric.progress} 
+                      className="h-2"
+                      style={{ 
+                        background: `linear-gradient(90deg, ${colorPalette.primary[0]} 0%, ${colorPalette.primary[1]} 100%)`
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
     )
   }
 
-  return (
-    <div className={`world-class-slide-renderer ${className}`}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSlide}
-          ref={slideRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="slide-container"
-        >
-          {renderSlideByType(currentSlideData, isEditable, onSlideEdit)}
-        </motion.div>
-      </AnimatePresence>
-      
-      {/* Slide Navigation */}
-      <div className="flex justify-between items-center mt-6 p-4 bg-white rounded-lg border">
-        <Button 
-          variant="outline" 
-          onClick={() => onSlideChange(Math.max(0, currentSlide - 1))}
-          disabled={currentSlide === 0}
-        >
-          Previous
-        </Button>
-        
-        <div className="flex space-x-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => onSlideChange(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentSlide ? 'bg-blue-500' : 'bg-gray-300'
-              }`}
-            />
-          ))}
-        </div>
-        
-        <Button 
-          variant="outline"
-          onClick={() => onSlideChange(Math.min(slides.length - 1, currentSlide + 1))}
-          disabled={currentSlide === slides.length - 1}
-        >
-          Next
-        </Button>
+  const renderInsightCards = (insights: any[]) => {
+    return (
+      <div className="space-y-4 mb-8">
+        {insights.map((insight, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.15, duration: 0.6 }}
+            className="bg-white rounded-xl p-6 shadow-md border-l-4 border-l-blue-500"
+          >
+            <div className="flex items-start space-x-4">
+              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Lightbulb className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 mb-2">{insight.title}</h4>
+                <p className="text-gray-700 text-sm leading-relaxed">{insight.description}</p>
+                {insight.impact && (
+                  <div className="mt-3 flex items-center space-x-2">
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      <Target className="w-3 h-3 mr-1" />
+                      {insight.impact}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
-    </div>
-  )
-}
-
-function renderSlideByType(slide: SlideData, isEditable: boolean, onSlideEdit?: (slideId: string, updates: Partial<SlideData>) => void) {
-  const visualStyle = slide.customization?.visualStyle || 'futuristic'
-  const colors = COLORS[visualStyle] || COLORS.futuristic
-  
-  switch (slide.type) {
-    case 'title':
-      return <TitleSlide slide={slide} colors={colors} />
-    case 'executive_summary':
-      return <ExecutiveSummarySlide slide={slide} colors={colors} />
-    case 'data_overview':
-      return <DataOverviewSlide slide={slide} colors={colors} />
-    case 'setup':
-    case 'build':
-    case 'reveal':
-    case 'climax':
-    case 'resolve':
-    case 'inspire':
-      return <NarrativeSlide slide={slide} colors={colors} />
-    case 'insight':
-    case 'trend_analysis':
-    case 'correlation_analysis':
-    case 'anomaly_detection':
-      return <InsightSlide slide={slide} colors={colors} />
-    case 'recommendations':
-      return <RecommendationsSlide slide={slide} colors={colors} />
-    default:
-      return <StandardSlide slide={slide} colors={colors} />
+    )
   }
-}
 
-function TitleSlide({ slide, colors }: { slide: SlideData; colors: string[] }) {
+  // Utility functions
+  const getAnnotationColor = (type: string) => {
+    switch (type) {
+      case 'milestone': return 'bg-blue-500'
+      case 'warning': return 'bg-yellow-500'
+      case 'success': return 'bg-green-500'
+      case 'info': return 'bg-gray-500'
+      default: return 'bg-blue-500'
+    }
+  }
+
+  const getMetricIcon = (type: string) => {
+    switch (type) {
+      case 'revenue': return <DollarSign className="w-6 h-6 text-green-600" />
+      case 'users': return <Users className="w-6 h-6 text-blue-600" />
+      case 'growth': return <TrendingUp className="w-6 h-6 text-green-600" />
+      case 'conversion': return <Percent className="w-6 h-6 text-purple-600" />
+      case 'engagement': return <Eye className="w-6 h-6 text-orange-600" />
+      default: return <Activity className="w-6 h-6 text-gray-600" />
+    }
+  }
+
+  const getMetricIconBg = (type: string) => {
+    switch (type) {
+      case 'revenue': return 'bg-green-50'
+      case 'users': return 'bg-blue-50'
+      case 'growth': return 'bg-green-50'
+      case 'conversion': return 'bg-purple-50'
+      case 'engagement': return 'bg-orange-50'
+      default: return 'bg-gray-50'
+    }
+  }
+
+  const getTrendColor = (trend: string) => {
+    switch (trend) {
+      case 'up': return 'text-green-600'
+      case 'down': return 'text-red-600'
+      case 'stable': return 'text-gray-600'
+      default: return 'text-gray-600'
+    }
+  }
+
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'up': return <TrendingUp className="w-4 h-4" />
+      case 'down': return <TrendingDown className="w-4 h-4" />
+      case 'stable': return <Activity className="w-4 h-4" />
+      default: return <Activity className="w-4 h-4" />
+    }
+  }
+
+  // Sample data generators
+  const generateSampleTrendData = () => [
+    { period: 'Jan', value: 400, trend: 380 },
+    { period: 'Feb', value: 300, trend: 410 },
+    { period: 'Mar', value: 600, trend: 440 },
+    { period: 'Apr', value: 800, trend: 470 },
+    { period: 'May', value: 700, trend: 500 },
+    { period: 'Jun', value: 900, trend: 530 }
+  ]
+
+  const generateSampleBarData = () => [
+    { category: 'Product A', value: 2400 },
+    { category: 'Product B', value: 1398 },
+    { category: 'Product C', value: 9800 },
+    { category: 'Product D', value: 3908 },
+    { category: 'Product E', value: 4800 }
+  ]
+
+  const generateSamplePieData = () => [
+    { name: 'Direct', value: 400 },
+    { name: 'Social', value: 300 },
+    { name: 'Email', value: 300 },
+    { name: 'Referral', value: 200 }
+  ]
+
+  const generateSampleAreaData = () => [
+    { period: 'Q1', value: 4000 },
+    { period: 'Q2', value: 3000 },
+    { period: 'Q3', value: 2000 },
+    { period: 'Q4', value: 2780 }
+  ]
+
+  const generateSampleComboData = () => [
+    { period: 'Jan', value: 400, volume: 240, target: 450 },
+    { period: 'Feb', value: 300, volume: 139, target: 420 },
+    { period: 'Mar', value: 600, volume: 980, target: 550 },
+    { period: 'Apr', value: 800, volume: 390, target: 600 },
+    { period: 'May', value: 700, volume: 480, target: 650 },
+    { period: 'Jun', value: 900, volume: 380, target: 700 }
+  ]
+
+  // Main render
   return (
-    <motion.div 
-      className="min-h-[600px] flex flex-col justify-center items-center text-center p-12"
-      style={{ 
-        background: `linear-gradient(135deg, ${colors[0]}15 0%, ${colors[1]}15 100%)`,
-        borderRadius: '16px'
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      className={`w-full h-full bg-gradient-to-br from-gray-50 to-white ${className}`}
+      style={{
+        background: slide.background?.type === 'gradient' 
+          ? `linear-gradient(135deg, ${slide.background.gradient?.[0] || '#f8fafc'}, ${slide.background.gradient?.[1] || '#ffffff'})`
+          : slide.background?.color || '#ffffff'
       }}
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.8, delay: 0.2 }}
     >
-      <motion.h1 
-        className="text-5xl font-bold mb-6"
-        style={{ color: colors[0] }}
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        {slide.title}
-      </motion.h1>
-      
-      {slide.subtitle && (
-        <motion.h2 
-          className="text-2xl text-gray-600 mb-8 max-w-4xl"
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          {slide.subtitle}
-        </motion.h2>
-      )}
-      
-      {slide.content.theme && (
+      <div className="w-full h-full p-8 overflow-y-auto">
+        {/* Slide Header */}
         <motion.div
-          className="flex items-center space-x-2 px-6 py-3 rounded-full"
-          style={{ backgroundColor: `${colors[1]}20` }}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.8 }}
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12"
         >
-          <Badge variant="secondary" style={{ backgroundColor: colors[1], color: 'white' }}>
-            {slide.content.theme}
-          </Badge>
-          {slide.content.confidence && (
-            <span className="text-sm text-gray-600">
-              {slide.content.confidence}% Confidence
-            </span>
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            {slide.title}
+          </h1>
+          {slide.subtitle && (
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              {slide.subtitle}
+            </p>
           )}
         </motion.div>
-      )}
+
+        {/* Key Metrics */}
+        {slide.content.keyMetrics && slide.content.keyMetrics.length > 0 && (
+          renderMetricCards(slide.content.keyMetrics)
+        )}
+
+        {/* Charts Section */}
+        {slide.charts && slide.charts.length > 0 && (
+          <div className="space-y-8 mb-12">
+            {slide.charts.map((chart, index) => renderExecutiveChart(chart, index))}
+          </div>
+        )}
+
+        {/* Insights Section */}
+        {slide.content.insights && slide.content.insights.length > 0 && (
+          renderInsightCards(slide.content.insights)
+        )}
+
+        {/* Key Takeaways */}
+        {slide.keyTakeaways && slide.keyTakeaways.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
+          >
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center mr-4">
+                <Award className="w-6 h-6 text-yellow-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">Key Takeaways</h3>
+            </div>
+            
+            <div className="space-y-4">
+              {slide.keyTakeaways.map((takeaway, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + index * 0.1, duration: 0.6 }}
+                  className="flex items-start space-x-3"
+                >
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-gray-700 font-medium">{takeaway}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* AI Insights Badge */}
+        {slide.aiInsights && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1, duration: 0.6 }}
+            className="fixed bottom-8 right-8 z-10"
+          >
+            <div className="bg-white rounded-full px-6 py-3 shadow-lg border border-gray-200 flex items-center space-x-2">
+              <Zap className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-gray-700">
+                AI Generated • {slide.aiInsights.confidence}% Confidence
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   )
 }
 
-function ExecutiveSummarySlide({ slide, colors }: { slide: SlideData; colors: string[] }) {
-  return (
-    <div className="min-h-[600px] p-8" style={{ borderRadius: '16px' }}>
-      <motion.div
-        initial={{ x: -50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h1 className="text-4xl font-bold mb-8" style={{ color: colors[0] }}>
-          {slide.title}
-        </h1>
-      </motion.div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Key Metrics */}
-        {slide.content.keyMetrics && (
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Activity style={{ color: colors[1] }} />
-                  <span>Key Metrics</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {slide.content.keyMetrics.map((metric: any, index: number) => (
-                    <div key={index} className="flex justify-between items-center p-3 rounded-lg bg-gray-50">
-                      <span className="font-medium">{metric.name}</span>
-                      <div className="text-right">
-                        <div className="text-xl font-bold" style={{ color: colors[0] }}>
-                          {metric.value}
-                        </div>
-                        {metric.change && (
-                          <div className={`text-sm flex items-center ${
-                            metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {metric.change.startsWith('+') ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                            {metric.change}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-        
-        {/* Recommendations */}
-        {slide.content.recommendations && (
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Target style={{ color: colors[2] }} />
-                  <span>Strategic Recommendations</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {slide.content.recommendations.map((rec: any, index: number) => (
-                    <div key={index} className="flex items-start space-x-3 p-3 rounded-lg border-l-4" style={{ borderLeftColor: colors[index % colors.length] }}>
-                      <div className="mt-1">
-                        <CheckCircle size={16} style={{ color: colors[index % colors.length] }} />
-                      </div>
-                      <div>
-                        <div className="font-medium">{rec.title}</div>
-                        <div className="text-sm text-gray-600">{rec.description}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </div>
-      
-      {/* Summary */}
-      {slide.content.summary && (
-        <motion.div
-          className="mt-8 p-6 rounded-lg"
-          style={{ backgroundColor: `${colors[0]}10` }}
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          <p className="text-lg text-gray-700 leading-relaxed">{slide.content.summary}</p>
-        </motion.div>
-      )}
-    </div>
-  )
-}
-
-function NarrativeSlide({ slide, colors }: { slide: SlideData; colors: string[] }) {
-  const roleIcons = {
-    setup: <Lightbulb />,
-    build: <TrendingUp />,
-    reveal: <AlertTriangle />,
-    climax: <Target />,
-    resolve: <CheckCircle />,
-    inspire: <ArrowRight />
-  }
-  
-  const roleColors = {
-    setup: colors[0],
-    build: colors[1],
-    reveal: colors[2],
-    climax: colors[3],
-    resolve: colors[4] || colors[0],
-    inspire: colors[0]
-  }
-  
-  const icon = roleIcons[slide.metadata?.narrativeRole as keyof typeof roleIcons]
-  const roleColor = roleColors[slide.metadata?.narrativeRole as keyof typeof roleColors] || colors[0]
-  
-  return (
-    <div className="min-h-[600px] p-8">
-      {/* Header with narrative role indicator */}
-      <motion.div
-        className="flex items-center space-x-4 mb-8"
-        initial={{ x: -50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="p-3 rounded-full" style={{ backgroundColor: `${roleColor}20` }}>
-          <div style={{ color: roleColor }}>
-            {icon}
-          </div>
-        </div>
-        <div>
-          <h1 className="text-4xl font-bold" style={{ color: roleColor }}>
-            {slide.title}
-          </h1>
-          {slide.subtitle && (
-            <p className="text-xl text-gray-600 mt-2">{slide.subtitle}</p>
-          )}
-        </div>
-      </motion.div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Narrative Content */}
-        <motion.div
-          className="lg:col-span-2"
-          initial={{ x: -30, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {slide.content.narrative && (
-            <div className="mb-6 p-6 rounded-lg bg-white border-l-4" style={{ borderLeftColor: roleColor }}>
-              <p className="text-lg leading-relaxed text-gray-700">{slide.content.narrative}</p>
-            </div>
-          )}
-          
-          {/* Insights */}
-          {slide.content.insights && slide.content.insights.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold" style={{ color: roleColor }}>Key Insights</h3>
-              {slide.content.insights.map((insight: any, index: number) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start space-x-3">
-                      <Badge variant="secondary" style={{ backgroundColor: colors[index % colors.length] }}>
-                        {insight.confidence}%
-                      </Badge>
-                      <div className="flex-1">
-                        <h4 className="font-medium mb-2">{insight.title}</h4>
-                        <p className="text-gray-600 mb-2">{insight.description}</p>
-                        <div className="text-sm text-gray-500">
-                          <strong>Impact:</strong> {insight.businessImplication}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </motion.div>
-        
-        {/* Charts/Visualizations */}
-        {slide.charts && slide.charts.length > 0 && (
-          <motion.div
-            initial={{ x: 30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <div className="space-y-6">
-              {slide.charts.map((chart, index) => (
-                <Card key={chart.id}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{chart.title}</CardTitle>
-                    {chart.description && (
-                      <p className="text-sm text-gray-600">{chart.description}</p>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <WorldClassChart chart={chart} colors={colors} />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </div>
-      
-      {/* Visual Impact Indicator */}
-      {slide.visualNarrative?.impact && (
-        <motion.div
-          className="mt-8 p-4 rounded-lg flex items-center justify-between"
-          style={{ backgroundColor: `${roleColor}10` }}
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          <span className="font-medium">Visual Impact:</span>
-          <Badge 
-            variant={slide.visualNarrative.impact === 'dramatic' ? 'destructive' : 'secondary'}
-            style={{ 
-              backgroundColor: slide.visualNarrative.impact === 'dramatic' ? colors[2] : colors[1],
-              color: 'white'
-            }}
-          >
-            {slide.visualNarrative.impact}
-          </Badge>
-        </motion.div>
-      )}
-    </div>
-  )
-}
-
-function InsightSlide({ slide, colors }: { slide: SlideData; colors: string[] }) {
-  return (
-    <div className="min-h-[600px] p-8">
-      <motion.h1
-        className="text-4xl font-bold mb-8"
-        style={{ color: colors[0] }}
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        {slide.title}
-      </motion.h1>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Main Content */}
-        <motion.div
-          initial={{ x: -30, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {slide.content.summary && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <BarChart3 style={{ color: colors[1] }} />
-                  <span>Analysis Summary</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-lg leading-relaxed">{slide.content.summary}</p>
-              </CardContent>
-            </Card>
-          )}
-          
-          {slide.content.insights && slide.content.insights[0] && (
-            <div className="space-y-4">
-              {slide.content.insights[0].businessImplication && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Business Implication</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{slide.content.insights[0].businessImplication}</p>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {slide.content.insights[0].recommendation && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <ArrowRight style={{ color: colors[2] }} />
-                      <span>Recommended Action</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{slide.content.insights[0].recommendation}</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-        </motion.div>
-        
-        {/* Charts */}
-        {slide.charts && slide.charts.length > 0 && (
-          <motion.div
-            initial={{ x: 30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            {slide.charts.map((chart, index) => (
-              <Card key={chart.id} className="mb-6">
-                <CardHeader>
-                  <CardTitle>{chart.title}</CardTitle>
-                  {chart.description && (
-                    <p className="text-sm text-gray-600">{chart.description}</p>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <WorldClassChart chart={chart} colors={colors} />
-                </CardContent>
-              </Card>
-            ))}
-          </motion.div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function RecommendationsSlide({ slide, colors }: { slide: SlideData; colors: string[] }) {
-  return (
-    <div className="min-h-[600px] p-8">
-      <motion.h1
-        className="text-4xl font-bold mb-8"
-        style={{ color: colors[0] }}
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        {slide.title}
-      </motion.h1>
-      
-      {slide.content.recommendations && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {slide.content.recommendations.map((rec: any, index: number) => (
-            <motion.div
-              key={index}
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-start space-x-3">
-                    <div 
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: colors[index % colors.length] }}
-                    >
-                      {index + 1}
-                    </div>
-                    <span>{rec.title}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 mb-4">{rec.description}</p>
-                  {rec.impact && (
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-sm font-medium">Expected Impact:</span>
-                      <Badge variant="secondary">{rec.impact}</Badge>
-                    </div>
-                  )}
-                  {rec.timeline && (
-                    <div className="flex items-center space-x-2">
-                      <Clock size={14} className="text-gray-500" />
-                      <span className="text-sm text-gray-600">{rec.timeline}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function DataOverviewSlide({ slide, colors }: { slide: SlideData; colors: string[] }) {
-  return (
-    <div className="min-h-[600px] p-8">
-      <motion.h1
-        className="text-4xl font-bold mb-8"
-        style={{ color: colors[0] }}
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        {slide.title}
-      </motion.h1>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Data Quality */}
-        {slide.content.dataQuality && (
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Data Quality</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center mb-4">
-                  <div className="text-3xl font-bold" style={{ color: colors[1] }}>
-                    {slide.content.dataQuality.score}/100
-                  </div>
-                </div>
-                <Progress 
-                  value={slide.content.dataQuality.score} 
-                  className="mb-4"
-                />
-                {slide.content.dataQuality.issues && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Quality Indicators:</h4>
-                    {slide.content.dataQuality.issues.map((issue: string, index: number) => (
-                      <div key={index} className="text-sm text-gray-600 flex items-center space-x-2">
-                        <CheckCircle size={14} style={{ color: colors[2] }} />
-                        <span>{issue}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-        
-        {/* Column Information */}
-        {slide.content.keyColumns && (
-          <motion.div
-            className="lg:col-span-2"
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Data Structure</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {slide.content.keyColumns.map((col: any, index: number) => (
-                    <div key={index} className="p-3 rounded-lg border">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{col.name}</span>
-                        <Badge variant="outline">{col.type}</Badge>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {col.uniqueValues} unique values
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </div>
-      
-      {/* Timeline Chart */}
-      {slide.charts && slide.charts.length > 0 && (
-        <motion.div
-          className="mt-8"
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>{slide.charts[0].title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <WorldClassChart chart={slide.charts[0]} colors={colors} />
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-    </div>
-  )
-}
-
-function StandardSlide({ slide, colors }: { slide: SlideData; colors: string[] }) {
-  return (
-    <div className="min-h-[600px] p-8">
-      <motion.h1
-        className="text-4xl font-bold mb-8"
-        style={{ color: colors[0] }}
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        {slide.title}
-      </motion.h1>
-      
-      {slide.subtitle && (
-        <motion.p
-          className="text-xl text-gray-600 mb-8"
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {slide.subtitle}
-        </motion.p>
-      )}
-      
-      {slide.content.summary && (
-        <motion.div
-          className="prose max-w-none mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <p className="text-lg leading-relaxed">{slide.content.summary}</p>
-        </motion.div>
-      )}
-      
-      {/* Charts */}
-      {slide.charts && slide.charts.length > 0 && (
-        <motion.div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          {slide.charts.map((chart, index) => (
-            <Card key={chart.id}>
-              <CardHeader>
-                <CardTitle>{chart.title}</CardTitle>
-                {chart.description && (
-                  <p className="text-sm text-gray-600">{chart.description}</p>
-                )}
-              </CardHeader>
-              <CardContent>
-                <WorldClassChart chart={chart} colors={colors} />
-              </CardContent>
-            </Card>
-          ))}
-        </motion.div>
-      )}
-    </div>
-  )
-}
-
-function WorldClassChart({ chart, colors }: { chart: ChartConfig; colors: string[] }) {
-  const chartColors = colors.slice(0, Math.max(5, chart.data?.length || 0))
-  
-  if (!chart.data || chart.data.length === 0) {
-    return (
-      <div className="h-64 flex items-center justify-center text-gray-500">
-        No data available for visualization
-      </div>
-    )
-  }
-  
-  switch (chart.chartType || chart.type) {
-    case 'line':
-      return <LineChartComponent data={chart.data} colors={chartColors} />
-    case 'bar':
-      return <BarChartComponent data={chart.data} colors={chartColors} />
-    case 'pie':
-      return <PieChartComponent data={chart.data} colors={chartColors} />
-    case 'area':
-      return <AreaChartComponent data={chart.data} colors={chartColors} />
-    case 'scatter':
-      return <ScatterChartComponent data={chart.data} colors={chartColors} />
-    case 'treemap':
-      return <TreemapChartComponent data={chart.data} colors={chartColors} />
-    case 'gauge':
-      return <GaugeChartComponent data={chart.data} colors={chartColors} />
-    case 'timeline':
-      return <TimelineChartComponent data={chart.data} colors={chartColors} />
-    default:
-      return <BarChartComponent data={chart.data} colors={chartColors} />
-  }
-}
-
-// Chart Components
-function LineChartComponent({ data, colors }: { data: any[]; colors: string[] }) {
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Line 
-          type="monotone" 
-          dataKey="value" 
-          stroke={colors[0]} 
-          strokeWidth={3}
-          dot={{ fill: colors[0], strokeWidth: 2, r: 6 }}
-          activeDot={{ r: 8, stroke: colors[0], strokeWidth: 2 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  )
-}
-
-function BarChartComponent({ data, colors }: { data: any[]; colors: string[] }) {
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="value" fill={colors[0]} radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
-  )
-}
-
-function PieChartComponent({ data, colors }: { data: any[]; colors: string[] }) {
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          outerRadius={100}
-          fill={colors[0]}
-          dataKey="value"
-          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-        >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
-  )
-}
-
-function AreaChartComponent({ data, colors }: { data: any[]; colors: string[] }) {
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <AreaChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Area 
-          type="monotone" 
-          dataKey="value" 
-          stroke={colors[0]} 
-          fill={`${colors[0]}30`} 
-          strokeWidth={2}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  )
-}
-
-function ScatterChartComponent({ data, colors }: { data: any[]; colors: string[] }) {
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <ScatterChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-        <XAxis dataKey="x" />
-        <YAxis dataKey="y" />
-        <Tooltip />
-        <Scatter name="Data Points" data={data} fill={colors[0]} />
-      </ScatterChart>
-    </ResponsiveContainer>
-  )
-}
-
-function TreemapChartComponent({ data, colors }: { data: any[]; colors: string[] }) {
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <Treemap
-        data={data}
-        dataKey="value"
-        stroke="#fff"
-        fill={colors[1]}
-      />
-    </ResponsiveContainer>
-  )
-}
-
-function GaugeChartComponent({ data, colors }: { data: any[]; colors: string[] }) {
-  const value = data[0]?.value || 0
-  const max = data[0]?.max || 100
-  const percentage = (value / max) * 100
-  
-  return (
-    <div className="h-64 flex flex-col items-center justify-center">
-      <div className="relative w-48 h-24 mb-4">
-        <svg width="192" height="96" viewBox="0 0 192 96">
-          <path
-            d="M 16 80 A 80 80 0 0 1 176 80"
-            fill="none"
-            stroke="#e5e7eb"
-            strokeWidth="8"
-          />
-          <path
-            d="M 16 80 A 80 80 0 0 1 176 80"
-            fill="none"
-            stroke={colors[0]}
-            strokeWidth="8"
-            strokeDasharray={`${percentage * 1.57} 157`}
-            style={{ transition: 'stroke-dasharray 1s ease-in-out' }}
-          />
-        </svg>
-        <div className="absolute top-12 left-1/2 transform -translate-x-1/2 text-center">
-          <div className="text-2xl font-bold" style={{ color: colors[0] }}>
-            {value}
-          </div>
-          <div className="text-sm text-gray-600">
-            of {max}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function TimelineChartComponent({ data, colors }: { data: any[]; colors: string[] }) {
-  return (
-    <div className="h-64 p-4">
-      <div className="relative">
-        <div className="absolute left-4 top-0 bottom-0 w-0.5" style={{ backgroundColor: colors[0] }}></div>
-        <div className="space-y-6">
-          {data.map((item, index) => (
-            <motion.div
-              key={index}
-              className="relative flex items-center space-x-4"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <div 
-                className="w-3 h-3 rounded-full border-2 border-white"
-                style={{ backgroundColor: colors[index % colors.length] }}
-              ></div>
-              <div className="flex-1">
-                <div className="font-medium">{item.name}</div>
-                <div className="text-sm text-gray-600">{item.value}</div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
+export default WorldClassSlideRenderer

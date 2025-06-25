@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { ChevronLeft, ChevronRight, Play, Pause, Download, Edit3 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { ChevronLeft, ChevronRight, Play, Pause, Download, Edit3, Copy, Trash2, Save, X, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface SimpleDeckViewerProps {
@@ -18,6 +19,10 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
   const [isPlaying, setIsPlaying] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [editMode, setEditMode] = useState(false)
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
+  const [editingText, setEditingText] = useState<string>('')
+  const [showEditPanel, setShowEditPanel] = useState(false)
 
   useEffect(() => {
     loadPresentation()
@@ -56,6 +61,88 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
   const prevSlide = () => {
     if (currentSlide > 0) {
       setCurrentSlide(currentSlide - 1)
+    }
+  }
+
+  const startEditing = (elementId: string, currentText: string) => {
+    setSelectedElementId(elementId)
+    setEditingText(currentText)
+    setShowEditPanel(true)
+  }
+
+  const saveEdit = () => {
+    if (!selectedElementId || !presentation) return
+
+    const updatedPresentation = { ...presentation }
+    const currentSlideData = updatedPresentation.slides[currentSlide]
+    
+    if (currentSlideData && currentSlideData.elements) {
+      currentSlideData.elements = currentSlideData.elements.map((element: any) => {
+        if (element.id === selectedElementId) {
+          return {
+            ...element,
+            content: {
+              ...element.content,
+              text: editingText,
+              html: editingText
+            }
+          }
+        }
+        return element
+      })
+    }
+
+    setPresentation(updatedPresentation)
+    setSelectedElementId(null)
+    setEditingText('')
+    setShowEditPanel(false)
+  }
+
+  const cancelEdit = () => {
+    setSelectedElementId(null)
+    setEditingText('')
+    setShowEditPanel(false)
+  }
+
+  const duplicateSlide = () => {
+    if (!presentation) return
+
+    const currentSlideData = presentation.slides[currentSlide]
+    const newSlide = {
+      ...currentSlideData,
+      id: `${currentSlideData.id}_copy_${Date.now()}`,
+      title: `${currentSlideData.title} (Copy)`,
+      elements: currentSlideData.elements?.map((element: any) => ({
+        ...element,
+        id: `${element.id}_copy_${Date.now()}`
+      })) || []
+    }
+
+    const updatedPresentation = {
+      ...presentation,
+      slides: [
+        ...presentation.slides.slice(0, currentSlide + 1),
+        newSlide,
+        ...presentation.slides.slice(currentSlide + 1)
+      ]
+    }
+
+    setPresentation(updatedPresentation)
+    setCurrentSlide(currentSlide + 1)
+  }
+
+  const deleteSlide = () => {
+    if (!presentation || presentation.slides.length <= 1) return
+
+    const updatedPresentation = {
+      ...presentation,
+      slides: presentation.slides.filter((_: any, index: number) => index !== currentSlide)
+    }
+
+    setPresentation(updatedPresentation)
+    
+    if (currentSlide >= updatedPresentation.slides.length) {
+      setCurrentSlide(updatedPresentation.slides.length - 1)
     }
   }
 
@@ -106,7 +193,9 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
           >
             {element.type === 'text' && (
               <div 
-                className="w-full h-full flex items-center"
+                className={`w-full h-full flex items-center group cursor-pointer transition-all duration-200 ${
+                  editMode ? 'hover:ring-2 hover:ring-blue-400 hover:ring-opacity-50' : ''
+                } ${selectedElementId === element.id ? 'ring-2 ring-blue-500' : ''}`}
                 style={{
                   backgroundColor: element.style?.backgroundColor || 'transparent',
                   color: element.style?.color || '#1f2937',
@@ -120,7 +209,27 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
                   padding: element.style?.padding || 0,
                   boxShadow: element.style?.boxShadow || 'none'
                 }}
+                onClick={() => {
+                  if (editMode) {
+                    const currentText = element.content?.text || element.content?.html || element.content || ''
+                    startEditing(element.id, currentText)
+                  }
+                }}
               >
+                {/* Edit button overlay for edit mode */}
+                {editMode && (
+                  <button
+                    className="absolute top-2 right-2 w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const currentText = element.content?.text || element.content?.html || element.content || ''
+                      startEditing(element.id, currentText)
+                    }}
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+                )}
+                
                 {element.content?.html ? (
                   <div 
                     className="w-full"
@@ -241,11 +350,11 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-xl font-bold text-white mb-2">Loading Presentation</h2>
-          <p className="text-gray-400">Please wait...</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Loading Presentation</h2>
+          <p className="text-gray-600">Please wait...</p>
         </div>
       </div>
     )
@@ -253,11 +362,11 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <Card className="p-8 max-w-lg">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <Card className="p-8 max-w-lg bg-white shadow-lg">
           <div className="text-center">
-            <h2 className="text-xl font-bold text-white mb-4">Error Loading Presentation</h2>
-            <p className="text-gray-400 mb-6">{error}</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Error Loading Presentation</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
             <div className="space-x-4">
               <Button onClick={loadPresentation}>Try Again</Button>
               <Button variant="outline" onClick={() => router.push('/dashboard')}>
@@ -272,11 +381,11 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
 
   if (!presentation || !presentation.slides || presentation.slides.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <Card className="p-8 max-w-lg">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <Card className="p-8 max-w-lg bg-white shadow-lg">
           <div className="text-center">
-            <h2 className="text-xl font-bold text-white mb-4">No Slides Found</h2>
-            <p className="text-gray-400 mb-6">This presentation doesn't contain any slides.</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">No Slides Found</h2>
+            <p className="text-gray-600 mb-6">This presentation doesn't contain any slides.</p>
             <Button onClick={() => router.push('/dashboard')}>
               Return to Dashboard
             </Button>
@@ -302,6 +411,41 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
           
           <div className="flex items-center space-x-4">
             <Button
+              onClick={() => setEditMode(!editMode)}
+              size="sm"
+              variant={editMode ? "default" : "outline"}
+              className={editMode ? "bg-blue-600 hover:bg-blue-700" : ""}
+            >
+              <Edit3 className="w-4 h-4 mr-2" />
+              {editMode ? 'Exit Edit' : 'Edit Mode'}
+            </Button>
+
+            {editMode && (
+              <>
+                <Button
+                  onClick={duplicateSlide}
+                  size="sm"
+                  variant="outline"
+                  className="border-green-500 text-green-600 hover:bg-green-50"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Duplicate
+                </Button>
+                
+                <Button
+                  onClick={deleteSlide}
+                  size="sm"
+                  variant="outline"
+                  className="border-red-500 text-red-600 hover:bg-red-50"
+                  disabled={presentation?.slides?.length <= 1}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+              </>
+            )}
+            
+            <Button
               onClick={() => setIsPlaying(!isPlaying)}
               size="sm"
               variant="outline"
@@ -312,14 +456,6 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
             <Button size="sm" variant="outline">
               <Download className="w-4 h-4 mr-2" />
               Export
-            </Button>
-            
-            <Button 
-              size="sm" 
-              onClick={() => router.push(`/deck-builder/edit/${presentationId}`)}
-            >
-              <Edit3 className="w-4 h-4 mr-2" />
-              Edit
             </Button>
           </div>
         </div>
@@ -333,7 +469,7 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
-            className="w-full max-w-6xl h-full bg-gray-900 rounded-lg border border-gray-800 p-8 relative overflow-hidden"
+            className="w-full max-w-6xl h-full bg-white rounded-lg border border-gray-200 shadow-lg p-8 relative overflow-hidden"
           >
             {renderSlideContent(currentSlideData)}
           </motion.div>
@@ -341,17 +477,18 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
 
         {/* Navigation */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-          <div className="flex items-center space-x-4 bg-gray-900 rounded-lg p-4 border border-gray-800">
+          <div className="flex items-center space-x-4 bg-white rounded-lg p-4 border border-gray-200 shadow-md">
             <Button
               onClick={prevSlide}
               disabled={currentSlide === 0}
               size="sm"
               variant="outline"
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
             
-            <span className="text-sm text-gray-400 px-4">
+            <span className="text-sm text-gray-600 px-4 font-medium">
               {currentSlide + 1} / {presentation.slides.length}
             </span>
             
@@ -360,6 +497,7 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
               disabled={currentSlide === presentation.slides.length - 1}
               size="sm"
               variant="outline"
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -368,7 +506,7 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
       </div>
 
       {/* Slide thumbnails */}
-      <div className="bg-gray-900 border-t border-gray-800 p-4">
+      <div className="bg-white border-t border-gray-200 p-4">
         <div className="flex space-x-2 overflow-x-auto">
           {presentation.slides.map((slide: any, index: number) => (
             <button
@@ -377,16 +515,16 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
               className={`
                 flex-shrink-0 w-32 h-20 rounded border-2 transition-all
                 ${index === currentSlide 
-                  ? 'border-blue-500 bg-blue-500/20' 
-                  : 'border-gray-600 bg-gray-800 hover:border-gray-500'
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 bg-gray-50 hover:border-gray-300'
                 }
               `}
             >
               <div className="w-full h-full p-2 text-xs text-left overflow-hidden">
-                <div className="font-medium text-white truncate">
+                <div className="font-medium text-gray-900 truncate">
                   {slide.title || `Slide ${index + 1}`}
                 </div>
-                <div className="text-gray-400 text-[10px] mt-1">
+                <div className="text-gray-500 text-[10px] mt-1">
                   {slide.content?.length || 0} elements
                 </div>
               </div>
@@ -394,6 +532,70 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
           ))}
         </div>
       </div>
+
+      {/* Text Editing Panel */}
+      {showEditPanel && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Text Content</h3>
+              <Button
+                onClick={cancelEdit}
+                size="sm"
+                variant="outline"
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Text Content
+              </label>
+              <textarea
+                value={editingText}
+                onChange={(e) => setEditingText(e.target.value)}
+                className="w-full h-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your text content..."
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <Button
+                onClick={cancelEdit}
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+              <Button
+                onClick={saveEdit}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Edit Mode Indicator */}
+      {editMode && (
+        <div className="fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-40">
+          <div className="flex items-center space-x-2">
+            <Edit3 className="w-4 h-4" />
+            <span className="text-sm font-medium">Edit Mode Active</span>
+            <span className="text-xs opacity-75">Click text elements to edit</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

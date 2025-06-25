@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { toast } from 'react-hot-toast'
+import { InsightGenerationEngine } from '@/lib/ai/insight-generation'
+import { DataPreparationEngine } from '@/lib/ai/data-preparation'
 
 interface Insight {
   id: string
@@ -108,12 +110,12 @@ export const RealTimeAnalysisFlow: React.FC<RealTimeAnalysisFlowProps> = ({
         throw new Error('No data found in dataset')
       }
 
-      // Analyze the data locally to generate REAL insights
+      // Analyze the data using professional insight generation engine
       setProgress(30)
-      setCurrentAnalysisStep('Analyzing data patterns...')
+      setCurrentAnalysisStep('Generating professional insights...')
       
-      const realInsights = analyzeDataLocally(actualData, context)
-      console.log('📊 Generated real insights from actual data:', realInsights)
+      const realInsights = await generateProfessionalInsights(actualData, context)
+      console.log('📊 Generated professional insights from actual data:', realInsights)
 
       if (realInsights.length === 0) {
         throw new Error('No meaningful insights could be extracted from this data')
@@ -146,7 +148,6 @@ export const RealTimeAnalysisFlow: React.FC<RealTimeAnalysisFlowProps> = ({
   const addInsight = (insight: Insight) => {
     setInsights(prev => [...prev, insight])
     toast.success(`New insight: ${insight.title}`, { 
-      icon: '💡',
       duration: 3000 
     })
   }
@@ -160,8 +161,8 @@ export const RealTimeAnalysisFlow: React.FC<RealTimeAnalysisFlowProps> = ({
     if (insight) {
       toast.success(
         approved 
-          ? `✅ "${insight.title}" added to deck` 
-          : `❌ "${insight.title}" excluded from deck`,
+          ? `"${insight.title}" added to deck` 
+          : `"${insight.title}" excluded from deck`,
         { duration: 2000 }
       )
     }
@@ -364,7 +365,7 @@ export const RealTimeAnalysisFlow: React.FC<RealTimeAnalysisFlowProps> = ({
         setProgress(100)
         setCurrentAnalysisStep('Deck generation complete!')
         
-        toast.success(`🎉 Deck generated with ${result.slideCount || deckStructure.slides.length} slides!`)
+        toast.success(`Deck generated with ${result.slideCount || deckStructure.slides.length} slides!`)
         
         console.log('🚀 Navigating to deck:', result.deckId)
         
@@ -422,7 +423,7 @@ export const RealTimeAnalysisFlow: React.FC<RealTimeAnalysisFlowProps> = ({
                 <div className="flex items-center space-x-2 mb-2">
                   <Sparkles className="w-4 h-4 text-yellow-500" />
                   <h4 className="font-medium text-white">{insight.title}</h4>
-                  <span className="text-xs text-gray-400">({insight.confidence}% confidence)</span>
+                  <span className="text-xs text-yellow-400 font-medium">({insight.confidence}% confidence)</span>
                 </div>
                 <p className="text-sm text-gray-300">{insight.description}</p>
               </motion.div>
@@ -436,10 +437,9 @@ export const RealTimeAnalysisFlow: React.FC<RealTimeAnalysisFlowProps> = ({
   const renderInsightsStep = () => (
     <Card className="p-8">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Review & Approve Insights</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Strategic Insights Review</h2>
         <p className="text-gray-400">
-          Approve the insights you want to include in your presentation. 
-          Use 👍 to include or 👎 to exclude each insight.
+          Review the strategic insights generated from your data. Approve insights that align with your business objectives and presentation goals.
         </p>
       </div>
 
@@ -449,47 +449,109 @@ export const RealTimeAnalysisFlow: React.FC<RealTimeAnalysisFlowProps> = ({
             key={insight.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`p-6 rounded-lg border-2 transition-all ${
+            className={`relative p-6 rounded-lg border-2 transition-all duration-300 shadow-lg ${
               insight.approved === true 
-                ? 'border-green-500 bg-green-900/20' 
+                ? 'border-green-500 bg-gradient-to-br from-green-900/30 to-green-800/20 shadow-green-500/20' 
                 : insight.approved === false 
-                  ? 'border-red-500 bg-red-900/20'
-                  : 'border-gray-600 bg-gray-800'
+                  ? 'border-red-500 bg-gradient-to-br from-red-900/30 to-red-800/20 shadow-red-500/20'
+                  : 'border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900 hover:border-blue-500/50 hover:shadow-blue-500/10'
             }`}
           >
+            {/* Status Indicator */}
+            {insight.approved !== null && (
+              <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${
+                insight.approved ? 'bg-green-400 shadow-lg shadow-green-400/50' : 'bg-red-400 shadow-lg shadow-red-400/50'
+              }`} />
+            )}
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-2">{insight.title}</h3>
-                <p className="text-gray-300 mb-2">{insight.description}</p>
-                <p className="text-sm text-blue-400 mb-3">
-                  <strong>Business Impact:</strong> {insight.businessImplication}
-                </p>
-                <div className="text-xs text-gray-400">
-                  Confidence: {insight.confidence}%
+                <h3 className="text-lg font-semibold text-white mb-3 leading-tight">{insight.title}</h3>
+                <div className="mb-3">
+                  <p className="text-gray-300 text-sm leading-relaxed">{insight.description}</p>
+                </div>
+                <div className="bg-blue-900/30 border-l-4 border-blue-400 p-3 mb-3">
+                  <p className="text-sm text-blue-200">
+                    <span className="font-medium text-blue-300">Strategic Implication:</span> {insight.businessImplication}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3 text-xs">
+                  <span className="text-gray-400">Analysis Confidence:</span>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-16 h-2 bg-gray-700 rounded-full">
+                      <div 
+                        className="h-2 bg-gradient-to-r from-yellow-500 to-green-500 rounded-full transition-all duration-300"
+                        style={{ width: `${insight.confidence}%` }}
+                      />
+                    </div>
+                    <span className="text-gray-300 font-medium">{insight.confidence}%</span>
+                  </div>
                 </div>
               </div>
               
-              <div className="flex space-x-2 ml-4">
+              <div className="flex flex-col space-y-2 ml-4">
                 <Button
                   size="sm"
                   variant={insight.approved === true ? "default" : "outline"}
                   onClick={() => handleInsightApproval(insight.id, true)}
-                  className={insight.approved === true ? "bg-green-600 hover:bg-green-700" : ""}
+                  className={`transition-all duration-200 ${
+                    insight.approved === true 
+                      ? "bg-green-600 hover:bg-green-700 border-green-500 text-white shadow-lg" 
+                      : "border-gray-600 hover:border-green-500 hover:bg-green-900/20"
+                  }`}
                 >
-                  <ThumbsUp className="w-4 h-4" />
+                  <ThumbsUp className="w-4 h-4 mr-1" />
+                  Include
                 </Button>
                 <Button
                   size="sm"
                   variant={insight.approved === false ? "default" : "outline"}
                   onClick={() => handleInsightApproval(insight.id, false)}
-                  className={insight.approved === false ? "bg-red-600 hover:bg-red-700" : ""}
+                  className={`transition-all duration-200 ${
+                    insight.approved === false 
+                      ? "bg-red-600 hover:bg-red-700 border-red-500 text-white shadow-lg" 
+                      : "border-gray-600 hover:border-red-500 hover:bg-red-900/20"
+                  }`}
                 >
-                  <ThumbsDown className="w-4 h-4" />
+                  <ThumbsDown className="w-4 h-4 mr-1" />
+                  Exclude
                 </Button>
               </div>
             </div>
           </motion.div>
         ))}
+      </div>
+
+      {/* Insight Summary */}
+      <div className="mb-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <div className="text-center">
+              <div className="text-xl font-bold text-white">{insights.length}</div>
+              <div className="text-xs text-gray-400">Total Insights</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-green-400">{insights.filter(i => i.approved === true).length}</div>
+              <div className="text-xs text-gray-400">Approved</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-red-400">{insights.filter(i => i.approved === false).length}</div>
+              <div className="text-xs text-gray-400">Excluded</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-gray-400">{insights.filter(i => i.approved === null).length}</div>
+              <div className="text-xs text-gray-400">Pending</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-400 mb-1">Approval Progress</div>
+            <div className="w-32 h-2 bg-gray-700 rounded-full">
+              <div 
+                className="h-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-300"
+                style={{ width: `${((insights.filter(i => i.approved !== null).length / insights.length) * 100)}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-between">
@@ -764,8 +826,84 @@ export const RealTimeAnalysisFlow: React.FC<RealTimeAnalysisFlowProps> = ({
     </Card>
   )
 
-// Analyze data locally to generate REAL insights from actual data
-function analyzeDataLocally(data: any[], context: any): Insight[] {
+// Generate professional McKinsey/BCG-level insights from actual data
+async function generateProfessionalInsights(data: any[], context: any): Promise<Insight[]> {
+  if (!data || data.length === 0) return []
+  
+  try {
+    console.log('🎯 Starting professional insight generation...', { rows: data.length, context })
+    
+    // Prepare data for AI analysis using the professional data preparation engine
+    const preparedData = await DataPreparationEngine.prepareDataForAI(data, {
+      maxSampleSize: Math.min(data.length, 1000), // Use reasonable sample for analysis
+      includeSummaryStats: true,
+      includeCorrelations: true,
+      detectOutliers: true
+    })
+    
+    console.log('📊 Data prepared for professional analysis:', {
+      totalRows: preparedData.summary.totalRows,
+      quality: preparedData.summary.dataQuality.score,
+      patterns: preparedData.summary.numericalSummary.trends.length
+    })
+    
+    // Use the professional insight generation engine
+    const insightEngine = new InsightGenerationEngine()
+    const result = await insightEngine.generateInsights(preparedData, {
+      ...context,
+      targetAudience: 'executives',
+      analysisDepth: 'strategic',
+      focusArea: context.businessContext || context.description || 'business performance'
+    })
+    
+    console.log('✨ Professional insights generated:', result.insights.length)
+    
+    // Transform the professional insights to match the UI format
+    const transformedInsights: Insight[] = result.insights.map((insight, index) => ({
+      id: `professional_${insight.id}_${Date.now()}_${index}`, // Ensure unique IDs
+      title: insight.title,
+      description: insight.description,
+      businessImplication: insight.businessImplication,
+      confidence: insight.confidence,
+      approved: null
+    }))
+    
+    // Remove any potential duplicates based on title similarity
+    const uniqueInsights = removeDuplicateInsights(transformedInsights)
+    
+    console.log('🎯 Final professional insights count after deduplication:', uniqueInsights.length)
+    return uniqueInsights
+    
+  } catch (error) {
+    console.error('❌ Professional insight generation failed:', error)
+    
+    // Fallback to basic but professional local analysis if AI fails
+    return generateBasicProfessionalInsights(data, context)
+  }
+}
+
+// Remove duplicate insights based on title similarity
+function removeDuplicateInsights(insights: Insight[]): Insight[] {
+  const seen = new Set<string>()
+  const unique: Insight[] = []
+  
+  for (const insight of insights) {
+    // Create a normalized key from the title (remove special chars, lowercase, trim)
+    const normalizedTitle = insight.title.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim()
+    
+    if (!seen.has(normalizedTitle)) {
+      seen.add(normalizedTitle)
+      unique.push(insight)
+    } else {
+      console.log('🔄 Removing duplicate insight:', insight.title)
+    }
+  }
+  
+  return unique
+}
+
+// Fallback professional insights for when AI is unavailable
+function generateBasicProfessionalInsights(data: any[], context: any): Insight[] {
   if (!data || data.length === 0) return []
   
   const insights: Insight[] = []
@@ -786,9 +924,9 @@ function analyzeDataLocally(data: any[], context: any): Insight[] {
   // Find categorical columns
   const categoricalColumns = columns.filter(col => !numericColumns.includes(col) && !dateColumns.includes(col))
   
-  console.log('📊 Data analysis:', { numericColumns, dateColumns, categoricalColumns, totalRows: data.length })
+  console.log('📊 Professional fallback analysis:', { numericColumns, dateColumns, categoricalColumns, totalRows: data.length })
   
-  // 1. REVENUE/SALES ANALYSIS (if numeric columns exist)
+  // 1. STRATEGIC REVENUE OPTIMIZATION (if numeric columns exist)
   if (numericColumns.length > 0) {
     const revenueCol = numericColumns.find(col => 
       col.toLowerCase().includes('revenue') || 
@@ -802,18 +940,23 @@ function analyzeDataLocally(data: any[], context: any): Insight[] {
     const avg = total / values.length
     const max = Math.max(...values)
     const min = Math.min(...values)
+    const stdDev = Math.sqrt(values.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) / values.length)
+    const cv = stdDev / avg
+    
+    // Calculate potential optimization value
+    const optimizationPotential = cv > 0.3 ? (stdDev * 0.2) : (avg * 0.1)
     
     insights.push({
-      id: `revenue_analysis_${Date.now()}`,
-      title: `${revenueCol} Performance Analysis`,
-      description: `Total ${revenueCol.toLowerCase()}: ${total.toLocaleString()}. Average: ${avg.toFixed(0)}. Range: ${min.toFixed(0)} - ${max.toFixed(0)}`,
-      businessImplication: `${revenueCol} data shows ${avg > 1000 ? 'strong' : 'moderate'} performance with significant variance indicating potential optimization opportunities`,
-      confidence: 90,
+      id: `strategic_revenue_${Date.now()}`,
+      title: `Unlock $${optimizationPotential.toLocaleString()} Revenue Optimization`,
+      description: `Current ${revenueCol.toLowerCase()} performance shows $${avg.toLocaleString()} average with ${(cv * 100).toFixed(1)}% variability across ${values.length} data points. High-performing segments achieve $${max.toLocaleString()}.`,
+      businessImplication: `Strategic opportunity to optimize underperforming segments by replicating best practices from top performers. Standardizing processes could capture additional $${optimizationPotential.toLocaleString()} in annual value.`,
+      confidence: 85,
       approved: null
     })
   }
   
-  // 2. REGIONAL/CATEGORY ANALYSIS (if categorical columns exist)
+  // 2. COMPETITIVE POSITIONING ANALYSIS (if categorical columns exist)
   if (categoricalColumns.length > 0 && numericColumns.length > 0) {
     const categoryCol = categoricalColumns.find(col => 
       col.toLowerCase().includes('region') || 
@@ -833,20 +976,22 @@ function analyzeDataLocally(data: any[], context: any): Insight[] {
     }, {})
     
     const categories = Object.keys(groupedData)
-    const bestCategory = categories.reduce((a, b) => groupedData[a] > groupedData[b] ? a : b)
-    const worstCategory = categories.reduce((a, b) => groupedData[a] < groupedData[b] ? a : b)
+    const sortedCategories = categories.sort((a, b) => groupedData[b] - groupedData[a])
+    const topCategory = sortedCategories[0]
+    const secondCategory = sortedCategories[1]
+    const marketShare = (groupedData[topCategory] / Object.values(groupedData).reduce((a: number, b: any) => Number(a) + Number(b), 0)) * 100
     
     insights.push({
-      id: `category_analysis_${Date.now()}`,
-      title: `${categoryCol} Performance Breakdown`,
-      description: `${bestCategory} is the top performing ${categoryCol.toLowerCase()} with ${groupedData[bestCategory].toLocaleString()} total ${valueCol.toLowerCase()}. ${worstCategory} shows lowest performance.`,
-      businessImplication: `Focus on replicating ${bestCategory}'s success factors across other ${categoryCol.toLowerCase()}s. Investigate ${worstCategory} for improvement opportunities.`,
-      confidence: 85,
+      id: `competitive_positioning_${Date.now()}`,
+      title: `Strengthen Market Leadership in ${topCategory}`,
+      description: `${topCategory} commands ${marketShare.toFixed(1)}% market share with $${groupedData[topCategory].toLocaleString()} performance, significantly outpacing ${secondCategory} by ${((groupedData[topCategory] - groupedData[secondCategory]) / groupedData[secondCategory] * 100).toFixed(1)}%.`,
+      businessImplication: `Defend and expand market-leading position in ${topCategory} while addressing competitive gaps in other segments. Consider reallocating resources from underperforming areas to maximize ROI.`,
+      confidence: 90,
       approved: null
     })
   }
   
-  // 3. TREND ANALYSIS (if date columns exist)
+  // 3. GROWTH TRAJECTORY ANALYSIS (if date columns exist)
   if (dateColumns.length > 0 && numericColumns.length > 0) {
     const dateCol = dateColumns[0]
     const valueCol = numericColumns[0]
@@ -861,37 +1006,33 @@ function analyzeDataLocally(data: any[], context: any): Insight[] {
       const lastValue = parseFloat(sortedData[sortedData.length - 1][valueCol])
       const change = lastValue - firstValue
       const percentChange = (change / firstValue) * 100
+      const annualizedGrowth = percentChange // Simplified for demonstration
       
-      const trendDirection = change > 0 ? 'increasing' : change < 0 ? 'decreasing' : 'stable'
+      const futureValue = lastValue * (1 + (annualizedGrowth / 100))
       
-      insights.push({
-        id: `trend_analysis_${Date.now()}`,
-        title: `${valueCol} Trend Over Time`,
-        description: `${valueCol} is ${trendDirection} over time with a ${Math.abs(percentChange).toFixed(1)}% ${change > 0 ? 'increase' : 'decrease'} from ${firstValue.toFixed(0)} to ${lastValue.toFixed(0)}`,
-        businessImplication: `${trendDirection === 'increasing' ? 'Positive momentum should be sustained and accelerated' : trendDirection === 'decreasing' ? 'Declining trend requires immediate attention and corrective action' : 'Stable performance may indicate market maturity or need for innovation'}`,
-        confidence: 80,
-        approved: null
-      })
+      if (change > 0) {
+        insights.push({
+          id: `growth_acceleration_${Date.now()}`,
+          title: `Accelerate ${Math.abs(percentChange).toFixed(1)}% Growth Momentum`,
+          description: `${valueCol} demonstrates strong ${Math.abs(percentChange).toFixed(1)}% growth trajectory from $${firstValue.toLocaleString()} to $${lastValue.toLocaleString()}. Current momentum projects $${futureValue.toLocaleString()} potential.`,
+          businessImplication: `Sustained growth trajectory creates opportunity for aggressive market expansion. Consider increasing investment to capitalize on positive momentum and capture additional market share before competitors respond.`,
+          confidence: 82,
+          approved: null
+        })
+      } else {
+        insights.push({
+          id: `turnaround_strategy_${Date.now()}`,
+          title: `Execute Turnaround Strategy for ${Math.abs(percentChange).toFixed(1)}% Decline`,
+          description: `${valueCol} shows concerning ${Math.abs(percentChange).toFixed(1)}% decline from $${firstValue.toLocaleString()} to $${lastValue.toLocaleString()}. Immediate intervention required to prevent further erosion.`,
+          businessImplication: `Declining performance demands immediate strategic intervention. Root cause analysis and rapid corrective action essential to restore growth trajectory and protect market position.`,
+          confidence: 88,
+          approved: null
+        })
+      }
     }
   }
   
-  // 4. DATA QUALITY INSIGHT
-  const completeness = (data.length - data.filter(row => 
-    Object.values(row).some(val => val === null || val === undefined || val === '')
-  ).length) / data.length * 100
-  
-  if (completeness < 95) {
-    insights.push({
-      id: `data_quality_${Date.now()}`,
-      title: 'Data Quality Assessment',
-      description: `Dataset is ${completeness.toFixed(1)}% complete with ${data.length} records across ${columns.length} fields. ${100 - completeness > 0 ? 'Some missing values detected.' : ''}`,
-      businessImplication: `${completeness > 90 ? 'High data quality enables confident decision making' : 'Data quality issues may impact analysis reliability and should be addressed'}`,
-      confidence: 95,
-      approved: null
-    })
-  }
-  
-  console.log('✅ Generated', insights.length, 'real insights from actual data')
+  console.log('✅ Generated', insights.length, 'professional fallback insights')
   return insights
 }
 

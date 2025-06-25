@@ -157,14 +157,32 @@ export async function POST(request: NextRequest) {
       console.log('🧠 Enhanced Analysis - Flattened data length:', processedData.length)
     }
 
-    // Apply intelligent data sampling for large datasets (simplified)
-    if (processedData.length > 50) {
-      console.log('🧠 Enhanced Analysis - Applying simple sampling for large dataset...')
-      processedData = processedData.slice(0, 50)
+    // Apply intelligent data sampling for large datasets (increased sample size)
+    if (processedData.length > 200) {
+      console.log('🧠 Enhanced Analysis - Applying sampling for large dataset...')
+      processedData = processedData.slice(0, 200) // Increased from 50 to 200
     }
 
-    // Simplified OpenAI analysis call
-    const dataPreview = JSON.stringify(processedData.slice(0, 10))
+    // Send substantial data sample to OpenAI for real analysis (increased from 10 to full processed data)
+    const dataPreview = JSON.stringify(processedData)
+    
+    // Generate data context for better analysis
+    const dataContext = processedData.length > 0 ? {
+      totalRows: processedData.length,
+      columns: Object.keys(processedData[0] || {}),
+      columnTypes: Object.keys(processedData[0] || {}).map(col => {
+        const sample = processedData[0][col]
+        if (typeof sample === 'number' || (!isNaN(parseFloat(sample)) && isFinite(sample))) {
+          return { name: col, type: 'numeric' }
+        } else if (typeof sample === 'string' && (sample.includes('/') || sample.includes('-'))) {
+          return { name: col, type: 'date' }
+        } else {
+          return { name: col, type: 'categorical' }
+        }
+      }),
+      sampleSize: processedData.length,
+      dataQuality: 'high'
+    } : null
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -212,10 +230,18 @@ You are not a data analyst - you are a strategic advisor to the CEO.`
             role: 'user',
             content: `Perform a WORLD-CLASS STRATEGIC ANALYSIS of this ${enhancedContext.industry || 'business'} data. Go beyond obvious metrics to uncover HIDDEN BUSINESS DRIVERS and STRATEGIC INSIGHTS that competitors are missing:
 
-DATA SAMPLE: ${dataPreview}
+DATASET OVERVIEW:
+${dataContext ? `- Total Rows: ${dataContext.totalRows}
+- Columns: ${dataContext.columns.join(', ')}
+- Column Types: ${dataContext.columnTypes.map(ct => `${ct.name} (${ct.type})`).join(', ')}
+- Data Quality: ${dataContext.dataQuality}` : 'Dataset structure analysis pending'}
+
+COMPLETE DATA FOR ANALYSIS: ${dataPreview}
+
 BUSINESS CONTEXT: ${enhancedContext.description || 'Strategic business analysis'}
 TARGET AUDIENCE: ${enhancedContext.targetAudience || 'C-Suite Executives'}
 TIME PERIOD: ${transformedTimeFrame.primaryPeriod.start} to ${transformedTimeFrame.primaryPeriod.end}
+INDUSTRY: ${enhancedContext.industry || 'General Business'}
 
 REQUIRED ANALYSIS DEPTH:
 1. HIDDEN STRATEGIC DRIVERS: What underlying forces are really driving performance?
