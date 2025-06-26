@@ -1,0 +1,51 @@
+Date,Region,Revenue,Units_Sold,Product_Category,Customer_Satisfaction,Marketing_Spend,Profit_Margin
+2024-01-01,North America,125000,320,Electronics,4.2,15000,0.25
+2024-01-02,Europe,98000,280,Software,4.5,12000,0.32
+2024-01-03,Asia Pacific,152000,410,Hardware,4.1,18000,0.28
+2024-01-04,North America,135000,350,Electronics,4.3,16000,0.26
+2024-01-05,Europe,108000,290,Software,4.6,13000,0.35
+2024-01-06,Asia Pacific,165000,430,Hardware,4.0,19000,0.29
+2024-01-07,Latin America,78000,200,Electronics,3.9,10000,0.22
+2024-01-08,Middle East,89000,230,Software,4.2,11000,0.31
+2024-01-09,North America,142000,370,Hardware,4.4,17000,0.27
+2024-01-10,Europe,115000,310,Electronics,4.5,14000,0.33
+2024-01-11,Asia Pacific,178000,460,Software,4.2,20000,0.30
+2024-01-12,North America,155000,390,Hardware,4.3,18000,0.28
+2024-01-13,Europe,122000,330,Electronics,4.6,15000,0.34
+2024-01-14,Asia Pacific,185000,480,Software,4.1,21000,0.31
+2024-01-15,Latin America,85000,220,Hardware,4.0,11000,0.24
+2024-01-16,Middle East,95000,250,Electronics,4.3,12000,0.29
+2024-01-17,North America,162000,410,Software,4.5,19000,0.32
+2024-01-18,Europe,128000,340,Hardware,4.4,16000,0.30
+2024-01-19,Asia Pacific,192000,500,Electronics,4.2,22000,0.33
+2024-01-20,North America,168000,430,Software,4.6,20000,0.35
+2024-01-21,Europe,135000,360,Hardware,4.3,17000,0.31
+2024-01-22,Asia Pacific,198000,520,Electronics,4.1,23000,0.32
+2024-01-23,Latin America,92000,240,Software,4.0,13000,0.26
+2024-01-24,Middle East,102000,270,Hardware,4.2,14000,0.28
+2024-01-25,North America,175000,450,Electronics,4.5,21000,0.33
+2024-01-26,Europe,142000,380,Software,4.4,18000,0.34
+2024-01-27,Asia Pacific,205000,540,Hardware,4.3,24000,0.31
+2024-01-28,North America,182000,470,Electronics,4.6,22000,0.36
+2024-01-29,Europe,148000,390,Software,4.5,19000,0.35
+2024-01-30,Asia Pacific,212000,560,Hardware,4.2,25000,0.32
+2024-02-01,North America,188000,490,Electronics,4.4,23000,0.34
+2024-02-02,Europe,155000,410,Software,4.6,20000,0.37
+2024-02-03,Asia Pacific,218000,580,Hardware,4.1,26000,0.30
+2024-02-04,Latin America,98000,260,Electronics,4.2,14000,0.28
+2024-02-05,Middle East,108000,290,Software,4.3,15000,0.31
+2024-02-06,North America,195000,510,Hardware,4.5,24000,0.35
+2024-02-07,Europe,162000,430,Electronics,4.4,21000,0.33
+2024-02-08,Asia Pacific,225000,600,Software,4.2,27000,0.32
+2024-02-09,North America,202000,530,Hardware,4.6,25000,0.38
+2024-02-10,Europe,168000,450,Electronics,4.5,22000,0.36
+2024-02-11,Asia Pacific,232000,620,Software,4.3,28000,0.33
+2024-02-12,Latin America,105000,280,Hardware,4.1,16000,0.29
+2024-02-13,Middle East,115000,310,Electronics,4.4,17000,0.32
+2024-02-14,North America,208000,550,Software,4.5,26000,0.37
+2024-02-15,Europe,175000,470,Hardware,4.6,23000,0.35
+2024-02-16,Asia Pacific,238000,640,Electronics,4.2,29000,0.31
+2024-02-17,North America,215000,570,Software,4.4,27000,0.36
+2024-02-18,Europe,182000,490,Hardware,4.5,24000,0.34
+2024-02-19,Asia Pacific,245000,660,Electronics,4.3,30000,0.32
+2024-02-20,Latin America,112000,300,Software,4.2,18000,0.30
