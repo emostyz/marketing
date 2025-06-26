@@ -98,7 +98,7 @@ export default function WorldClassPresentationEditor({
   const [isDragging, setIsDragging] = useState(false)
   const [isRegenerating, setIsRegenerating] = useState(false)
   const [useWorldClassRenderer, setUseWorldClassRenderer] = useState(true)
-  const [worldClassSlides, setWorldClassSlides] = useState<any[]>([])
+  const [worldClassSlides, setWorldClassSlides] = useState<any[]>(() => convertInitialSlides(initialSlides))
   const [isCollaborativeMode, setIsCollaborativeMode] = useState(false)
   const [collaborators, setCollaborators] = useState<Array<{id: string, name: string, avatar: string, cursor?: {x: number, y: number}}>>([])
   const [comments, setComments] = useState<Array<{id: string, slideId: string, x: number, y: number, text: string, author: string, timestamp: number}>>([])
@@ -107,6 +107,15 @@ export default function WorldClassPresentationEditor({
   // Auto-save state
   const [autoSaveInstance, setAutoSaveInstance] = useState<EnhancedAutoSave | null>(null)
   const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveState | null>(null)
+
+  // Update slides when initialSlides change
+  useEffect(() => {
+    if (initialSlides && initialSlides.length > 0) {
+      const convertedSlides = convertInitialSlides(initialSlides)
+      setSlides(convertedSlides)
+      setWorldClassSlides(convertedSlides)
+    }
+  }, [initialSlides, convertInitialSlides])
 
   const slideCanvasRef = useRef<HTMLDivElement>(null)
   const editorRef = useRef<HTMLDivElement>(null)
@@ -294,24 +303,30 @@ export default function WorldClassPresentationEditor({
         }] : [],
         confidence: slide.aiInsights?.confidence || 85
       },
-      charts: slide.charts?.map(chart => ({
-        id: chart.id || `chart_${Date.now()}`,
-        type: 'chart',
-        chartType: chart.type || 'bar',
-        title: chart.title || 'Data Visualization',
-        description: chart.insights?.[0] || 'Strategic data insights',
-        data: chart.data || [],
-        xAxis: chart.config?.xAxisKey || 'name',
-        yAxis: chart.config?.yAxisKey || 'value',
-        configuration: chart.config || {},
-        customization: {
-          style: 'modern',
-          visualUpgrades: ['gradient', 'shadow'],
-          interactivity: ['hover', 'tooltip'],
-          storytelling: [chart.hiddenPattern || 'Strategic insight'],
-          innovation: ['animated-reveal']
+      charts: slide.charts?.map(chart => {
+        console.log('🎯 Converting chart for WorldClass:', chart)
+        return {
+          id: chart.id || `chart_${Date.now()}`,
+          type: chart.chartType || chart.type || 'bar',
+          chartType: chart.chartType || chart.type || 'bar',
+          title: chart.title || 'Data Visualization',
+          description: chart.insights?.[0] || chart.insight || 'Strategic data insights',
+          data: chart.data || [],
+          xAxisKey: chart.xAxisKey || chart.xAxis || 'name',
+          yAxisKey: chart.yAxisKey || chart.yAxis || 'value',
+          xAxis: chart.xAxisKey || chart.xAxis || 'name',
+          yAxis: chart.yAxisKey || chart.yAxis || 'value',
+          insight: chart.insight,
+          configuration: chart.configuration || chart.config || {},
+          customization: {
+            style: 'modern',
+            visualUpgrades: ['gradient', 'shadow'],
+            interactivity: ['hover', 'tooltip'],
+            storytelling: [chart.hiddenPattern || chart.insight || 'Strategic insight'],
+            innovation: ['animated-reveal']
+          }
         }
-      })) || [],
+      }) || [],
       customization: {
         visualStyle: slide.style === 'mckinsey' ? 'executive' : 'futuristic',
         innovationLevel: 'advanced',
@@ -399,7 +414,7 @@ export default function WorldClassPresentationEditor({
   useEffect(() => {
     if (presentationId) {
       const autoSave = new EnhancedAutoSave({
-        debounceMs: 3000, // 3 seconds
+        debounceMs: 100, // 100ms for near-instant saves
         maxRetries: 3,
         saveOnVisibilityChange: true,
         saveOnBeforeUnload: true,
@@ -901,32 +916,11 @@ export default function WorldClassPresentationEditor({
                 {/* Enhanced Slide Content */}
                 {useWorldClassRenderer && worldClassSlides.length > 0 ? (
                   <div className="absolute inset-0 overflow-hidden">
-                    <div 
-                      style={{ 
-                        transform: `scale(${slideScale})`,
-                        transformOrigin: 'top left',
-                        width: SLIDE_WIDTH,
-                        height: SLIDE_HEIGHT
-                      }}
-                    >
-                      <WorldClassSlideRenderer
-                        slides={worldClassSlides}
-                        currentSlide={currentSlideIndex}
-                        onSlideChange={goToSlide}
-                        onSlideEdit={(slideId, updates) => {
-                          // Update the corresponding slide in our slides array
-                          const slideIndex = slides.findIndex(s => s.id === slideId)
-                          if (slideIndex !== -1) {
-                            const newSlides = [...slides]
-                            newSlides[slideIndex] = { ...newSlides[slideIndex], ...updates }
-                            setSlides(newSlides)
-                            addToHistory(newSlides)
-                          }
-                        }}
-                        isEditable={false}
-                        className="w-full h-full"
-                      />
-                    </div>
+                    <WorldClassSlideRenderer
+                      slide={worldClassSlides[currentSlideIndex] || currentSlide}
+                      isActive={true}
+                      className="w-full h-full"
+                    />
                   </div>
                 ) : (
                   <EnhancedSlideRenderer 

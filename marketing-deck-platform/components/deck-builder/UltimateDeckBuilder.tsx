@@ -281,8 +281,8 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   // Auto-save configuration for intake form
   const intakeAutoSave = useAutoSave(intakeSessionData, saveIntakeProgress, {
     enabled: true, // Always enabled
-    interval: 10000, // Save every 10 seconds
-    debounceDelay: 1500, // Wait 1.5 seconds after last change
+    interval: 2000, // Save every 2 seconds
+    debounceDelay: 100, // Wait 100ms after last change for instant saves
     conflictResolution: 'auto' // Auto-resolve conflicts for form data
   })
 

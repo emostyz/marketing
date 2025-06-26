@@ -105,15 +105,15 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       }
 
       setProgress(30)
-      setCurrentAnalysisStep('Analyzing data patterns with AI...')
+      setCurrentAnalysisStep('Activating Ultimate AI Brain with Python data science ecosystem...')
       
-      // Use AI to generate REAL insights from the actual data
+      // Use Ultimate AI Brain to generate REAL insights from the actual data
       let realInsights: Insight[] = []
       try {
         realInsights = await analyzeDataWithAI(actualData, context)
-        console.log('🧠 Generated AI insights from actual data:', realInsights)
+        console.log('🧠 Generated Ultimate AI Brain insights from actual data:', realInsights)
       } catch (aiError) {
-        console.warn('⚠️ AI analysis failed, falling back to local analysis:', aiError)
+        console.warn('⚠️ Ultimate AI Brain analysis failed, falling back to local analysis:', aiError)
         realInsights = analyzeDataLocally(actualData, context)
         console.log('📊 Generated local insights from actual data:', realInsights)
       }
@@ -156,62 +156,80 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
 
   // Use AI to analyze data and generate sophisticated insights
   async function analyzeDataWithAI(data: any[], context: any): Promise<Insight[]> {
-    console.log('🧠 Starting AI analysis of data...')
+    console.log('🧠 Starting Ultimate AI Brain analysis of data...')
     
-    setCurrentAnalysisStep('Calling AI brain for advanced analysis...')
+    setCurrentAnalysisStep('Activating world-class AI brain with Python ecosystem...')
     
-    // Enhanced context for better AI analysis
+    // Enhanced context for ultimate AI analysis
     const enhancedContext = {
-      businessContext: context.businessContext || 'Data Analysis',
+      industry: context.industryContext || context.industry || 'general',
+      goals: [
+        context.businessContext || 'data analysis',
+        context.presentationGoal || 'strategic insights',
+        context.goal || 'extract insights'
+      ],
+      kpis: [
+        ...(context.keyMetrics || []),
+        'performance', 'growth', 'efficiency'
+      ],
       targetAudience: context.targetAudience || 'executives',
-      goal: context.goal || 'extract insights',
-      industryContext: context.industryContext || 'general',
-      companySize: context.companySize || 'medium',
-      presentationGoal: context.presentationGoal || 'strategic review',
-      decisionMakers: context.decisionMakers || ['executive team'],
-      urgency: context.urgency || 'normal',
-      keyMetrics: context.keyMetrics || [],
-      competitiveContext: context.competitiveContext || 'standard market',
-      ...context
+      timeHorizon: context.timeHorizon || context.timeLimit || '3-6 months',
+      competitiveContext: context.competitiveContext || 'competitive market',
+      constraints: [
+        ...(context.constraints || []),
+        'budget optimization', 'resource allocation'
+      ]
     }
 
-    const response = await fetch('/api/openai/enhanced-analyze', {
+    // Include user feedback for learning
+    const userFeedback = {
+      previousInsights: [],
+      corrections: [],
+      preferences: [],
+      qualityRatings: []
+    }
+
+    const response = await fetch('/api/ai/ultimate-brain', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        data: data.slice(0, 100), // Fixed: API expects 'data' parameter, not 'dataset'
+        data: data.slice(0, 100),
         context: enhancedContext,
-        analysisType: 'comprehensive',
-        requestedOutputs: ['strategic_insights', 'business_implications', 'recommendations', 'correlations'],
-        qualityThreshold: 80 // Minimum confidence threshold
+        userFeedback,
+        learningObjectives: [
+          'identify strategic insights',
+          'predict future trends', 
+          'recommend actionable steps',
+          'optimize business performance'
+        ]
       })
     })
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`AI analysis failed: ${response.status} - ${errorText}`)
+      throw new Error(`Ultimate AI Brain analysis failed: ${response.status} - ${errorText}`)
     }
 
     const result = await response.json()
-    console.log('🧠 AI analysis result:', result)
+    console.log('🧠 Ultimate AI Brain analysis result:', result)
 
     if (!result.success) {
-      throw new Error(result.error || 'AI analysis returned invalid results')
+      throw new Error(result.error || 'Ultimate AI Brain analysis returned invalid results')
     }
 
-    // Convert AI analysis to our Insight format with enhanced processing
+    // Convert Ultimate AI Brain analysis to our Insight format
     const aiInsights: Insight[] = []
     const analysis = result.analysis || {}
 
-    // Process strategic insights with improved mapping
+    // Process strategic insights from Ultimate AI Brain
     if (analysis.strategicInsights?.length > 0) {
       analysis.strategicInsights.slice(0, 4).forEach((insight: any, index: number) => {
         if (insight && (insight.headline || insight.title || insight.finding)) {
           aiInsights.push({
-            id: `ai_strategic_${Date.now()}_${index}`,
+            id: `ultimate_strategic_${Date.now()}_${index}`,
             title: insight.headline || insight.title || insight.finding || `Strategic Insight ${index + 1}`,
             description: insight.description || insight.content || insight.summary || insight.finding,
-            businessImplication: insight.businessImplication || insight.recommendation || insight.impact || 'Strategic consideration for leadership team',
+            businessImplication: insight.businessImplication || insight.recommendation || insight.impact || 'Strategic consideration from world-class AI analysis',
             confidence: Math.min(Math.max(insight.confidence || 88, 70), 95), // Clamp between 70-95
             approved: null
           })
@@ -219,15 +237,15 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       })
     }
 
-    // Process key metrics with validation
+    // Process key metrics from Python analysis
     if (analysis.keyMetrics?.length > 0) {
       analysis.keyMetrics.slice(0, 3).forEach((metric: any, index: number) => {
         if (metric && metric.name) {
           aiInsights.push({
-            id: `ai_metric_${Date.now()}_${index}`,
+            id: `ultimate_metric_${Date.now()}_${index}`,
             title: `${metric.name} Performance Analysis`,
             description: `${metric.name}: ${metric.value || 'N/A'} ${metric.trend ? `(${metric.trend} trend)` : ''}`,
-            businessImplication: metric.insight || metric.businessImpact || metric.implication || 'Important performance indicator requiring attention',
+            businessImplication: metric.insight || metric.businessImpact || metric.implication || 'Performance insight from advanced machine learning analysis',
             confidence: 92,
             approved: null
           })
@@ -235,7 +253,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       })
     }
 
-    // Process correlations with enhanced details
+    // Process correlations from statistical analysis
     if (analysis.correlations?.length > 0) {
       analysis.correlations.slice(0, 2).forEach((correlation: any, index: number) => {
         if (correlation && correlation.variable1 && correlation.variable2) {
@@ -243,10 +261,10 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
           const strengthDesc = strength > 0.8 ? 'very strong' : strength > 0.6 ? 'strong' : 'moderate'
           
           aiInsights.push({
-            id: `ai_correlation_${Date.now()}_${index}`,
+            id: `ultimate_correlation_${Date.now()}_${index}`,
             title: `${correlation.variable1} ↔ ${correlation.variable2} Relationship`,
-            description: `${strengthDesc} correlation (${strength.toFixed(3)}) reveals significant relationship between ${correlation.variable1} and ${correlation.variable2}`,
-            businessImplication: correlation.businessImplication || correlation.impact || 'This relationship can inform strategic decisions and resource allocation',
+            description: `${strengthDesc} correlation (${strength.toFixed(3)}) discovered through advanced statistical analysis`,
+            businessImplication: correlation.businessImplication || correlation.impact || 'Strategic relationship identified through machine learning analysis',
             confidence: Math.min(Math.max(correlation.confidence || 85, 75), 90),
             approved: null
           })
@@ -254,18 +272,35 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       })
     }
 
-    // Add fallback insights if AI didn't produce enough
+    // Process actionable recommendations from Ultimate AI Brain
+    if (analysis.recommendations?.length > 0) {
+      analysis.recommendations.slice(0, 2).forEach((recommendation: any, index: number) => {
+        if (recommendation && recommendation.title) {
+          aiInsights.push({
+            id: `ultimate_recommendation_${Date.now()}_${index}`,
+            title: `Action: ${recommendation.title}`,
+            description: recommendation.description || 'Strategic recommendation from AI analysis',
+            businessImplication: `Expected ROI: ${recommendation.expectedROI || 'TBD'}%. ${recommendation.implementation?.join(', ') || 'Implementation plan available'}`,
+            confidence: recommendation.confidence || 85,
+            approved: null
+          })
+        }
+      })
+    }
+
+    // Add fallback insights if Ultimate AI Brain didn't produce enough
     if (aiInsights.length < 2) {
+      console.log('🔄 Ultimate AI Brain produced fewer insights, adding local analysis fallback...')
       const fallbackInsights = analyzeDataLocally(data, context)
       aiInsights.push(...fallbackInsights.slice(0, 3 - aiInsights.length))
     }
 
     // Ensure we have meaningful insights
     if (aiInsights.length === 0) {
-      throw new Error('AI analysis produced no usable insights. Please check your data quality and try again.')
+      throw new Error('Ultimate AI Brain analysis produced no usable insights. Please check your data quality and try again.')
     }
 
-    console.log('✅ Converted AI analysis to', aiInsights.length, 'high-quality insights')
+    console.log('✅ Ultimate AI Brain converted to', aiInsights.length, 'world-class insights with Python ecosystem analysis')
     return aiInsights.slice(0, 6) // Limit to top 6 insights
   }
 
@@ -575,8 +610,11 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       <div className="text-center">
         <div className="mb-6">
           <Brain className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold text-white mb-2">Analyzing Your Data</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Ultimate AI Brain Analysis</h2>
           <p className="text-gray-400">{currentAnalysisStep}</p>
+          <div className="mt-2 text-xs text-blue-300">
+            Powered by Python • scikit-learn • statsmodels • prophet • plotly • OpenAI GPT-4o
+          </div>
         </div>
         
         <div className="w-full bg-gray-700 rounded-full h-3 mb-6">

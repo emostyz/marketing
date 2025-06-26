@@ -37,8 +37,8 @@ export function useAutoSave<T>(
 ) {
   const {
     enabled = true,
-    interval = 30000, // 30 seconds
-    debounceDelay = 2000, // 2 seconds
+    interval = 5000, // 5 seconds for frequent auto-saves
+    debounceDelay = 100, // 100ms for near-instant saves
     onSaveStart,
     onSaveSuccess,
     onSaveError,
