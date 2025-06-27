@@ -10,7 +10,7 @@ async function testRealAuth() {
   
   try {
     // Test with the existing confirmed user
-    const email = 'test@aedrin.com';
+    const email = 'test@easydecks.ai';
     const password = 'password123';
     
     console.log(`🔐 Testing sign in with: ${email}`);

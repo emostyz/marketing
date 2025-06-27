@@ -60,7 +60,7 @@ export default function HomePage() {
             </div>
             <h1 className="text-3xl font-bold text-white mb-4">Thank You!</h1>
             <p className="text-gray-300 mb-8">
-              We've received your information and will be in touch soon with early access to AEDRIN.
+              We've received your information and will be in touch soon with early access to EasyDecks.ai.
             </p>
             <div className="space-y-4">
               <Link href="/">
@@ -81,7 +81,7 @@ export default function HomePage() {
   }
 
   return (
-    <UnifiedLayout showComingSoonBar={true}>
+    <UnifiedLayout showComingSoonBar={true} className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
 
       {/* Hero Section */}
       <section className="relative px-6 py-20">
@@ -97,7 +97,7 @@ export default function HomePage() {
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Create professional marketing presentations in minutes with AI. Upload your data, 
-              and watch as AEDRIN generates compelling slides with charts, insights, and narratives.
+              and watch as EasyDecks.ai generates compelling slides with charts, insights, and narratives.
             </p>
           </div>
 
@@ -200,7 +200,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">
-              Why Choose AEDRIN?
+              Why Choose EasyDecks.ai?
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
               The most advanced AI-powered presentation platform designed for modern businesses
@@ -333,7 +333,7 @@ export default function HomePage() {
             Ready to Transform Your Presentations?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of professionals who are already creating stunning presentations with AEDRIN
+            Join thousands of professionals who are already creating stunning presentations with EasyDecks.ai
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/auth/signup">
@@ -359,7 +359,7 @@ export default function HomePage() {
       <footer className="px-6 py-4 border-t border-gray-800 bg-gray-900/30">
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-gray-500 text-sm">
-            © 2024 AEDRIN. All rights reserved. | 
+            © 2024 EasyDecks.ai. All rights reserved. | 
             <Link href="/admin/login" className="text-gray-400 hover:text-gray-300 ml-2">Admin</Link>
           </p>
         </div>

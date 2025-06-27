@@ -36,7 +36,7 @@ async function testCompleteAuthFlow() {
     // Test 1: Backend Authentication
     console.log('\n1️⃣ Testing backend authentication...');
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: 'test@aedrin.com',
+      email: 'test@easydecks.ai',
       password: 'password123'
     });
     
@@ -57,7 +57,7 @@ async function testCompleteAuthFlow() {
     // Test 3: Fill login form
     console.log('\n3️⃣ Filling login form...');
     await page.waitForSelector('input[type="email"]');
-    await page.type('input[type="email"]', 'test@aedrin.com');
+    await page.type('input[type="email"]', 'test@easydecks.ai');
     await page.type('input[type="password"]', 'password123');
     console.log('✅ Login form filled');
 
@@ -85,8 +85,8 @@ async function testCompleteAuthFlow() {
     console.log('\n5️⃣ Checking localStorage for user data...');
     const localStorage = await page.evaluate(() => {
       return {
-        authState: localStorage.getItem('aedrin-auth-state'),
-        demoSession: localStorage.getItem('aedrin-demo-session')
+        authState: localStorage.getItem('easydecks-auth-state'),
+        demoSession: localStorage.getItem('easydecks-demo-session')
       };
     });
     
@@ -105,7 +105,7 @@ async function testCompleteAuthFlow() {
       return document.body.innerText;
     });
     
-    if (dashboardText.includes('AEDRIN') && dashboardText.includes('Dashboard')) {
+    if (dashboardText.includes('EasyDecks.ai') && dashboardText.includes('Dashboard')) {
       console.log('✅ Dashboard content loaded correctly');
     } else {
       console.log('❌ Dashboard content not found');
@@ -130,8 +130,8 @@ async function testCompleteAuthFlow() {
     console.log('\n8️⃣ Verifying localStorage cleared...');
     const afterSignOutStorage = await page.evaluate(() => {
       return {
-        authState: localStorage.getItem('aedrin-auth-state'),
-        demoSession: localStorage.getItem('aedrin-demo-session')
+        authState: localStorage.getItem('easydecks-auth-state'),
+        demoSession: localStorage.getItem('easydecks-demo-session')
       };
     });
     

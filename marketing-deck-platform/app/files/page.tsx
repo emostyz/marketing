@@ -10,7 +10,7 @@ import {
   Grid3X3, List, Search, Filter, ChevronDown, Plus, Upload, 
   Folder, FileText, Clock, Star, Trash2, MoreVertical,
   Download, Share2, Copy, Move, Eye, Info, Check,
-  ArrowLeft, Menu, Settings, User, Brain, LogOut
+  ArrowLeft, Menu, Settings, User, Brain, LogOut, Database
 } from 'lucide-react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import * as ContextMenu from '@radix-ui/react-context-menu'
@@ -81,6 +81,19 @@ export default function FilesPage() {
   
   const createNewDeck = useCallback(() => {
     router.push('/deck-builder/new')
+  }, [router])
+
+  const handleDeckOpen = useCallback((deck: Deck) => {
+    if (deck.type === 'draft') {
+      // For drafts, open the deck builder to continue editing
+      router.push('/deck-builder/new')
+    } else if (deck.type === 'dataset') {
+      // For datasets, show preview or redirect to data analysis
+      router.push(`/data-analysis?import=${deck.id}`)
+    } else {
+      // For completed presentations, open the editor
+      router.push(`/test-editor?deck=${deck.id}`)
+    }
   }, [router])
   
   const filteredDecks = useMemo(() => {
@@ -202,14 +215,14 @@ export default function FilesPage() {
                 decks={filteredDecks} 
                 selectedItems={selectedItems} 
                 onSelectionChange={setSelectedItems}
-                onDeckOpen={(deckId) => router.push(`/test-editor?deck=${deckId}`)}
+                onDeckOpen={handleDeckOpen}
               />
             ) : (
               <DeckList 
                 decks={filteredDecks} 
                 selectedItems={selectedItems} 
                 onSelectionChange={setSelectedItems}
-                onDeckOpen={(deckId) => router.push(`/test-editor?deck=${deckId}`)}
+                onDeckOpen={handleDeckOpen}
               />
             )}
           </div>
@@ -252,12 +265,28 @@ export default function FilesPage() {
                   <CommandItem 
                     key={deck.id}
                     onSelect={() => {
-                      router.push(`/test-editor?deck=${deck.id}`)
+                      handleDeckOpen(deck)
                       setSearchOpen(false)
                     }}
                   >
-                    <FileText className="w-4 h-4 mr-2" />
+                    {deck.type === 'draft' ? (
+                      <Clock className="w-4 h-4 mr-2 text-orange-400" />
+                    ) : deck.type === 'dataset' ? (
+                      <Database className="w-4 h-4 mr-2 text-green-400" />
+                    ) : (
+                      <FileText className="w-4 h-4 mr-2" />
+                    )}
                     {deck.title}
+                    {deck.type === 'draft' && (
+                      <span className="ml-auto px-2 py-0.5 bg-orange-900 text-orange-300 text-xs rounded-full">
+                        Draft
+                      </span>
+                    )}
+                    {deck.type === 'dataset' && (
+                      <span className="ml-auto px-2 py-0.5 bg-green-900 text-green-300 text-xs rounded-full">
+                        Dataset
+                      </span>
+                    )}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -289,7 +318,7 @@ function DeckGrid({ decks, selectedItems, onSelectionChange, onDeckOpen }: {
   decks: Deck[]
   selectedItems: Set<string>
   onSelectionChange: (items: Set<string>) => void
-  onDeckOpen: (id: string) => void
+  onDeckOpen: (deck: Deck) => void
 }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
@@ -307,7 +336,7 @@ function DeckGrid({ decks, selectedItems, onSelectionChange, onDeckOpen }: {
             }
             onSelectionChange(newSelection)
           }}
-          onOpen={() => onDeckOpen(deck.id)}
+          onOpen={() => onDeckOpen(deck)}
         />
       ))}
     </div>
@@ -342,17 +371,48 @@ function DeckCard({ deck, isSelected, onSelect, onOpen }: {
           whileTap={{ scale: 0.98 }}
         >
           {/* Thumbnail */}
-          <div className="aspect-[16/9] rounded-t-lg bg-gradient-to-br from-gray-700 to-gray-800 p-4 flex items-center justify-center">
-            <FileText className="w-12 h-12 text-gray-400" />
+          <div className={cn(
+            "aspect-[16/9] rounded-t-lg p-4 flex items-center justify-center",
+            deck.type === 'draft' 
+              ? "bg-gradient-to-br from-orange-800 to-orange-900" 
+              : deck.type === 'dataset'
+              ? "bg-gradient-to-br from-green-800 to-green-900"
+              : "bg-gradient-to-br from-gray-700 to-gray-800"
+          )}>
+            {deck.type === 'draft' ? (
+              <Clock className="w-12 h-12 text-orange-400" />
+            ) : deck.type === 'dataset' ? (
+              <Database className="w-12 h-12 text-green-400" />
+            ) : (
+              <FileText className="w-12 h-12 text-gray-400" />
+            )}
           </div>
           
           {/* Info */}
           <div className="p-4">
             <div className="flex items-start justify-between gap-2 mb-2">
               <h3 className="font-medium text-sm text-white truncate">{deck.title}</h3>
-              {deck.isStarred && (
-                <Star className="w-4 h-4 text-yellow-400 fill-current flex-shrink-0" />
-              )}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {deck.type === 'draft' && (
+                  <span className="px-2 py-0.5 bg-orange-900 text-orange-300 text-xs rounded-full">
+                    Draft
+                  </span>
+                )}
+                {deck.type === 'dataset' && (
+                  <span className={cn(
+                    "px-2 py-0.5 text-xs rounded-full",
+                    deck.status === 'completed' ? "bg-green-900 text-green-300" :
+                    deck.status === 'processing' ? "bg-blue-900 text-blue-300" :
+                    "bg-yellow-900 text-yellow-300"
+                  )}>
+                    {deck.status === 'completed' ? 'Ready' : 
+                     deck.status === 'processing' ? 'Processing' : 'Pending'}
+                  </span>
+                )}
+                {deck.isStarred && (
+                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                )}
+              </div>
             </div>
             <p className="text-xs text-gray-400">
               Modified {formatRelativeTime(deck.updatedAt)}
@@ -443,7 +503,7 @@ function DeckList({ decks, selectedItems, onSelectionChange, onDeckOpen }: {
   decks: Deck[]
   selectedItems: Set<string>
   onSelectionChange: (items: Set<string>) => void
-  onDeckOpen: (id: string) => void
+  onDeckOpen: (deck: Deck) => void
 }) {
   return (
     <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
@@ -470,7 +530,7 @@ function DeckList({ decks, selectedItems, onSelectionChange, onDeckOpen }: {
               "grid grid-cols-12 gap-4 px-4 py-3 border-b border-gray-700/50 hover:bg-gray-750 cursor-pointer transition-colors",
               selectedItems.has(deck.id) ? "bg-blue-900/20" : ""
             )}
-            onClick={() => onDeckOpen(deck.id)}
+            onClick={() => onDeckOpen(deck)}
           >
             <div className="col-span-6 flex items-center gap-3">
               <button
@@ -495,8 +555,30 @@ function DeckList({ decks, selectedItems, onSelectionChange, onDeckOpen }: {
                   <Check className="w-2.5 h-2.5 text-white" />
                 )}
               </button>
-              <FileText className="w-4 h-4 text-blue-400" />
+              {deck.type === 'draft' ? (
+                <Clock className="w-4 h-4 text-orange-400" />
+              ) : deck.type === 'dataset' ? (
+                <Database className="w-4 h-4 text-green-400" />
+              ) : (
+                <FileText className="w-4 h-4 text-blue-400" />
+              )}
               <span className="font-medium text-white">{deck.title}</span>
+              {deck.type === 'draft' && (
+                <span className="px-2 py-0.5 bg-orange-900 text-orange-300 text-xs rounded-full">
+                  Draft
+                </span>
+              )}
+              {deck.type === 'dataset' && (
+                <span className={cn(
+                  "px-2 py-0.5 text-xs rounded-full",
+                  deck.status === 'completed' ? "bg-green-900 text-green-300" :
+                  deck.status === 'processing' ? "bg-blue-900 text-blue-300" :
+                  "bg-yellow-900 text-yellow-300"
+                )}>
+                  {deck.status === 'completed' ? 'Ready' : 
+                   deck.status === 'processing' ? 'Processing' : 'Pending'}
+                </span>
+              )}
               {deck.isStarred && (
                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
               )}

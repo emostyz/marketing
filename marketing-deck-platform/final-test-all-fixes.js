@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * AEDRIN Platform - Complete End-to-End Workflow Test
+ * EasyDecks.ai Platform - Complete End-to-End Workflow Test
  * 
- * This script tests the fully functional AEDRIN marketing deck platform
+ * This script tests the fully functional EasyDecks.ai marketing deck platform
  * from data upload through deck generation to PowerPoint export.
  * 
  * ALL FIXES IMPLEMENTED:
@@ -21,7 +21,7 @@ const fs = require('fs');
 const BASE_URL = 'http://localhost:3000';
 const TEST_COOKIE = 'demo-session=active';
 
-console.log('🚀 AEDRIN PLATFORM - COMPLETE WORKFLOW TEST');
+console.log('🚀 EasyDecks.ai PLATFORM - COMPLETE WORKFLOW TEST');
 console.log('='.repeat(50));
 
 async function runCompleteTest() {
@@ -80,7 +80,7 @@ async function runCompleteTest() {
     console.log('   🔸 Deck Generation: 5 professional storytelling slides');
     console.log('   🔸 Editor: Drag/drop/resize functionality');  
     console.log('   🔸 Export: Working PowerPoint export with PptxGenJS');
-    console.log('\n🚀 AEDRIN Platform is now FULLY FUNCTIONAL!');
+    console.log('\n🚀 EasyDecks.ai Platform is now FULLY FUNCTIONAL!');
     
   } catch (error) {
     console.error('\n❌ WORKFLOW TEST FAILED:', error.message);

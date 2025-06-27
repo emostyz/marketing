@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * COMPREHENSIVE END-TO-END VALIDATION AGENT FOR AEDRIN PLATFORM
+ * COMPREHENSIVE END-TO-END VALIDATION AGENT FOR EasyDecks.ai PLATFORM
  * 
  * This agent validates the complete user journey from data upload to presentation export,
  * using real data (demo_1000_row_dataset.csv) to prove the system works with actual business data.
@@ -14,7 +14,7 @@
  * 5. Editor Functionality Testing - Drag/drop/resize capabilities
  * 6. Export System Testing - PowerPoint export with real content
  * 
- * Author: AEDRIN Platform Team
+ * Author: EasyDecks.ai Platform Team
  * Date: 2024-12-24
  */
 
@@ -22,7 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
 
-class AedrinE2EValidationAgent {
+class EasyDecksE2EValidationAgent {
   constructor() {
     this.testResults = {
       passed: 0,
@@ -95,7 +95,7 @@ class AedrinE2EValidationAgent {
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'AEDRIN-E2E-Test-Agent/1.0',
+          'User-Agent': 'EasyDecks.ai-E2E-Test-Agent/1.0',
           ...options.headers
         },
         ...options
@@ -742,7 +742,7 @@ class AedrinE2EValidationAgent {
 
   printSummary(report) {
     console.log('\n' + '='.repeat(80));
-    console.log('🎯 AEDRIN PLATFORM E2E VALIDATION SUMMARY');
+    console.log('🎯 EasyDecks.ai PLATFORM E2E VALIDATION SUMMARY');
     console.log('='.repeat(80));
     console.log(`📊 Test Results: ${report.summary.passed}/${report.summary.totalTests} passed (${report.summary.successRate}%)`);
     console.log(`⏱️  Total Duration: ${(report.duration / 1000).toFixed(1)}s`);
@@ -766,7 +766,7 @@ class AedrinE2EValidationAgent {
   }
 
   async runCompleteValidation() {
-    this.log('🚀 Starting comprehensive E2E validation of AEDRIN platform...', 'test');
+    this.log('🚀 Starting comprehensive E2E validation of EasyDecks.ai platform...', 'test');
     
     try {
       // Step 1: Validate demo data file
@@ -819,7 +819,7 @@ class AedrinE2EValidationAgent {
 
 // Execute the validation if run directly
 if (require.main === module) {
-  const agent = new AedrinE2EValidationAgent();
+  const agent = new EasyDecksE2EValidationAgent();
   agent.runCompleteValidation()
     .then(() => {
       console.log('\n✅ E2E validation completed successfully!');
@@ -831,4 +831,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { AedrinE2EValidationAgent };
+module.exports = { EasyDecksE2EValidationAgent };

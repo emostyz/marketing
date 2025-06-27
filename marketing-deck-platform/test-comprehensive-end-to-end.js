@@ -2,7 +2,7 @@
 
 /**
  * COMPREHENSIVE END-TO-END PRODUCTION TEST SUITE
- * Tests the entire AEDRIN platform flow from user perspective
+ * Tests the entire EasyDecks.ai platform flow from user perspective
  * Simulates real user scenarios and validates production readiness
  */
 
@@ -751,7 +751,7 @@ class EndToEndTestSuite {
     const passRate = total > 0 ? Math.round((this.testResults.passed / total) * 100) : 0;
     
     console.log('\n' + '='.repeat(100));
-    console.log('🎯 PRODUCTION READINESS ASSESSMENT - AEDRIN PLATFORM');
+    console.log('🎯 PRODUCTION READINESS ASSESSMENT - EasyDecks.ai PLATFORM');
     console.log('='.repeat(100));
     console.log(`⏱️  Total Time: ${duration}s`);
     console.log(`✅ Passed: ${this.testResults.passed}`);

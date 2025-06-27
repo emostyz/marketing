@@ -88,13 +88,15 @@ export function useAutoSave<T>(
         setLastSavedData(dataToSave)
         onSaveSuccess?.(result)
 
-        // Show subtle success indicator
-        toast.success('Saved', {
-          duration: 1000,
+        // Show subtle success indicator for instant feedback
+        toast.success('Auto-saved', {
+          duration: 800,
           position: 'bottom-right',
           style: {
-            fontSize: '12px',
-            padding: '8px 12px'
+            fontSize: '11px',
+            padding: '6px 10px',
+            backgroundColor: '#10b981',
+            color: 'white'
           }
         })
 
@@ -114,9 +116,17 @@ export function useAutoSave<T>(
         } else {
           onSaveError?.(error instanceof Error ? error : new Error(errorMessage))
           
-          toast.error(`Save failed: ${errorMessage}`, {
-            duration: 4000,
-            position: 'bottom-right'
+          toast.error(`Auto-save failed: ${errorMessage}`, {
+            duration: 3000,
+            position: 'bottom-right',
+            style: {
+              backgroundColor: '#ef4444',
+              color: 'white'
+            },
+            action: {
+              label: 'Retry',
+              onClick: () => debouncedSave(dataToSave)
+            }
           })
         }
       }

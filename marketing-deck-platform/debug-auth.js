@@ -53,7 +53,7 @@ async function simulateDemoAuth() {
     console.log('\nStep 3: Setting user state')
     const demoUser = {
       id: 'demo-user',
-      email: 'demo@aedrin.com',
+      email: 'demo@easydecks.ai',
       name: 'Demo User',
       subscription: 'pro',
       demo: true
@@ -91,7 +91,7 @@ async function simulateDashboardLoad() {
       
       const user = {
         id: 'demo-user',
-        email: 'demo@aedrin.com',
+        email: 'demo@easydecks.ai',
         name: 'Demo User',
         subscription: 'pro',
         demo: true

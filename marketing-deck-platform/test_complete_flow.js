@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-// Comprehensive End-to-End Test for AEDRIN Marketing Deck Platform
+// Comprehensive End-to-End Test for EasyDecks.ai Marketing Deck Platform
 // This script verifies that the complete user journey works flawlessly
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 AEDRIN End-to-End Test Suite');
+console.log('🚀 EasyDecks.ai End-to-End Test Suite');
 console.log('=================================\n');
 
 const testResults = {
@@ -370,7 +370,7 @@ console.log(`📈 Success Rate: ${Math.round((testResults.passed / (testResults.
 
 if (testResults.failed === 0) {
   console.log('\n🎉 ALL TESTS PASSED! 🎉');
-  console.log('AEDRIN is ready for production use!');
+  console.log('EasyDecks.ai is ready for production use!');
   console.log('The application has:');
   console.log('✨ Working authentication flow');
   console.log('✨ Functional dashboard with file upload');

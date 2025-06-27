@@ -267,7 +267,7 @@ function simulatePowerPointExport(analysisResult, dataset) {
   const presentation = {
     id: `pres_${Date.now()}`,
     title: 'Business Performance Analysis',
-    author: 'AEDRIN Analytics',
+    author: 'EasyDecks.ai Analytics',
     slides: analysisResult.slideStructure.map(slide => ({
       id: slide.id,
       title: slide.title,
@@ -315,7 +315,7 @@ function simulatePowerPointExport(analysisResult, dataset) {
 
 // Run complete validation
 function runValidation() {
-  console.log('🚀 AEDRIN Data Processing Validation');
+  console.log('🚀 EasyDecks.ai Data Processing Validation');
   console.log('=' .repeat(50));
   console.log('Testing with 1000 rows x 14 columns of user data\n');
 

@@ -156,7 +156,7 @@ function checkEnvironment() {
 
 // Run the test
 async function main() {
-  console.log('🎯 AEDRIN AI PIPELINE VALIDATION')
+  console.log('🎯 EasyDecks.ai AI PIPELINE VALIDATION')
   console.log('=' .repeat(50))
   console.log()
   

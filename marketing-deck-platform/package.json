@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "npm run type-check && next build",
     "start": "next start",
     "type-check": "tsc --noEmit",
@@ -136,9 +136,9 @@
       "react-dom": "^19.1.0"
     }
   },
-  "name": "marketing-deck-platform",
+  "name": "easydecks-ai",
   "version": "1.0.0",
-  "description": "This is a starter template for building a SaaS application using **Next.js** with support for authentication, Stripe integration for payments, and a dashboard for logged-in users.",
+  "description": "EasyDecks.ai - AI-powered presentation deck builder with smart analytics and professional templates.",
   "main": "button_functionality_test.js",
   "directories": {
     "lib": "lib"

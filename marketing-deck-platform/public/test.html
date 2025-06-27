@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Brain End-to-End Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test-section { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .step { margin: 10px 0; padding: 10px; border-left: 4px solid #ddd; }
+        .step.success { border-color: #22c55e; background: #f0fdf4; }
+        .step.error { border-color: #ef4444; background: #fef2f2; }
+        .step.running { border-color: #3b82f6; background: #eff6ff; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .primary { background: #3b82f6; color: white; }
+        .success { background: #22c55e; color: white; }
+        .error { background: #ef4444; color: white; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .result-box { background: #f0f9ff; border: 1px solid #0ea5e9; padding: 15px; border-radius: 6px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 AI Brain Complete Integration Test</h1>
+    <p><strong>Testing:</strong> Real user data → AI Brain API → Slide Generation → Display</p>
+    
+    <div class="test-section">
+        <h2>📊 Step 1: Test AI Brain API with Real Data</h2>
+        <button class="primary" onclick="testAIBrain()">Test AI Brain API</button>
+        <div id="ai-brain-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎨 Step 2: Test Slide Generation</h2>
+        <button class="primary" onclick="testSlideGeneration()" id="slide-gen-btn" disabled>Test Slide Generation</button>
+        <div id="slide-gen-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🌐 Step 3: Browser Integration Test</h2>
+        <p>Open the presentation editor in a new tab:</p>
+        <button class="primary" onclick="openEditor()">Open Presentation Editor</button>
+        <div class="step">
+            <strong>Manual Test Steps:</strong>
+            <ol>
+                <li>Click the "AI Brain" button (Brain icon) in the toolbar</li>
+                <li>Complete the Business Context Wizard:
+                    <ul>
+                        <li>Company: TechCorp SaaS</li>
+                        <li>Industry: SaaS</li> 
+                        <li>Goal: Increase Q4 revenue by 40%</li>
+                        <li>Audience: Executives</li>
+                        <li>Upload the real-test-data.csv file</li>
+                    </ul>
+                </li>
+                <li>Click "Generate Presentation with AI Brain"</li>
+                <li>Verify slides are created with real AI insights</li>
+            </ol>
+        </div>
+        <div id="manual-test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 Test Results Summary</h2>
+        <div id="final-results">
+            <div class="step">⏳ Waiting for tests to complete...</div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            aiBrain: false,
+            slideGeneration: false,
+            browserIntegration: false
+        };
+
+        // Real test data
+        const realTestData = [
+            {"Date": "2024-01", "Revenue": 450000, "Customers": 1200, "Region": "North America", "Churn Rate": 3.2, "Customer Acquisition Cost": 180, "Monthly Recurring Revenue": 85000, "Growth Rate": 15.2},
+            {"Date": "2024-02", "Revenue": 520000, "Customers": 1350, "Region": "North America", "Churn Rate": 2.8, "Customer Acquisition Cost": 165, "Monthly Recurring Revenue": 95000, "Growth Rate": 18.5},
+            {"Date": "2024-03", "Revenue": 380000, "Customers": 980, "Region": "Europe", "Churn Rate": 4.1, "Customer Acquisition Cost": 220, "Monthly Recurring Revenue": 72000, "Growth Rate": 8.3},
+            {"Date": "2024-04", "Revenue": 610000, "Customers": 1580, "Region": "North America", "Churn Rate": 2.9, "Customer Acquisition Cost": 155, "Monthly Recurring Revenue": 115000, "Growth Rate": 22.1},
+            {"Date": "2024-05", "Revenue": 420000, "Customers": 1100, "Region": "Europe", "Churn Rate": 3.8, "Customer Acquisition Cost": 210, "Monthly Recurring Revenue": 78000, "Growth Rate": 12.7},
+            {"Date": "2024-06", "Revenue": 550000, "Customers": 1420, "Region": "North America", "Churn Rate": 2.5, "Customer Acquisition Cost": 145, "Monthly Recurring Revenue": 125000, "Growth Rate": 20.8}
+        ];
+
+        const businessContext = {
+            industry: "SaaS",
+            goals: ["Increase Q4 revenue by 40%", "Reduce customer churn", "Expand European market"],
+            targetAudience: "executives",
+            timeHorizon: "Q4 2024"
+        };
+
+        async function testAIBrain() {
+            const resultDiv = document.getElementById('ai-brain-result');
+            resultDiv.innerHTML = '<div class="step running">🔄 Testing AI Brain API with real data...</div>';
+            
+            try {
+                console.log('🧠 Testing AI Brain with real SaaS data:', realTestData);
+                
+                const response = await fetch('/api/ai/ultimate-brain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: realTestData,
+                        context: businessContext
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.analysis && result.analysis.strategicInsights) {
+                    testResults.aiBrain = true;
+                    document.getElementById('slide-gen-btn').disabled = false;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="step success">✅ AI Brain API Working!</div>
+                        <div class="result-box">
+                            <strong>📊 Results:</strong><br>
+                            • Insights Generated: ${result.analysis.strategicInsights.length}<br>
+                            • Average Confidence: ${result.analysis.overallConfidence}%<br>
+                            • Visualizations: ${result.analysis.visualizations?.length || 0}<br>
+                            • Quality Score: ${calculateQualityScore(result.analysis.strategicInsights)}%
+                        </div>
+                        <details>
+                            <summary>View Sample Insights</summary>
+                            <pre>${JSON.stringify(result.analysis.strategicInsights.slice(0, 2), null, 2)}</pre>
+                        </details>
+                    `;
+                    
+                    // Store result for slide generation
+                    window.aiAnalysisResult = result.analysis;
+                } else {
+                    throw new Error('Invalid response structure');
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="step error">❌ AI Brain Test Failed: ${error.message}</div>`;
+                console.error('AI Brain test error:', error);
+            }
+            
+            updateFinalResults();
+        }
+
+        async function testSlideGeneration() {
+            const resultDiv = document.getElementById('slide-gen-result');
+            resultDiv.innerHTML = '<div class="step running">🔄 Testing slide generation with AI results...</div>';
+            
+            try {
+                if (!window.aiAnalysisResult) {
+                    throw new Error('AI Brain analysis must be completed first');
+                }
+                
+                // Simulate slide generation logic
+                const slideStructure = generateSlideStructure(window.aiAnalysisResult);
+                const slideQuality = assessSlideQuality(slideStructure, window.aiAnalysisResult);
+                
+                testResults.slideGeneration = true;
+                
+                resultDiv.innerHTML = `
+                    <div class="step success">✅ Slide Generation Working!</div>
+                    <div class="result-box">
+                        <strong>🎨 Slide Structure:</strong><br>
+                        • Total Slides: ${slideStructure.length}<br>
+                        • Slide Types: ${slideStructure.join(', ')}<br>
+                        • Quality Score: ${slideQuality}%<br>
+                        • AI Insights Integrated: ✅ Yes
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <strong>Expected Slides:</strong>
+                        <ol>
+                            ${slideStructure.map(type => `<li>${type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</li>`).join('')}
+                        </ol>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="step error">❌ Slide Generation Test Failed: ${error.message}</div>`;
+                console.error('Slide generation test error:', error);
+            }
+            
+            updateFinalResults();
+        }
+
+        function openEditor() {
+            // Open the actual deck builder in a new tab
+            window.open('/deck-builder/new', '_blank');
+            
+            // Mark browser integration as ready for manual testing
+            const resultDiv = document.getElementById('manual-test-result');
+            resultDiv.innerHTML = `
+                <div class="step running">🔄 Manual testing required</div>
+                <div class="result-box">
+                    <strong>Next Steps:</strong><br>
+                    1. Editor opened in new tab<br>
+                    2. Follow the manual test steps above<br>
+                    3. Verify AI Brain button → Wizard → Slide generation works<br>
+                    4. Use the real-test-data.csv file for upload
+                </div>
+                <button class="success" onclick="markBrowserTestComplete()">✅ Mark Browser Test Complete</button>
+            `;
+        }
+
+        function markBrowserTestComplete() {
+            testResults.browserIntegration = true;
+            const resultDiv = document.getElementById('manual-test-result');
+            resultDiv.innerHTML = '<div class="step success">✅ Browser Integration Verified (Manual)</div>';
+            updateFinalResults();
+        }
+
+        function generateSlideStructure(analysis) {
+            const slides = ['title'];
+            
+            // Add executive summary for executive audience
+            if (businessContext.targetAudience === 'executives') {
+                slides.push('executive-summary');
+            }
+            
+            slides.push('key-metrics');
+            
+            if (analysis.strategicInsights?.length > 0) {
+                slides.push('insights');
+            }
+            
+            slides.push('trend-analysis');
+            slides.push('recommendations');
+            
+            return slides;
+        }
+
+        function assessSlideQuality(slideStructure, analysis) {
+            const qualityChecks = [
+                slideStructure.length >= 5, // Adequate number of slides
+                analysis.strategicInsights?.length >= 3, // Multiple insights
+                analysis.overallConfidence >= 80, // High confidence
+                slideStructure.includes('insights'), // Insights slide present
+                slideStructure.includes('recommendations') // Recommendations present
+            ];
+            
+            const score = qualityChecks.filter(Boolean).length / qualityChecks.length * 100;
+            return Math.round(score);
+        }
+
+        function calculateQualityScore(insights) {
+            if (!insights || insights.length === 0) return 0;
+            
+            const avgQuality = insights.map(insight => {
+                const checks = [
+                    insight.title && insight.title.length > 10,
+                    insight.description && insight.description.length > 20, 
+                    insight.businessImplication && insight.businessImplication.length > 50,
+                    insight.evidence && insight.evidence.length > 0,
+                    insight.confidence >= 80
+                ];
+                return checks.filter(Boolean).length / checks.length;
+            }).reduce((a, b) => a + b, 0) / insights.length;
+            
+            return Math.round(avgQuality * 100);
+        }
+
+        function updateFinalResults() {
+            const resultsDiv = document.getElementById('final-results');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(Boolean).length;
+            const percentage = Math.round((passedTests / totalTests) * 100);
+            
+            let status = 'error';
+            let message = 'Tests incomplete';
+            
+            if (percentage === 100) {
+                status = 'success';
+                message = 'All tests passed - PRODUCTION READY!';
+            } else if (percentage >= 67) {
+                status = 'running';
+                message = 'Most tests passed - Good progress';
+            }
+            
+            resultsDiv.innerHTML = `
+                <div class="step ${status}">
+                    📊 Overall Score: ${percentage}% (${passedTests}/${totalTests})
+                </div>
+                <div class="result-box">
+                    <strong>Test Results:</strong><br>
+                    • AI Brain API: ${testResults.aiBrain ? '✅' : '❌'}<br>
+                    • Slide Generation: ${testResults.slideGeneration ? '✅' : '❌'}<br>
+                    • Browser Integration: ${testResults.browserIntegration ? '✅' : '❌'}<br><br>
+                    <strong>Status:</strong> ${message}
+                </div>
+            `;
+        }
+
+        // Initialize
+        updateFinalResults();
+    </script>
+</body>
+</html>

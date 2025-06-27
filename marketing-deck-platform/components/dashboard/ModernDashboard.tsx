@@ -151,7 +151,7 @@ export function ModernDashboard() {
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
-            <span className="text-xl font-medium text-gray-900">AEDRIN</span>
+            <span className="text-xl font-medium text-gray-900">EasyDecks.ai</span>
           </div>
           
           {/* Search Bar */}

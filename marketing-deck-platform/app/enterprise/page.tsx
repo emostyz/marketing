@@ -66,7 +66,7 @@ export default function EnterprisePage() {
     {
       icon: <Lock className="w-8 h-8" />,
       title: 'On-Premise Deployment',
-      description: 'Deploy AEDRIN within your infrastructure for maximum control.',
+      description: 'Deploy EasyDecks.ai within your infrastructure for maximum control.',
       details: ['Private cloud deployment', 'On-premise installation', 'Hybrid configurations', 'Air-gapped environments']
     },
     {
@@ -106,7 +106,7 @@ export default function EnterprisePage() {
 
   const testimonials = [
     {
-      quote: "AEDRIN transformed how our executive team communicates insights. What used to take our analysts days now happens in minutes.",
+      quote: "EasyDecks.ai transformed how our executive team communicates insights. What used to take our analysts days now happens in minutes.",
       author: "Sarah Chen",
       role: "Chief Data Officer",
       company: "Fortune 100 Technology Company"
@@ -224,7 +224,7 @@ export default function EnterprisePage() {
           >
             <h2 className="text-4xl font-bold mb-6">Enterprise Use Cases</h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              See how leading organizations use AEDRIN to transform their presentation workflows.
+              See how leading organizations use EasyDecks.ai to transform their presentation workflows.
             </p>
           </motion.div>
 
@@ -296,7 +296,7 @@ export default function EnterprisePage() {
             >
               <h2 className="text-4xl font-bold mb-6">Ready to Get Started?</h2>
               <p className="text-xl text-gray-300">
-                Schedule a demo to see how AEDRIN can transform your organization's presentations.
+                Schedule a demo to see how EasyDecks.ai can transform your organization's presentations.
               </p>
             </motion.div>
 

@@ -66,7 +66,7 @@ export function TemplateLibrary({ isOpen, onClose, onSelectTemplate }: TemplateL
       downloads: 1247,
       isPremium: false,
       tags: ['charts', 'data', 'modern', 'analytics'],
-      author: 'AEDRIN Team',
+      author: 'EasyDecks.ai Team',
       preview: ['/api/placeholder/400/300', '/api/placeholder/400/300', '/api/placeholder/400/300']
     },
     {

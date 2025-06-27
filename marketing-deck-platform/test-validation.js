@@ -1,4 +1,4 @@
-// Comprehensive validation test for AEDRIN application
+// Comprehensive validation test for EasyDecks.ai application
 // Run this after starting the dev server
 
 const tests = [
@@ -59,7 +59,7 @@ async function runTest(test) {
 }
 
 async function runAllTests() {
-  console.log("🧪 Running AEDRIN Application Tests...\n");
+  console.log("🧪 Running EasyDecks.ai Application Tests...\n");
   
   let passed = 0;
   let total = tests.length;
@@ -73,7 +73,7 @@ async function runAllTests() {
   console.log(`\n📊 Results: ${passed}/${total} tests passed`);
   
   if (passed === total) {
-    console.log("🎉 All tests passed! AEDRIN is working correctly.");
+    console.log("🎉 All tests passed! EasyDecks.ai is working correctly.");
   } else {
     console.log("⚠️  Some tests failed. Please check the issues above.");
   }

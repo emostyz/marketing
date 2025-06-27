@@ -1,4 +1,4 @@
-# AEDRIN Homepage & Pricing Implementation Summary
+# EasyDecks.ai Homepage & Pricing Implementation Summary
 
 ## Overview
 
@@ -11,7 +11,7 @@ I've successfully transformed your marketing deck platform with a fully function
 - **Responsive design** that works on all devices
 - **Smooth animations** and hover effects
 - **Professional typography** and spacing
-- **Consistent branding** with AEDRIN logo and colors
+- **Consistent branding** with EasyDecks.ai logo and colors
 
 ### Hero Section
 - **Compelling headline** with gradient text effects
@@ -257,4 +257,4 @@ The system is production-ready and designed to generate significant revenue whil
 - Year 2: $17M ARR
 - Overall Gross Margin: 82%
 
-This positions AEDRIN as a premium AI presentation platform with strong market potential and sustainable profitability. 
+This positions EasyDecks.ai as a premium AI presentation platform with strong market potential and sustainable profitability. 

@@ -29,13 +29,63 @@ interface AuthContextType {
   signUp: (name: string, email: string, password: string, company?: string) => Promise<{ error?: string }>
   signOut: () => Promise<void>
   updateProfile: (profileData: any) => Promise<{ error?: string }>
+  startSessionKeeper: () => void
+  stopSessionKeeper: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Cache key for auth state
-const USER_CACHE_KEY = 'aedrin-auth-state'
-const DEMO_CACHE_KEY = 'aedrin-demo-session'
+const USER_CACHE_KEY = 'easydecks-auth-state'
+const DEMO_CACHE_KEY = 'easydecks-demo-session'
+
+// Session refresh manager to prevent logout during long operations
+class SessionKeeper {
+  private refreshInterval: NodeJS.Timeout | null = null
+  private isActive = false
+
+  start() {
+    if (this.isActive) return
+    
+    this.isActive = true
+    console.log('🔄 Starting session keeper for long operations')
+    
+    // Refresh session every 15 seconds during active operations
+    this.refreshInterval = setInterval(async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (session && !error) {
+          // Refresh the session silently
+          await supabase.auth.refreshSession()
+          
+          // Sync with server cookie
+          await fetch('/api/auth/set-cookie', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: session.access_token })
+          })
+          
+          console.log('🔄 Session refreshed during long operation')
+        }
+      } catch (error) {
+        console.warn('⚠️ Session refresh failed during long operation:', error)
+      }
+    }, 15000) // Every 15 seconds
+  }
+
+  stop() {
+    if (!this.isActive) return
+    
+    this.isActive = false
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval)
+      this.refreshInterval = null
+    }
+    console.log('⏹️ Stopped session keeper')
+  }
+}
+
+const sessionKeeper = new SessionKeeper()
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -88,6 +138,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('🔧 AuthProvider initializing...')
     
+    // Safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      console.log('⏰ Auth initialization timeout - setting loading to false')
+      setLoading(false)
+      setInitialized(true)
+    }, 5000) // 5 second timeout
+    
     const initializeAuth = async () => {
       try {
         // First, try to restore from cache for immediate UI response
@@ -106,8 +163,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (demoData.expiresAt && new Date(demoData.expiresAt) > new Date()) {
               console.log('🎭 Demo session found and valid')
               const demoUser = {
-                id: 'demo-user',
-                email: 'demo@aedrin.com',
+                id: '00000000-0000-0000-0000-000000000001',
+                email: 'demo@easydecks.ai',
                 name: 'Demo User',
                 subscription: 'pro' as const,
                 demo: true
@@ -182,6 +239,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('❌ Error in initializeAuth:', error)
         setLoading(false)
         setInitialized(true)
+      } finally {
+        clearTimeout(safetyTimeout)
       }
     }
 
@@ -437,8 +496,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Set demo user
       const demoUser: User = {
-        id: 'demo-user',
-        email: 'demo@aedrin.com',
+        id: '00000000-0000-0000-0000-000000000001',
+        email: 'demo@easydecks.ai',
         name: 'Demo User',
         subscription: 'pro',
         demo: true
@@ -642,7 +701,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signInWithOAuth,
       signUp,
       signOut,
-      updateProfile
+      updateProfile,
+      startSessionKeeper: () => sessionKeeper.start(),
+      stopSessionKeeper: () => sessionKeeper.stop()
     }}>
       {children}
     </AuthContext.Provider>

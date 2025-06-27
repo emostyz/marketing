@@ -16,9 +16,9 @@ export default function TestAuthPage() {
   const testSignIn = async () => {
     try {
       setTestResult('Testing sign in...')
-      console.log('🧪 Testing sign in with test@aedrin.com')
+      console.log('🧪 Testing sign in with test@easydecks.ai')
       
-      const result = await signIn('test@aedrin.com', 'password123')
+      const result = await signIn('test@easydecks.ai', 'password123')
       
       if (result.error) {
         setTestResult(`❌ Sign in failed: ${result.error}`)
@@ -74,7 +74,7 @@ export default function TestAuthPage() {
               onClick={testSignIn}
               className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
             >
-              Test Sign In (test@aedrin.com)
+              Test Sign In (test@easydecks.ai)
             </button>
             
             <button

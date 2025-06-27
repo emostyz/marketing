@@ -94,7 +94,7 @@ interface Intent {
   parameters?: any;
 }
 
-export class AedrinBrain extends EventEmitter {
+export class EasyDecksBrain extends EventEmitter {
   private openai: OpenAI;
   private context: SystemContext;
   
@@ -147,7 +147,7 @@ export class AedrinBrain extends EventEmitter {
           return this.handleGeneralQuery(input);
       }
     } catch (error) {
-      console.error('AEDRIN Brain processing error:', error);
+      console.error('EasyDecks.ai Brain processing error:', error);
       return {
         type: 'error',
         error: error instanceof Error ? error.message : 'Unknown processing error'
@@ -569,11 +569,11 @@ export class AedrinBrain extends EventEmitter {
 }
 
 // Singleton instance for server-side use
-let brainInstance: AedrinBrain | null = null;
+let brainInstance: EasyDecksBrain | null = null;
 
-export function getAedrinBrain(sessionId?: string): AedrinBrain {
+export function getEasyDecksBrain(sessionId?: string): EasyDecksBrain {
   if (!brainInstance) {
-    brainInstance = new AedrinBrain(sessionId);
+    brainInstance = new EasyDecksBrain(sessionId);
   }
   return brainInstance;
 }

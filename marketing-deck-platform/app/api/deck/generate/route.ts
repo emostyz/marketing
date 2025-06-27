@@ -221,6 +221,9 @@ export async function POST(request: NextRequest) {
         lastModified: new Date()
       }
       
+      if (!global.demoDeckStorage) {
+        global.demoDeckStorage = new Map()
+      }
       global.demoDeckStorage.set(deck.id, demoDeck)
       console.log('💾 Demo deck stored in global memory with ID:', deck.id)
     } else {
@@ -457,7 +460,7 @@ function createExecutiveSummarySlide(story: any, datasetName: string, rowCount: 
     subtitle: datasetName,
     content: {
       summary: headline,
-      keyMetrics: keyStats.map(stat => ({
+      keyMetrics: keyStats.map((stat: any) => ({
         name: stat.column,
         value: formatNumber(stat.total),
         change: stat.growth > 0 ? `+${stat.growth.toFixed(1)}%` : `${stat.growth.toFixed(1)}%`,
@@ -500,7 +503,7 @@ function createExecutiveSummarySlide(story: any, datasetName: string, rowCount: 
         layer: 2, locked: false, hidden: false, animations: []
       },
       // Key metrics cards in a beautiful grid
-      ...keyStats.map((stat, index) => {
+      ...keyStats.map((stat: any, index: number) => {
         const growth = stat.growth || 0
         const trendIcon = growth > 0 ? '↑' : growth < 0 ? '↓' : '→'
         const trendColor = growth > 0 ? '#10b981' : growth < 0 ? '#ef4444' : '#6b7280'
@@ -621,7 +624,7 @@ function createKeyInsightsSlide(story: any, data: any[]) {
     subtitle: 'Data-Driven Discoveries',
     content: {
       summary: 'Critical findings from comprehensive data analysis',
-      insights: insights.map((insight, i) => ({
+      insights: insights.map((insight: any, i: number) => ({
         title: insight.headline,
         description: insight.detail,
         metric: insight.metric,
@@ -657,7 +660,7 @@ function createKeyInsightsSlide(story: any, data: any[]) {
         layer: 2, locked: false, hidden: false, animations: []
       },
       // Insight cards in a beautiful grid
-      ...insights.map((insight, index) => {
+      ...insights.map((insight: any, index: number) => {
         const cardX = index % 2 === 0 ? 60 : 420
         const cardY = 140 + Math.floor(index / 2) * 180
         const accentColor = accentColors[index % accentColors.length]
@@ -798,7 +801,7 @@ function createKeyInsightsSlide(story: any, data: any[]) {
       }
     ],
     charts: [],
-    keyTakeaways: insights.map(i => i.headline)
+    keyTakeaways: insights.map((i: any) => i.headline)
   }
 }
 
@@ -808,10 +811,10 @@ function createDetailedAnalysisSlide(story: any, data: any[]) {
   const topCategories = story.topPerformers.slice(0, 3)
   
   // Calculate insights from the chart data
-  const totalValue = chartData.data.reduce((sum, item) => sum + item.value, 0)
+  const totalValue = chartData.data.reduce((sum: any, item: any) => sum + item.value, 0)
   const avgValue = totalValue / chartData.data.length
-  const maxItem = chartData.data.reduce((max, item) => item.value > max.value ? item : max, chartData.data[0])
-  const minItem = chartData.data.reduce((min, item) => item.value < min.value ? item : min, chartData.data[0])
+  const maxItem = chartData.data.reduce((max: any, item: any) => item.value > max.value ? item : max, chartData.data[0])
+  const minItem = chartData.data.reduce((min: any, item: any) => item.value < min.value ? item : min, chartData.data[0])
   
   return {
     id: `slide-analysis-${Date.now()}`,
@@ -906,7 +909,7 @@ function createDetailedAnalysisSlide(story: any, data: any[]) {
         style: { fontSize: 14, fontWeight: '600', color: '#374151', textAlign: 'left' },
         layer: 6, locked: false, hidden: false, animations: []
       },
-      ...topCategories.map((cat, i) => ({
+      ...topCategories.map((cat: any, i: number) => ({
         id: `element-top-${i}-${Date.now()}`,
         type: 'text',
         content: { 
@@ -1268,7 +1271,7 @@ function prepareChartData(data: any[], story: any) {
         [metricCol]: Number(value) // Add named column for Tremor
       }))
       .filter(item => !isNaN(item.value) && item.value > 0)
-      .sort((a, b) => b.value - a.value) // Sort by value descending
+      .sort((a: any, b: any) => b.value - a.value) // Sort by value descending
       .slice(0, 8) // Limit to top 8 for readability
     
     if (chartData.length >= 2) {
@@ -1289,8 +1292,8 @@ function prepareChartData(data: any[], story: any) {
     
     const metricsData = story.keyMetrics
       .slice(0, 6)
-      .filter(m => m.total && !isNaN(Number(m.total)) && Number(m.total) > 0)
-      .map(m => ({ 
+      .filter((m: any) => m.total && !isNaN(Number(m.total)) && Number(m.total) > 0)
+      .map((m: any) => ({ 
         name: String(m.column).substring(0, 15),
         value: Number(m.total),
         [m.column]: Number(m.total)
@@ -1373,7 +1376,7 @@ function prepareTrendsData(data: any[], story: any) {
     
     // Sort by time if possible
     try {
-      timeData = timeData.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+      timeData = timeData.sort((a: any, b: any) => new Date(a.time).getTime() - new Date(b.time).getTime())
     } catch (e) {
       // If sorting by date fails, keep original order
     }

@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
     // Organize settings by type
     const settings = {
       general: {
-        site_name: 'AEDRIN',
+        site_name: 'EasyDecks.ai',
         site_tagline: 'Transform Your Data Into Stunning Presentations',
-        contact_email: 'support@aedrin.com'
+        contact_email: 'support@easydecks.ai'
       },
       features: {
         ai_analysis: true,

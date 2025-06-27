@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-// Button Functionality Verification for AEDRIN
+// Button Functionality Verification for EasyDecks.ai
 // This script verifies that all buttons have proper event handlers and functionality
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('🎯 AEDRIN Button Functionality Test');
+console.log('🎯 EasyDecks.ai Button Functionality Test');
 console.log('=====================================\n');
 
 const results = { passed: 0, failed: 0 };

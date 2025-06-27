@@ -1244,4 +1244,168 @@ ${prompt}`;
       throw error;
     }
   }
+
+  /**
+   * Enhance slide content based on user request and AI analysis
+   */
+  async enhanceSlideContent(params: {
+    slide: any
+    userRequest: string
+    dataContext: any
+    businessContext: any
+  }): Promise<any> {
+    try {
+      const { slide, userRequest, dataContext, businessContext } = params
+      
+      const prompt = `You are an expert presentation consultant enhancing a slide based on user feedback.
+
+CURRENT SLIDE:
+${JSON.stringify(slide, null, 2)}
+
+USER REQUEST: "${userRequest}"
+
+BUSINESS CONTEXT:
+${JSON.stringify(businessContext, null, 2)}
+
+DATA CONTEXT:
+${JSON.stringify(dataContext?.summary || dataContext, null, 2)}
+
+ENHANCEMENT TASK:
+Based on the user's request, improve the slide while maintaining its core structure. Focus on:
+1. Improving content quality and relevance
+2. Adding data-driven insights
+3. Enhancing visual elements
+4. Strengthening business messaging
+5. Making it more compelling for the target audience
+
+Return the enhanced slide in the same format as the input, but improved according to the user's request.
+
+Respond ONLY with valid JSON (no markdown, no explanation):
+{
+  "title": "enhanced title",
+  "subtitle": "enhanced subtitle", 
+  "content": {
+    "summary": "enhanced summary",
+    "narrative": "enhanced narrative",
+    "insights": ["enhanced insights"],
+    "recommendations": ["enhanced recommendations"]
+  },
+  "charts": [...] // enhanced charts if applicable,
+  "keyTakeaways": ["enhanced takeaways"],
+  "aiInsights": {
+    "enhancement": "description of what was enhanced",
+    "userRequestFulfilled": "how the user request was addressed"
+  }
+}`
+
+      const brainRequest: BrainRequest = {
+        userId: 'system',
+        data: this.prepareDataForAnalysis(dataContext),
+        context: {
+          industry: businessContext.industry || 'business',
+          targetAudience: 'executives',
+          businessContext: businessContext.businessContext || '',
+          description: `Enhancing slide: ${userRequest}`
+        },
+        timeFrame: { 
+          primaryPeriod: { start: '', end: '', label: '' }, 
+          analysisType: 'custom', 
+          includeTrends: false, 
+          includeSeasonality: false, 
+          includeOutliers: false 
+        },
+        requirements: { prompt },
+        userTier: 'professional'
+      }
+      
+      const response = await this.masterBrain.processAnalysis(brainRequest)
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Slide enhancement failed')
+      }
+      
+      return typeof response.result === 'string' ? this.parseJsonResponse(response.result) : response.result
+      
+    } catch (error) {
+      console.error('❌ EnhancedBrainV2: Slide enhancement failed:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Analyze new data points for real-time insights
+   */
+  async analyzeNewDataPoints(dataPoints: any[], businessContext: any): Promise<any> {
+    try {
+      const prompt = `You are a data analyst providing real-time insights on new data points.
+
+NEW DATA POINTS:
+${JSON.stringify(dataPoints, null, 2)}
+
+BUSINESS CONTEXT:
+${JSON.stringify(businessContext, null, 2)}
+
+ANALYSIS TASK:
+Analyze these new data points and provide:
+1. Key patterns and trends
+2. Business implications
+3. Recommended visualizations
+4. Action items
+
+Focus on actionable insights that can immediately inform business decisions.
+
+Respond ONLY with valid JSON (no markdown, no explanation):
+{
+  "insights": [
+    {
+      "title": "insight title",
+      "description": "detailed analysis",
+      "confidence": 85,
+      "impact": "high|medium|low",
+      "recommendation": "specific action to take"
+    }
+  ],
+  "visualizations": [
+    {
+      "type": "chart type",
+      "title": "chart title",
+      "message": "key message"
+    }
+  ],
+  "summary": "overall analysis summary"
+}`
+
+      const brainRequest: BrainRequest = {
+        userId: 'system',
+        data: JSON.stringify(dataPoints),
+        context: {
+          industry: businessContext.industry || 'business',
+          targetAudience: 'analysts',
+          businessContext: businessContext.businessContext || '',
+          description: 'Real-time data analysis'
+        },
+        timeFrame: { 
+          primaryPeriod: { start: '', end: '', label: '' }, 
+          analysisType: 'real_time', 
+          includeTrends: true, 
+          includeSeasonality: false, 
+          includeOutliers: true 
+        },
+        requirements: { prompt },
+        userTier: 'professional'
+      }
+      
+      const response = await this.masterBrain.processAnalysis(brainRequest)
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Data analysis failed')
+      }
+      
+      return typeof response.result === 'string' ? this.parseJsonResponse(response.result) : response.result
+      
+    } catch (error) {
+      console.error('❌ EnhancedBrainV2: Data analysis failed:', error)
+      throw error
+    }
+  }
 } 

@@ -240,7 +240,7 @@ export class AdminAuth {
               isAdmin: true,
               admin: {
                 id: 'direct-admin',
-                email: 'admin@aedrin.com',
+                email: 'admin@easydecks.ai',
                 full_name: 'Platform Administrator',
                 user_role: 'admin',
                 created_at: new Date().toISOString(),

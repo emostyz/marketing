@@ -10,7 +10,7 @@ export default function SimpleDashboard() {
   const presentations = [
     { 
       id: '1', 
-      userId: 'demo-user-1',
+      userId: '00000000-0000-0000-0000-000000000001',
       title: 'Q4 Sales Report', 
       description: 'Quarterly sales analysis and performance metrics',
       slides: [],
@@ -32,7 +32,7 @@ export default function SimpleDashboard() {
     },
     { 
       id: '2', 
-      userId: 'demo-user-1',
+      userId: '00000000-0000-0000-0000-000000000001',
       title: 'Marketing Analysis', 
       description: 'Marketing campaign performance and ROI analysis',
       slides: [],

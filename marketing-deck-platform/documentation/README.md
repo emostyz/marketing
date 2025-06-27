@@ -1,6 +1,6 @@
-# AEDRIN Platform Documentation
+# EasyDecks.ai Platform Documentation
 
-This folder contains comprehensive documentation for the AEDRIN AI-powered marketing deck platform.
+This folder contains comprehensive documentation for the EasyDecks.ai AI-powered marketing deck platform.
 
 ## Document Overview
 
@@ -91,4 +91,4 @@ This folder contains comprehensive documentation for the AEDRIN AI-powered marke
 
 ## Contact
 
-For questions about this documentation or the AEDRIN platform, please refer to the development team or project stakeholders. 
+For questions about this documentation or the EasyDecks.ai platform, please refer to the development team or project stakeholders. 

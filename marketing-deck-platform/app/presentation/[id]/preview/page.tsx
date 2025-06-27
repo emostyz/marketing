@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { ExportModal } from '@/components/export/ExportModal'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 
 // Mock presentation data - would come from API
 const mockPresentation = {
@@ -97,8 +98,39 @@ export default function PresentationPreview() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
-  const [presentation, setPresentation] = useState(mockPresentation)
+  const [presentation, setPresentation] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+
+  // Load presentation data
+  useEffect(() => {
+    const loadPresentation = async () => {
+      if (!id) return
+      
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/presentations/${id}`)
+        
+        if (!response.ok) {
+          throw new Error('Failed to load presentation')
+        }
+        
+        const data = await response.json()
+        setPresentation(data)
+        setError(null)
+      } catch (err) {
+        console.error('Error loading presentation:', err)
+        setError('Failed to load presentation')
+        // Fallback to mock data for development
+        setPresentation(mockPresentation)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadPresentation()
+  }, [id])
 
   // Auto-advance slides when playing
   useEffect(() => {
@@ -222,10 +254,174 @@ export default function PresentationPreview() {
     }
   }
 
+  // Fullscreen content (without layout)
+  if (isFullscreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-gray-950 text-white">{/* Main Preview Area */}
+        <div className="flex-1 relative">
+          {/* Slide Display */}
+          <div className="relative h-screen bg-gradient-to-br from-gray-900 to-gray-950">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0"
+              >
+                {renderSlideContent(presentation.slides[currentSlide])}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Slide Number */}
+            <div className="absolute top-8 right-8 bg-black/50 px-4 py-2 rounded-lg">
+              <span className="text-sm text-gray-300">
+                {currentSlide + 1} / {presentation.slides.length}
+              </span>
+            </div>
+
+            {/* Navigation Arrows */}
+            <button
+              onClick={previousSlide}
+              disabled={currentSlide === 0}
+              className="absolute left-8 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/50 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/70 transition-colors"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+
+            <button
+              onClick={nextSlide}
+              disabled={currentSlide === presentation.slides.length - 1}
+              className="absolute right-8 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/50 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/70 transition-colors"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Controls */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4">
+              {/* Playback Controls */}
+              <Button
+                onClick={previousSlide}
+                disabled={currentSlide === 0}
+                size="sm"
+                variant="outline"
+              >
+                <SkipBack className="w-4 h-4" />
+              </Button>
+
+              <Button
+                onClick={togglePlayback}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              </Button>
+
+              <Button
+                onClick={nextSlide}
+                disabled={currentSlide === presentation.slides.length - 1}
+                size="sm"
+                variant="outline"
+              >
+                <SkipForward className="w-4 h-4" />
+              </Button>
+
+              {/* Progress Bar */}
+              <div className="flex items-center gap-2 mx-4">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 transition-all duration-300"
+                    style={{ width: `${((currentSlide + 1) / presentation.slides.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Additional Controls */}
+              <Button
+                onClick={() => setIsMuted(!isMuted)}
+                size="sm"
+                variant="outline"
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </Button>
+
+              <Button
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                size="sm"
+                variant="outline"
+              >
+                {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Export Modal */}
+        <ExportModal 
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          presentationId={params.id as string}
+          presentationTitle={presentation.title}
+        />
+      </div>
+    )
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <UnifiedLayout requireAuth={true} hideFooter={true} className="bg-gray-950">
+        <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-300">Loading presentation...</p>
+          </div>
+        </div>
+      </UnifiedLayout>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <UnifiedLayout requireAuth={true} hideFooter={true} className="bg-gray-950">
+        <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-400 mb-4">{error}</p>
+            <Link href="/dashboard">
+              <Button variant="outline">Back to Dashboard</Button>
+            </Link>
+          </div>
+        </div>
+      </UnifiedLayout>
+    )
+  }
+
+  // No presentation data
+  if (!presentation) {
+    return (
+      <UnifiedLayout requireAuth={true} hideFooter={true} className="bg-gray-950">
+        <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">Presentation not found</p>
+            <Link href="/dashboard">
+              <Button variant="outline">Back to Dashboard</Button>
+            </Link>
+          </div>
+        </div>
+      </UnifiedLayout>
+    )
+  }
+
+  // Regular mode with UnifiedLayout
   return (
-    <div className={`min-h-screen bg-gray-950 text-white ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
-      {/* Header (hidden in fullscreen) */}
-      {!isFullscreen && (
+    <UnifiedLayout requireAuth={true} hideFooter={true} className="bg-gray-950">
+      <div className="bg-gray-950 text-white">
+        {/* Header with presentation info and controls */}
         <div className="bg-gray-900/50 border-b border-gray-800 p-4">
           <div className="container mx-auto flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -261,113 +457,111 @@ export default function PresentationPreview() {
             </div>
           </div>
         </div>
-      )}
 
-      {/* Main Preview Area */}
-      <div className="flex-1 relative">
-        {/* Slide Display */}
-        <div className="relative h-screen bg-gradient-to-br from-gray-900 to-gray-950">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="absolute inset-0"
-            >
-              {renderSlideContent(presentation.slides[currentSlide])}
-            </motion.div>
-          </AnimatePresence>
+        {/* Main Preview Area */}
+        <div className="flex-1 relative">
+          {/* Slide Display */}
+          <div className="relative h-screen bg-gradient-to-br from-gray-900 to-gray-950">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0"
+              >
+                {renderSlideContent(presentation.slides[currentSlide])}
+              </motion.div>
+            </AnimatePresence>
 
-          {/* Slide Number */}
-          <div className="absolute top-8 right-8 bg-black/50 px-4 py-2 rounded-lg">
-            <span className="text-sm text-gray-300">
-              {currentSlide + 1} / {presentation.slides.length}
-            </span>
-          </div>
-
-          {/* Navigation Arrows */}
-          <button
-            onClick={previousSlide}
-            disabled={currentSlide === 0}
-            className="absolute left-8 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/50 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/70 transition-colors"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-
-          <button
-            onClick={nextSlide}
-            disabled={currentSlide === presentation.slides.length - 1}
-            className="absolute right-8 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/50 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/70 transition-colors"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Controls */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-          <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4">
-            {/* Playback Controls */}
-            <Button
-              onClick={previousSlide}
-              disabled={currentSlide === 0}
-              size="sm"
-              variant="outline"
-            >
-              <SkipBack className="w-4 h-4" />
-            </Button>
-
-            <Button
-              onClick={togglePlayback}
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            </Button>
-
-            <Button
-              onClick={nextSlide}
-              disabled={currentSlide === presentation.slides.length - 1}
-              size="sm"
-              variant="outline"
-            >
-              <SkipForward className="w-4 h-4" />
-            </Button>
-
-            {/* Progress Bar */}
-            <div className="flex items-center gap-2 mx-4">
-              <Clock className="w-4 h-4 text-gray-400" />
-              <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-blue-500 transition-all duration-300"
-                  style={{ width: `${((currentSlide + 1) / presentation.slides.length) * 100}%` }}
-                />
-              </div>
+            {/* Slide Number */}
+            <div className="absolute top-8 right-8 bg-black/50 px-4 py-2 rounded-lg">
+              <span className="text-sm text-gray-300">
+                {currentSlide + 1} / {presentation.slides.length}
+              </span>
             </div>
 
-            {/* Additional Controls */}
-            <Button
-              onClick={() => setIsMuted(!isMuted)}
-              size="sm"
-              variant="outline"
+            {/* Navigation Arrows */}
+            <button
+              onClick={previousSlide}
+              disabled={currentSlide === 0}
+              className="absolute left-8 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/50 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/70 transition-colors"
             >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </Button>
+              <ChevronLeft className="w-6 h-6" />
+            </button>
 
-            <Button
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              size="sm"
-              variant="outline"
+            <button
+              onClick={nextSlide}
+              disabled={currentSlide === presentation.slides.length - 1}
+              className="absolute right-8 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black/50 rounded-full flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/70 transition-colors"
             >
-              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
-            </Button>
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Controls */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4">
+              {/* Playback Controls */}
+              <Button
+                onClick={previousSlide}
+                disabled={currentSlide === 0}
+                size="sm"
+                variant="outline"
+              >
+                <SkipBack className="w-4 h-4" />
+              </Button>
+
+              <Button
+                onClick={togglePlayback}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              </Button>
+
+              <Button
+                onClick={nextSlide}
+                disabled={currentSlide === presentation.slides.length - 1}
+                size="sm"
+                variant="outline"
+              >
+                <SkipForward className="w-4 h-4" />
+              </Button>
+
+              {/* Progress Bar */}
+              <div className="flex items-center gap-2 mx-4">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 transition-all duration-300"
+                    style={{ width: `${((currentSlide + 1) / presentation.slides.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Additional Controls */}
+              <Button
+                onClick={() => setIsMuted(!isMuted)}
+                size="sm"
+                variant="outline"
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </Button>
+
+              <Button
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                size="sm"
+                variant="outline"
+              >
+                {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Slide Thumbnails (not shown in fullscreen) */}
-      {!isFullscreen && (
+        {/* Slide Thumbnails */}
         <div className="bg-gray-900/50 border-t border-gray-800 p-4">
           <div className="container mx-auto">
             <div className="flex gap-4 overflow-x-auto pb-2">
@@ -387,15 +581,15 @@ export default function PresentationPreview() {
             </div>
           </div>
         </div>
-      )}
 
-      {/* Export Modal */}
-      <ExportModal 
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        presentationId={params.id as string}
-        presentationTitle={presentation.title}
-      />
-    </div>
+        {/* Export Modal */}
+        <ExportModal 
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          presentationId={params.id as string}
+          presentationTitle={presentation.title}
+        />
+      </div>
+    </UnifiedLayout>
   )
 }

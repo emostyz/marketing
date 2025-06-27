@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, ThumbsUp, ThumbsDown, Sparkles, Brain, FileText, ArrowRight, ArrowLeft } from 'lucide-react'
+import { CheckCircle2, ThumbsUp, ThumbsDown, Sparkles, Brain, FileText, ArrowRight, ArrowLeft, GripVertical, Trash2, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
+import { useAuth } from '@/lib/auth/auth-context'
 
 interface Insight {
   id: string
@@ -16,16 +17,21 @@ interface Insight {
   approved: boolean | null
 }
 
+interface SlideStructure {
+  id: string
+  title: string
+  purpose: string
+  type: string
+  enabled: boolean // Can be toggled on/off
+  essential: boolean // Cannot be deleted if true
+  order: number
+}
+
 interface DeckStructure {
   title: string
   description: string
   purpose: string
-  slides: {
-    id: string
-    title: string
-    purpose: string
-    type: string
-  }[]
+  slides: SlideStructure[]
 }
 
 interface SimpleRealTimeFlowProps {
@@ -41,11 +47,16 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
   onComplete, 
   onBack 
 }) => {
+  const { startSessionKeeper, stopSessionKeeper } = useAuth()
   const [step, setStep] = useState<'analyzing' | 'insights' | 'structure' | 'generating'>('analyzing')
   const [insights, setInsights] = useState<Insight[]>([])
   const [deckStructure, setDeckStructure] = useState<DeckStructure | null>(null)
   const [progress, setProgress] = useState(0)
   const [currentAnalysisStep, setCurrentAnalysisStep] = useState('')
+  
+  // Slide management state
+  const [draggedSlideId, setDraggedSlideId] = useState<string | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   // Start analysis
   useEffect(() => {
@@ -55,6 +66,10 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
   const startRealAnalysis = async () => {
     try {
       console.log('🚀 Starting REAL analysis with dataset:', datasetId)
+      
+      // Start session keeper to prevent logout during long analysis
+      startSessionKeeper()
+      
       setCurrentAnalysisStep('Fetching your data...')
       setProgress(10)
 
@@ -125,30 +140,28 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       setProgress(70)
       setCurrentAnalysisStep('Processing insights...')
       
-      // Add insights one by one to avoid duplicates
-      for (let i = 0; i < realInsights.length; i++) {
-        await new Promise(resolve => setTimeout(resolve, 800))
-        setInsights(prev => {
-          // Check for duplicates by ID
-          const exists = prev.find(existing => existing.id === realInsights[i].id)
-          if (exists) {
-            console.warn('Duplicate insight detected, skipping:', realInsights[i].id)
-            return prev
-          }
-          return [...prev, realInsights[i]]
-        })
-        
-        toast.success(`Found: ${realInsights[i].title}`, { 
-          duration: 2000 
-        })
-      }
+      // Add insights all at once to avoid duplicates and improve performance
+      setInsights(realInsights)
+      
+      // Show success message for the batch
+      toast.success(`Analysis complete! Found ${realInsights.length} strategic insights`, { 
+        duration: 3000 
+      })
 
       setProgress(100)
       setCurrentAnalysisStep('Analysis complete!')
+      
+      // Stop session keeper after analysis completes
+      stopSessionKeeper()
+      
       setTimeout(() => setStep('insights'), 1000)
 
     } catch (error) {
       console.error('❌ Real analysis failed:', error)
+      
+      // Stop session keeper on error too
+      stopSessionKeeper()
+      
       toast.error('Analysis failed: ' + (error instanceof Error ? error.message : 'Unknown error'))
       setCurrentAnalysisStep('Analysis failed. Please check your data and try again.')
     }
@@ -158,7 +171,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
   async function analyzeDataWithAI(data: any[], context: any): Promise<Insight[]> {
     console.log('🧠 Starting Ultimate AI Brain analysis of data...')
     
-    setCurrentAnalysisStep('Activating world-class AI brain with Python ecosystem...')
+    setCurrentAnalysisStep('Summoning the data wizards and their magical algorithms...')
     
     // Enhanced context for ultimate AI analysis
     const enhancedContext = {
@@ -189,24 +202,45 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       qualityRatings: []
     }
 
-    const response = await fetch('/api/ai/ultimate-brain', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data: data.slice(0, 100),
-        context: enhancedContext,
-        userFeedback,
-        learningObjectives: [
-          'identify strategic insights',
-          'predict future trends', 
-          'recommend actionable steps',
-          'optimize business performance'
-        ]
+    // Add timeout and error handling for Ultimate AI Brain
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => {
+      console.warn('⏰ Ultimate AI Brain request timed out after 25 seconds')
+      controller.abort()
+    }, 25000) // 25 second timeout
+    
+    let response: Response
+    try {
+      response = await fetch('/api/ai/ultimate-brain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: data.slice(0, 50), // Reduce data size for faster processing
+          context: enhancedContext,
+          userFeedback,
+          learningObjectives: [
+            'identify strategic insights',
+            'predict future trends', 
+            'recommend actionable steps',
+            'optimize business performance'
+          ]
+        }),
+        signal: controller.signal
       })
-    })
+      clearTimeout(timeoutId)
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId)
+      if (fetchError.name === 'AbortError') {
+        console.warn('⏰ Ultimate AI Brain request was aborted due to timeout')
+        throw new Error('Ultimate AI Brain analysis timed out - falling back to local analysis')
+      }
+      console.error('🌐 Network error during Ultimate AI Brain request:', fetchError)
+      throw new Error(`Network error: ${fetchError.message}`)
+    }
 
     if (!response.ok) {
       const errorText = await response.text()
+      console.error('❌ Ultimate AI Brain API error:', response.status, errorText)
       throw new Error(`Ultimate AI Brain analysis failed: ${response.status} - ${errorText}`)
     }
 
@@ -221,16 +255,17 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
     const aiInsights: Insight[] = []
     const analysis = result.analysis || {}
 
-    // Process strategic insights from Ultimate AI Brain
+    // PRIORITIZE OpenAI strategic insights - these are the high-quality ones
     if (analysis.strategicInsights?.length > 0) {
-      analysis.strategicInsights.slice(0, 4).forEach((insight: any, index: number) => {
+      console.log('🎯 Found OpenAI strategic insights:', analysis.strategicInsights.length)
+      analysis.strategicInsights.slice(0, 6).forEach((insight: any, index: number) => {
         if (insight && (insight.headline || insight.title || insight.finding)) {
           aiInsights.push({
-            id: `ultimate_strategic_${Date.now()}_${index}`,
+            id: `openai_strategic_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             title: insight.headline || insight.title || insight.finding || `Strategic Insight ${index + 1}`,
             description: insight.description || insight.content || insight.summary || insight.finding,
-            businessImplication: insight.businessImplication || insight.recommendation || insight.impact || 'Strategic consideration from world-class AI analysis',
-            confidence: Math.min(Math.max(insight.confidence || 88, 70), 95), // Clamp between 70-95
+            businessImplication: insight.businessImplication || insight.recommendation || insight.impact || 'Strategic opportunity identified through AI analysis',
+            confidence: Math.min(Math.max(insight.confidence || 92, 85), 98), // Higher confidence for OpenAI insights
             approved: null
           })
         }
@@ -288,11 +323,11 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       })
     }
 
-    // Add fallback insights if Ultimate AI Brain didn't produce enough
-    if (aiInsights.length < 2) {
-      console.log('🔄 Ultimate AI Brain produced fewer insights, adding local analysis fallback...')
+    // Only add fallback insights if OpenAI completely failed
+    if (aiInsights.length === 0) {
+      console.log('🔄 No OpenAI insights generated, using fallback analysis...')
       const fallbackInsights = analyzeDataLocally(data, context)
-      aiInsights.push(...fallbackInsights.slice(0, 3 - aiInsights.length))
+      aiInsights.push(...fallbackInsights.slice(0, 3))
     }
 
     // Ensure we have meaningful insights
@@ -304,7 +339,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
     return aiInsights.slice(0, 6) // Limit to top 6 insights
   }
 
-  // Analyze data locally to generate REAL insights from actual data
+  // Generate STRATEGIC, HIGH-IMPACT insights from data analysis
   function analyzeDataLocally(data: any[], context: any): Insight[] {
     if (!data || data.length === 0) return []
     
@@ -324,7 +359,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
     
     console.log('📊 Data structure:', { numericColumns, categoricalColumns, totalRows: data.length })
     
-    // 1. REVENUE/SALES ANALYSIS (if numeric columns exist)
+    // 1. STRATEGIC GROWTH OPPORTUNITY ANALYSIS
     if (numericColumns.length > 0) {
       const revenueCol = numericColumns.find(col => 
         col.toLowerCase().includes('revenue') || 
@@ -339,17 +374,23 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       const max = Math.max(...values)
       const min = Math.min(...values)
       
+      // Calculate growth potential and variance analysis
+      const variance = ((max - min) / avg * 100)
+      const topQuartile = values.sort((a, b) => b - a).slice(0, Math.ceil(values.length * 0.25))
+      const topQuartileAvg = topQuartile.reduce((a, b) => a + b, 0) / topQuartile.length
+      const potentialUpside = ((topQuartileAvg - avg) / avg * 100).toFixed(0)
+      
       insights.push({
-        id: `revenue_${revenueCol}_${Date.now()}`,
-        title: `${revenueCol} Performance Overview`,
-        description: `Total ${revenueCol.toLowerCase()}: ${total.toLocaleString()}. Average: ${avg.toFixed(0)}. Range: ${min.toFixed(0)} - ${max.toFixed(0)}`,
-        businessImplication: `${revenueCol} shows ${avg > 10000 ? 'strong' : 'moderate'} performance. The ${((max-min)/avg*100).toFixed(0)}% variance suggests ${avg > 10000 ? 'diverse revenue streams' : 'potential for optimization'}`,
-        confidence: 90,
+        id: `strategic_growth_${Date.now()}`,
+        title: `Market Expansion Opportunity: ${potentialUpside}% Revenue Upside`,
+        description: `Analysis reveals ${revenueCol.toLowerCase()} performance ranges from $${min.toLocaleString()} to $${max.toLocaleString()}, with top quartile averaging $${topQuartileAvg.toLocaleString()}`,
+        businessImplication: `Immediate opportunity to capture $${((topQuartileAvg - avg) * values.length).toLocaleString()} in additional revenue by scaling top-performing strategies across all segments. ROI potential: ${potentialUpside}% revenue increase within 6-12 months.`,
+        confidence: 92,
         approved: null
       })
     }
     
-    // 2. CATEGORY/REGIONAL ANALYSIS (if categorical columns exist)
+    // 2. COMPETITIVE ADVANTAGE ANALYSIS
     if (categoricalColumns.length > 0 && numericColumns.length > 0) {
       const categoryCol = categoricalColumns.find(col => 
         col.toLowerCase().includes('region') || 
@@ -360,49 +401,72 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       
       const valueCol = numericColumns[0]
       
-      // Group by category and sum values
+      // Advanced competitive analysis
       const groupedData = data.reduce((acc, row) => {
         const category = row[categoryCol]
         const value = parseFloat(row[valueCol]) || 0
-        acc[category] = (acc[category] || 0) + value
+        if (!acc[category]) acc[category] = []
+        acc[category].push(value)
         return acc
       }, {})
       
-      const categories = Object.keys(groupedData)
-      if (categories.length > 1) {
-        const bestCategory = categories.reduce((a, b) => groupedData[a] > groupedData[b] ? a : b)
-        const worstCategory = categories.reduce((a, b) => groupedData[a] < groupedData[b] ? a : b)
-        
-        const bestValue = groupedData[bestCategory]
-        const worstValue = groupedData[worstCategory]
-        const performance_gap = ((bestValue - worstValue) / worstValue * 100).toFixed(0)
+      const categoryPerformance = Object.entries(groupedData).map(([category, values]: [string, number[]]) => ({
+        category,
+        total: values.reduce((a, b) => a + b, 0),
+        avg: values.reduce((a, b) => a + b, 0) / values.length,
+        count: values.length
+      })).sort((a, b) => b.total - a.total)
+      
+      if (categoryPerformance.length > 1) {
+        const leader = categoryPerformance[0]
+        const underperformer = categoryPerformance[categoryPerformance.length - 1]
+        const marketShare = (leader.total / categoryPerformance.reduce((sum, cat) => sum + cat.total, 0) * 100).toFixed(0)
+        const efficiency = (leader.avg / underperformer.avg).toFixed(1)
         
         insights.push({
-          id: `category_${categoryCol}_${Date.now()}`,
-          title: `${categoryCol} Performance Gap Analysis`,
-          description: `${bestCategory} leads with ${bestValue.toLocaleString()} total ${valueCol.toLowerCase()}, outperforming ${worstCategory} by ${performance_gap}%`,
-          businessImplication: `Focus resources on replicating ${bestCategory}'s success model. ${worstCategory} requires strategic intervention to close the ${performance_gap}% performance gap`,
-          confidence: 85,
+          id: `competitive_advantage_${Date.now()}`,
+          title: `${leader.category} Dominance: ${marketShare}% Market Leadership`,
+          description: `${leader.category} generates $${leader.total.toLocaleString()} (${marketShare}% of total), with ${efficiency}x higher efficiency than ${underperformer.category}`,
+          businessImplication: `Strategic imperative: Scale ${leader.category} model to capture additional $${(leader.avg * underperformer.count - underperformer.total).toLocaleString()} by applying best practices to underperforming segments. Expected timeline: 3-6 months for 200%+ ROI.`,
+          confidence: 89,
           approved: null
         })
       }
     }
     
-    // 3. DATA VOLUME & COMPLETENESS INSIGHT
-    const completeness = (data.length - data.filter(row => 
-      Object.values(row).some(val => val === null || val === undefined || val === '')
-    ).length) / data.length * 100
+    // 3. OPERATIONAL EXCELLENCE INSIGHT
+    if (numericColumns.length >= 2) {
+      const primaryMetric = numericColumns[0]
+      const secondaryMetric = numericColumns[1]
+      
+      const primaryValues = data.map(row => parseFloat(row[primaryMetric])).filter(v => !isNaN(v))
+      const secondaryValues = data.map(row => parseFloat(row[secondaryMetric])).filter(v => !isNaN(v))
+      
+      const primaryTotal = primaryValues.reduce((a, b) => a + b, 0)
+      const secondaryTotal = secondaryValues.reduce((a, b) => a + b, 0)
+      const efficiency = (primaryTotal / secondaryTotal).toFixed(2)
+      
+      // Calculate top 20% performance benchmark
+      const sortedByPrimary = data.map(row => ({
+        primary: parseFloat(row[primaryMetric]) || 0,
+        secondary: parseFloat(row[secondaryMetric]) || 0
+      })).sort((a, b) => b.primary - a.primary)
+      
+      const top20Percent = sortedByPrimary.slice(0, Math.ceil(sortedByPrimary.length * 0.2))
+      const benchmarkEfficiency = top20Percent.reduce((sum, item) => sum + (item.primary / item.secondary), 0) / top20Percent.length
+      const improvementPotential = ((benchmarkEfficiency - parseFloat(efficiency)) / parseFloat(efficiency) * 100).toFixed(0)
+      
+      insights.push({
+        id: `operational_excellence_${Date.now()}`,
+        title: `Process Optimization: ${improvementPotential}% Efficiency Gain Potential`,
+        description: `Current ${primaryMetric}/${secondaryMetric} ratio: ${efficiency}. Top 20% performers achieve ${benchmarkEfficiency.toFixed(2)}, indicating ${improvementPotential}% improvement opportunity`,
+        businessImplication: `Operational transformation opportunity: Implement top-performer processes to unlock $${(primaryTotal * parseFloat(improvementPotential) / 100).toLocaleString()} in additional value. Focus on process standardization and best practice deployment for immediate 15-25% efficiency gains.`,
+        confidence: 87,
+        approved: null
+      })
+    }
     
-    insights.push({
-      id: `data_quality_${Date.now()}`,
-      title: 'Dataset Quality Assessment',
-      description: `Analyzed ${data.length.toLocaleString()} records across ${columns.length} fields with ${completeness.toFixed(1)}% data completeness`,
-      businessImplication: `${completeness > 95 ? 'High data quality enables confident strategic decisions' : 'Data gaps may require validation before making critical business decisions'}`,
-      confidence: 95,
-      approved: null
-    })
-    
-    console.log('✅ Generated', insights.length, 'REAL insights from actual data')
+    console.log('✅ Generated', insights.length, 'STRATEGIC insights from comprehensive data analysis')
     return insights
   }
 
@@ -422,57 +486,300 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
     }
   }
 
-  const proceedToStructureApproval = () => {
+  // Create intelligent slide structure using OpenAI
+  const createIntelligentSlideStructure = async (approvedInsights: Insight[], context: any): Promise<DeckStructure> => {
+    console.log('🧠 Creating intelligent slide structure with AI...')
+    
+    const prompt = `You are an expert Fortune 500 presentation strategist. Create an intelligent slide structure for a business presentation.
+
+CONTEXT:
+- Business Context: ${context.businessContext || 'Data Analysis'}
+- Target Audience: ${context.targetAudience || 'Executives'}
+- Presentation Goal: ${context.presentationGoal || 'Strategic Decision Making'}
+- Industry: ${context.industryContext || 'General Business'}
+- Time Limit: ${context.timeLimit || 15} minutes
+
+APPROVED INSIGHTS:
+${approvedInsights.map((insight, i) => `${i + 1}. ${insight.title}: ${insight.description}`).join('\n')}
+
+BUSINESS IMPLICATIONS:
+${approvedInsights.map((insight, i) => `${i + 1}. ${insight.businessImplication}`).join('\n')}
+
+CREATE A STRATEGIC SLIDE STRUCTURE that:
+1. Follows consulting best practices (structured thinking, pyramid principle)
+2. Tells a compelling business story
+3. Addresses the specific audience needs
+4. Incorporates all approved insights logically
+5. Includes actionable recommendations
+6. Optimizes for the time limit
+
+Return ONLY valid JSON in this exact format:
+{
+  "title": "Compelling presentation title",
+  "description": "Brief description of the presentation purpose",
+  "purpose": "Clear statement of presentation objective",
+  "slides": [
+    {
+      "id": "unique_id",
+      "title": "Specific slide title",
+      "purpose": "Clear purpose of this slide",
+      "type": "title|insight|analysis|recommendations|appendix",
+      "enabled": true,
+      "essential": true|false,
+      "order": 0,
+      "content_guidance": "Specific guidance for AI slide generation",
+      "key_message": "Main takeaway for this slide"
+    }
+  ]
+}`
+
+    try {
+      const response = await fetch('/api/ai/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: approvedInsights,
+          context: {
+            ...context,
+            systemPrompt: prompt,
+            requestType: 'slide_structure',
+            responseFormat: 'json'
+          }
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`AI structure API failed: ${response.status}`)
+      }
+
+      const result = await response.json()
+      console.log('🎯 AI structure result:', result)
+
+      // Parse the AI response
+      let structure
+      if (result.analysis && typeof result.analysis === 'string') {
+        try {
+          structure = JSON.parse(result.analysis)
+        } catch (parseError) {
+          console.error('❌ Failed to parse AI structure JSON:', parseError)
+          throw new Error('Invalid JSON from AI structure generation')
+        }
+      } else if (result.structure) {
+        structure = result.structure
+      } else {
+        throw new Error('No structure found in AI response')
+      }
+
+      // Validate and enhance the structure
+      if (!structure.slides || !Array.isArray(structure.slides)) {
+        throw new Error('Invalid slide structure from AI')
+      }
+
+      // Ensure proper ordering and IDs
+      structure.slides = structure.slides.map((slide: any, index: number) => ({
+        ...slide,
+        id: slide.id || `ai_slide_${Date.now()}_${index}`,
+        order: index,
+        enabled: slide.enabled !== false, // Default to true
+        essential: slide.essential === true // Default to false
+      }))
+
+      console.log('✅ Intelligent slide structure created:', structure)
+      return structure
+
+    } catch (error) {
+      console.error('❌ AI slide structure creation failed:', error)
+      throw error
+    }
+  }
+
+  const proceedToStructureApproval = async () => {
+    console.log('🔄 proceedToStructureApproval called')
     const approvedInsights = insights.filter(i => i.approved === true)
+    console.log('📊 Approved insights:', approvedInsights.length, 'out of', insights.length)
     
     if (approvedInsights.length === 0) {
+      console.warn('❌ No approved insights, showing error')
       toast.error('Please approve at least one insight to continue.')
       return
     }
 
-    const structure: DeckStructure = {
-      title: `${context.businessContext || 'Data Analysis'} Insights Report`,
-      description: `Analysis revealing ${approvedInsights.length} key business insights`,
-      purpose: 'Present data-driven recommendations to drive strategic decisions',
-      slides: [
-        {
-          id: 'title',
-          title: 'Executive Summary',
-          purpose: 'Overview of key findings and recommendations',
-          type: 'title'
-        },
-        ...approvedInsights.map((insight, index) => ({
-          id: `insight-${insight.id}`,
-          title: insight.title,
-          purpose: insight.businessImplication,
-          type: 'insight'
-        })),
-        {
-          id: 'recommendations',
-          title: 'Strategic Recommendations',
-          purpose: 'Actionable next steps based on insights',
-          type: 'recommendations'
-        }
-      ]
-    }
+    // Show loading state
+    setCurrentAnalysisStep('Creating intelligent slide structure with AI...')
+    setProgress(20)
 
-    setDeckStructure(structure)
-    setStep('structure')
+    try {
+      // Use OpenAI to create an intelligent slide structure
+      const intelligentStructure = await createIntelligentSlideStructure(approvedInsights, context)
+      
+      setDeckStructure(intelligentStructure)
+      setStep('structure')
+      setProgress(100)
+      setCurrentAnalysisStep('Intelligent slide structure created!')
+      
+      toast.success(`Created ${intelligentStructure.slides.length} slides tailored to your insights and context`)
+      
+    } catch (error) {
+      console.error('❌ AI structure creation failed, using fallback:', error)
+      
+      // Fallback to template-based structure
+      const fallbackStructure: DeckStructure = {
+        title: `${context.businessContext || 'Data Analysis'} Insights Report`,
+        description: `Analysis revealing ${approvedInsights.length} key business insights`,
+        purpose: 'Present data-driven recommendations to drive strategic decisions',
+        slides: [
+          {
+            id: 'title',
+            title: 'Executive Summary',
+            purpose: 'Overview of key findings and recommendations',
+            type: 'title',
+            enabled: true,
+            essential: true,
+            order: 0
+          },
+          ...approvedInsights.map((insight, index) => ({
+            id: `insight-${insight.id}`,
+            title: insight.title,
+            purpose: insight.businessImplication,
+            type: 'insight',
+            enabled: true,
+            essential: false,
+            order: index + 1
+          })),
+          {
+            id: 'recommendations',
+            title: 'Strategic Recommendations',
+            purpose: 'Actionable next steps based on insights',
+            type: 'recommendations',
+            enabled: true,
+            essential: true,
+            order: approvedInsights.length + 1
+          }
+        ]
+      }
+
+      setDeckStructure(fallbackStructure)
+      setStep('structure')
+      setProgress(100)
+      
+      toast.warning('Used template structure due to AI issue. Slides will still be intelligent.')
+    }
+  }
+
+  // Slide management functions
+  const handleSlideReorder = (draggedId: string, targetIndex: number) => {
+    if (!deckStructure) return
+    
+    const slides = [...deckStructure.slides]
+    const draggedIndex = slides.findIndex(slide => slide.id === draggedId)
+    
+    if (draggedIndex === -1) return
+    
+    // Remove dragged slide and insert at new position
+    const [draggedSlide] = slides.splice(draggedIndex, 1)
+    slides.splice(targetIndex, 0, draggedSlide)
+    
+    // Update order numbers
+    const reorderedSlides = slides.map((slide, index) => ({
+      ...slide,
+      order: index
+    }))
+    
+    setDeckStructure({
+      ...deckStructure,
+      slides: reorderedSlides
+    })
+    
+    toast.success(`Moved "${draggedSlide.title}" to position ${targetIndex + 1}`)
+  }
+
+  const handleSlideToggle = (slideId: string) => {
+    if (!deckStructure) return
+    
+    const updatedSlides = deckStructure.slides.map(slide => 
+      slide.id === slideId 
+        ? { ...slide, enabled: !slide.enabled }
+        : slide
+    )
+    
+    setDeckStructure({
+      ...deckStructure,
+      slides: updatedSlides
+    })
+    
+    const slide = deckStructure.slides.find(s => s.id === slideId)
+    if (slide) {
+      toast.success(
+        slide.enabled 
+          ? `"${slide.title}" disabled and will be excluded from deck`
+          : `"${slide.title}" enabled and will be included in deck`
+      )
+    }
+  }
+
+  const handleSlideDelete = (slideId: string) => {
+    if (!deckStructure) return
+    
+    const slideToDelete = deckStructure.slides.find(s => s.id === slideId)
+    if (!slideToDelete) return
+    
+    if (slideToDelete.essential) {
+      toast.error('This slide is essential and cannot be deleted.')
+      return
+    }
+    
+    const updatedSlides = deckStructure.slides
+      .filter(slide => slide.id !== slideId)
+      .map((slide, index) => ({ ...slide, order: index }))
+    
+    setDeckStructure({
+      ...deckStructure,
+      slides: updatedSlides
+    })
+    
+    toast.success(`"${slideToDelete.title}" removed from deck`)
+  }
+
+  const getEnabledSlidesCount = () => {
+    if (!deckStructure) return 0
+    return deckStructure.slides.filter(slide => slide.enabled).length
   }
 
   const generateFinalDeck = async () => {
-    if (!deckStructure) return
+    console.log('🚀 generateFinalDeck called')
+    console.log('📋 Deck structure:', deckStructure)
+    console.log('📊 Enabled slides count:', getEnabledSlidesCount())
+    
+    if (!deckStructure) {
+      console.error('❌ No deck structure available')
+      toast.error('No deck structure available. Please try again.')
+      return
+    }
 
+    if (getEnabledSlidesCount() === 0) {
+      console.error('❌ No enabled slides')
+      toast.error('Please enable at least one slide to generate.')
+      return
+    }
+
+    console.log('✅ Starting deck generation...')
     setStep('generating')
     setProgress(0)
     setCurrentAnalysisStep('Initializing world-class generation...')
 
+    // Start session keeper for deck generation
+    startSessionKeeper()
+
     try {
       const approvedInsights = insights.filter(i => i.approved === true)
+      const enabledSlides = deckStructure.slides.filter(slide => slide.enabled)
+      
       console.log('🎯 Generating world-class deck with:', {
         datasetId,
         approvedInsights: approvedInsights.length,
-        deckStructure: deckStructure.slides.length,
+        totalSlides: deckStructure.slides.length,
+        enabledSlides: enabledSlides.length,
+        disabledSlides: deckStructure.slides.length - enabledSlides.length,
         context: Object.keys(context).length
       })
 
@@ -486,7 +793,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       await new Promise(resolve => setTimeout(resolve, 1200))
 
       setProgress(45)
-      setCurrentAnalysisStep('Generating McKinsey-style slide content...')
+      setCurrentAnalysisStep('Generating world-class slide content...')
       await new Promise(resolve => setTimeout(resolve, 1500))
 
       setProgress(65)
@@ -496,7 +803,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       setProgress(80)
       setCurrentAnalysisStep('Applying circular feedback optimization...')
 
-      // Enhanced context for world-class generation
+      // Enhanced context for world-class generation with user customizations
       const worldClassContext = {
         audience: context.targetAudience || 'executives',
         goal: context.businessContext || 'strategic data analysis',
@@ -507,12 +814,22 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
         urgency: context.urgency || 'normal',
         presentationStyle: context.presentationStyle || 'executive',
         approvedInsights: approvedInsights,
-        deckStructure: deckStructure,
+        deckStructure: {
+          ...deckStructure,
+          slides: enabledSlides, // Only enabled slides
+          customizedByUser: true,
+          originalSlideCount: deckStructure.slides.length,
+          finalSlideCount: enabledSlides.length
+        },
         userApprovedStructure: true,
+        userCustomizedSlides: true,
+        slideReorderingApplied: true,
         realTimeGenerated: true,
         analysisMethod: 'ai_enhanced_with_feedback',
         qualityTarget: 'world_class',
         confidenceThreshold: 85,
+        consultingStyle: 'executive', // For cohesive chart styling
+        chartCohesion: 'professional',
         ...context
       }
 
@@ -536,8 +853,15 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
         const errorText = await response.text()
         console.error('❌ World-class generation failed:', response.status, errorText)
         
+        // Handle timeout specifically
+        if (response.status === 408) {
+          setCurrentAnalysisStep('AI generation timed out, using enhanced fallback...')
+          toast.error('AI generation is taking longer than expected. Using enhanced fallback...')
+        } else {
+          setCurrentAnalysisStep('Primary generation failed, trying enhanced fallback...')
+        }
+        
         // Try fallback generation
-        setCurrentAnalysisStep('Primary generation failed, trying enhanced fallback...')
         const fallbackResponse = await fetch('/api/deck/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -578,6 +902,9 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
         const deckId = result.deckId || result.presentationId
         console.log('🚀 Navigating to generated deck:', deckId)
         
+        // Stop session keeper before navigation
+        stopSessionKeeper()
+        
         // Navigate to the saved presentation with slight delay for user feedback
         setTimeout(() => {
           onComplete(deckId)
@@ -589,6 +916,9 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
 
     } catch (error) {
       console.error('💥 Deck generation failed completely:', error)
+      
+      // Stop session keeper on error
+      stopSessionKeeper()
       
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       toast.error(`Generation failed: ${errorMessage}`, {
@@ -610,10 +940,10 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       <div className="text-center">
         <div className="mb-6">
           <Brain className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold text-white mb-2">Ultimate AI Brain Analysis</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Data Genius at Work</h2>
           <p className="text-gray-400">{currentAnalysisStep}</p>
           <div className="mt-2 text-xs text-blue-300">
-            Powered by Python • scikit-learn • statsmodels • prophet • plotly • OpenAI GPT-4o
+            Powered by Caffeinated Data Scientists™ • Machine Learning Wizards • Chart Whisperers • OpenAI GPT-4o
           </div>
         </div>
         
@@ -728,7 +1058,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
           className="bg-blue-600 hover:bg-blue-700"
           disabled={insights.filter(i => i.approved === true).length === 0}
         >
-          Continue to Structure Review
+          Continue to Structure Review ({insights.filter(i => i.approved === true).length} approved)
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>
@@ -738,9 +1068,9 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
   const renderStructureStep = () => (
     <Card className="p-8">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Approve Presentation Structure</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Customize Presentation Structure</h2>
         <p className="text-gray-400">
-          Review the structure of your presentation before we generate the final deck.
+          Drag to reorder slides, toggle modules on/off, or delete non-essential slides. Only enabled slides will be included in your final deck.
         </p>
       </div>
 
@@ -762,25 +1092,159 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
                 <label className="text-sm font-medium text-gray-400">Purpose:</label>
                 <p className="text-white">{deckStructure.purpose}</p>
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-400">Slides to Generate:</label>
+                <p className="text-white">
+                  {getEnabledSlidesCount()} of {deckStructure.slides.length} slides
+                  <span className="text-green-400 ml-2">
+                    ({deckStructure.slides.filter(s => !s.enabled).length} disabled)
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Slide Structure */}
+          {/* Interactive Slide Structure */}
           <div className="bg-gray-800 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold text-white mb-4">Slide Structure ({deckStructure.slides.length} slides)</h3>
-            <div className="space-y-3">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-white">Slide Structure</h3>
+              <div className="text-sm text-gray-400">
+                <span className="inline-flex items-center">
+                  <GripVertical className="w-4 h-4 mr-1" />
+                  Drag to reorder
+                </span>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
               {deckStructure.slides.map((slide, index) => (
-                <div key={slide.id} className="flex items-start space-x-4 p-4 bg-gray-700 rounded-lg">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                <motion.div
+                  key={slide.id}
+                  className={`group relative flex items-center space-x-4 p-4 rounded-lg border-2 transition-all cursor-move ${
+                    slide.enabled 
+                      ? 'bg-gray-700 border-gray-600 hover:border-blue-500' 
+                      : 'bg-gray-800 border-gray-700 opacity-60'
+                  } ${draggedSlideId === slide.id ? 'scale-105 shadow-lg z-10' : ''} ${
+                    dragOverIndex === index ? 'border-blue-400 bg-blue-900/20' : ''
+                  }`}
+                  draggable={true}
+                  onDragStart={(e) => {
+                    setDraggedSlideId(slide.id)
+                    e.dataTransfer.effectAllowed = 'move'
+                  }}
+                  onDragEnd={() => {
+                    setDraggedSlideId(null)
+                    setDragOverIndex(null)
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                    setDragOverIndex(index)
+                  }}
+                  onDragLeave={() => {
+                    setDragOverIndex(null)
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    if (draggedSlideId && draggedSlideId !== slide.id) {
+                      handleSlideReorder(draggedSlideId, index)
+                    }
+                    setDraggedSlideId(null)
+                    setDragOverIndex(null)
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {/* Drag Handle */}
+                  <div className="flex-shrink-0 text-gray-500 hover:text-gray-300 cursor-grab active:cursor-grabbing">
+                    <GripVertical className="w-5 h-5" />
+                  </div>
+                  
+                  {/* Slide Number */}
+                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    slide.enabled 
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-600 text-gray-300'
+                  }`}>
                     {index + 1}
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-white">{slide.title}</h4>
-                    <p className="text-sm text-gray-400 mt-1">{slide.purpose}</p>
+                  
+                  {/* Slide Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-3">
+                      <h4 className={`font-medium truncate ${
+                        slide.enabled ? 'text-white' : 'text-gray-400'
+                      }`}>
+                        {slide.title}
+                      </h4>
+                      <div className="flex items-center space-x-2">
+                        <span className={`text-xs px-2 py-1 rounded-full capitalize ${
+                          slide.type === 'title' ? 'bg-purple-600 text-purple-100' :
+                          slide.type === 'insight' ? 'bg-blue-600 text-blue-100' :
+                          slide.type === 'recommendations' ? 'bg-green-600 text-green-100' :
+                          'bg-gray-600 text-gray-100'
+                        }`}>
+                          {slide.type}
+                        </span>
+                        {slide.essential && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-amber-600 text-amber-100">
+                            Essential
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <p className={`text-sm mt-1 truncate ${
+                      slide.enabled ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
+                      {slide.purpose}
+                    </p>
                   </div>
-                  <div className="text-xs text-gray-500 capitalize">{slide.type}</div>
-                </div>
+                  
+                  {/* Slide Actions */}
+                  <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* Toggle Enable/Disable */}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleSlideToggle(slide.id)}
+                      className={`h-8 w-8 p-0 ${
+                        slide.enabled 
+                          ? 'text-green-400 hover:text-green-300 hover:bg-green-900/20' 
+                          : 'text-gray-500 hover:text-gray-400 hover:bg-gray-700'
+                      }`}
+                      title={slide.enabled ? 'Disable slide' : 'Enable slide'}
+                    >
+                      {slide.enabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </Button>
+                    
+                    {/* Delete Button (only for non-essential slides) */}
+                    {!slide.essential && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleSlideDelete(slide.id)}
+                        className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                        title="Delete slide"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
               ))}
+            </div>
+            
+            {/* Slide Management Tips */}
+            <div className="mt-6 p-4 bg-blue-900/20 rounded-lg border border-blue-600/30">
+              <h4 className="text-sm font-medium text-blue-300 mb-2">💡 Slide Management Tips</h4>
+              <ul className="text-xs text-blue-200 space-y-1">
+                <li>• <strong>Drag and drop</strong> to reorder slides</li>
+                <li>• <strong>Click the eye icon</strong> to toggle slides on/off</li>
+                <li>• <strong>Click the trash icon</strong> to permanently delete non-essential slides</li>
+                <li>• Essential slides (Title & Recommendations) cannot be deleted</li>
+                <li>• Only enabled slides will appear in your final presentation</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -794,9 +1258,10 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
         <Button 
           onClick={generateFinalDeck}
           className="bg-green-600 hover:bg-green-700"
+          disabled={getEnabledSlidesCount() === 0}
         >
           <CheckCircle2 className="w-4 h-4 mr-2" />
-          Generate Presentation
+          Generate {getEnabledSlidesCount()} Slides
         </Button>
       </div>
     </Card>

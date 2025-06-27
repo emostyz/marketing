@@ -15,7 +15,7 @@ async function testAuthFlow() {
   
   try {
     // Test user credentials
-    const email = 'test@aedrin.com';
+    const email = 'test@easydecks.ai';
     const password = 'password123';
     
     console.log(`🔐 Step 1: Signing in with ${email}`);

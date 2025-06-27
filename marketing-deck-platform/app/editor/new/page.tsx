@@ -1,12 +1,12 @@
 import { Suspense } from 'react'
-import { WorldClassEditor } from '@/components/editor/WorldClassEditor'
+import WorldClassPresentationEditor from '@/components/editor/WorldClassPresentationEditor'
 import Skeleton from '@/components/ui/Skeleton'
 
 export default function NewEditorPage() {
   return (
     <div className="min-h-screen">
       <Suspense fallback={<EditorSkeleton />}>
-        <WorldClassEditor />
+        <WorldClassPresentationEditor />
       </Suspense>
     </div>
   )

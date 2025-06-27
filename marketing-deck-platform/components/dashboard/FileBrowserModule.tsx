@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { 
   Grid3X3, List, FileText, Star, MoreVertical, Eye,
-  Share2, Download, Copy, Trash2, Plus
+  Share2, Download, Copy, Trash2, Plus, Database, Clock
 } from 'lucide-react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ModernButton } from '@/components/ui/ModernButton'
@@ -128,17 +128,48 @@ function FileCard({ file, onOpen }: { file: DeckFile; onOpen: () => void }) {
       whileTap={{ scale: 0.98 }}
     >
       {/* Thumbnail */}
-      <div className="aspect-[16/9] rounded-t-lg bg-gradient-to-br from-blue-600/20 to-purple-600/20 p-4 flex items-center justify-center">
-        <FileText className="w-8 h-8 text-blue-400" />
+      <div className={cn(
+        "aspect-[16/9] rounded-t-lg p-4 flex items-center justify-center",
+        file.type === 'draft' 
+          ? "bg-gradient-to-br from-orange-600/20 to-orange-700/20" 
+          : file.type === 'dataset'
+          ? "bg-gradient-to-br from-green-600/20 to-green-700/20"
+          : "bg-gradient-to-br from-blue-600/20 to-purple-600/20"
+      )}>
+        {file.type === 'draft' ? (
+          <Clock className="w-8 h-8 text-orange-400" />
+        ) : file.type === 'dataset' ? (
+          <Database className="w-8 h-8 text-green-400" />
+        ) : (
+          <FileText className="w-8 h-8 text-blue-400" />
+        )}
       </div>
       
       {/* Info */}
       <div className="p-3">
         <div className="flex items-start justify-between gap-2 mb-1">
           <h4 className="font-medium text-white text-sm truncate">{file.title}</h4>
-          {file.isStarred && (
-            <Star className="w-3 h-3 text-yellow-400 fill-current flex-shrink-0" />
-          )}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {file.type === 'draft' && (
+              <span className="px-1.5 py-0.5 bg-orange-900 text-orange-300 text-xs rounded-full">
+                Draft
+              </span>
+            )}
+            {file.type === 'dataset' && (
+              <span className={cn(
+                "px-1.5 py-0.5 text-xs rounded-full",
+                file.status === 'completed' ? "bg-green-900 text-green-300" :
+                file.status === 'processing' ? "bg-blue-900 text-blue-300" :
+                "bg-yellow-900 text-yellow-300"
+              )}>
+                {file.status === 'completed' ? 'Ready' : 
+                 file.status === 'processing' ? 'Processing' : 'Pending'}
+              </span>
+            )}
+            {file.isStarred && (
+              <Star className="w-3 h-3 text-yellow-400 fill-current" />
+            )}
+          </div>
         </div>
         <p className="text-xs text-gray-400">
           {formatRelativeTime(file.updatedAt)}
@@ -182,10 +213,32 @@ function FileRow({ file, onOpen }: { file: DeckFile; onOpen: () => void }) {
       className="flex items-center gap-4 p-3 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-colors cursor-pointer border border-transparent hover:border-gray-600"
       onClick={onOpen}
     >
-      <FileText className="w-5 h-5 text-blue-400 flex-shrink-0" />
+      {file.type === 'draft' ? (
+        <Clock className="w-5 h-5 text-orange-400 flex-shrink-0" />
+      ) : file.type === 'dataset' ? (
+        <Database className="w-5 h-5 text-green-400 flex-shrink-0" />
+      ) : (
+        <FileText className="w-5 h-5 text-blue-400 flex-shrink-0" />
+      )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h4 className="font-medium text-white text-sm truncate">{file.title}</h4>
+          {file.type === 'draft' && (
+            <span className="px-1.5 py-0.5 bg-orange-900 text-orange-300 text-xs rounded-full">
+              Draft
+            </span>
+          )}
+          {file.type === 'dataset' && (
+            <span className={cn(
+              "px-1.5 py-0.5 text-xs rounded-full",
+              file.status === 'completed' ? "bg-green-900 text-green-300" :
+              file.status === 'processing' ? "bg-blue-900 text-blue-300" :
+              "bg-yellow-900 text-yellow-300"
+            )}>
+              {file.status === 'completed' ? 'Ready' : 
+               file.status === 'processing' ? 'Processing' : 'Pending'}
+            </span>
+          )}
           {file.isStarred && (
             <Star className="w-3 h-3 text-yellow-400 fill-current" />
           )}

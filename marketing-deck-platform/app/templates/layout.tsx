@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { createPageMetadata } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Professional Presentation Templates - AEDRIN',
+  title: 'Professional Presentation Templates - EasyDecks.ai',
   description: 'Choose from our collection of professionally designed presentation templates. Beautiful templates for every business story, from executive dashboards to startup pitches.',
   path: '/templates',
   keywords: [

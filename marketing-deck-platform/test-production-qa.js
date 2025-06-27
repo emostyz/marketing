@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Production QA Test Suite for AEDRIN Marketing Deck Platform
+ * Production QA Test Suite for EasyDecks.ai Marketing Deck Platform
  * Comprehensive end-to-end testing to ensure world-class production readiness
  */
 
@@ -318,7 +318,7 @@ class ProductionQARunner {
       // Test basic completion
       const response = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: "Test message for AEDRIN QA" }],
+        messages: [{ role: "user", content: "Test message for EasyDecks.ai QA" }],
         max_tokens: 10
       });
       
@@ -452,7 +452,7 @@ class ProductionQARunner {
   // ==========================================
 
   async runAllTests() {
-    this.log('🚀 Starting Production QA Test Suite for AEDRIN Platform', 'running');
+    this.log('🚀 Starting Production QA Test Suite for EasyDecks.ai Platform', 'running');
     this.log('========================================================', 'info');
     
     try {
@@ -489,7 +489,7 @@ class ProductionQARunner {
     const passRate = Math.round((this.testResults.passed / total) * 100);
     
     console.log('\n' + '='.repeat(80));
-    console.log('🎯 PRODUCTION QA REPORT - AEDRIN PLATFORM');
+    console.log('🎯 PRODUCTION QA REPORT - EasyDecks.ai PLATFORM');
     console.log('='.repeat(80));
     console.log(`⏱️  Total Time: ${duration}s`);
     console.log(`✅ Passed: ${this.testResults.passed}`);

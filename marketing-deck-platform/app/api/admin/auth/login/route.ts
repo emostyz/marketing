@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     if (username !== adminUsername || password !== adminPassword) {
       // Log failed attempt for security
-      console.warn(`Failed admin login attempt from IP: ${request.ip || 'unknown'} at ${new Date().toISOString()}`)
+      console.warn(`Failed admin login attempt from IP: ${(request as any).ip || 'unknown'} at ${new Date().toISOString()}`)
       
       return NextResponse.json(
         { error: 'Invalid credentials' },

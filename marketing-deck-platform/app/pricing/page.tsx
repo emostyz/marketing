@@ -100,7 +100,7 @@ const testimonials = [
     name: 'Sarah Chen',
     role: 'VP of Marketing',
     company: 'TechFlow Inc.',
-    content: 'AEDRIN has transformed how we create quarterly presentations. What used to take days now takes hours, and the quality is consistently better.',
+    content: 'EasyDecks.ai has transformed how we create quarterly presentations. What used to take days now takes hours, and the quality is consistently better.',
     rating: 5,
     avatar: '👩‍💼'
   },
@@ -129,7 +129,7 @@ const faqs = [
   },
   {
     question: 'Do you offer refunds?',
-    answer: 'We offer a 30-day money-back guarantee. If you\'re not satisfied with AEDRIN, we\'ll refund your subscription no questions asked.'
+    answer: 'We offer a 30-day money-back guarantee. If you\'re not satisfied with EasyDecks.ai, we\'ll refund your subscription no questions asked.'
   },
   {
     question: 'What payment methods do you accept?',
@@ -427,7 +427,7 @@ export default function PricingPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-gray-300">Everything you need to know about AEDRIN pricing</p>
+            <p className="text-xl text-gray-300">Everything you need to know about EasyDecks.ai pricing</p>
           </div>
           
           <div className="space-y-6">
@@ -446,7 +446,7 @@ export default function PricingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">Ready to Transform Your Presentations?</h2>
           <p className="text-xl text-gray-300 mb-8">
-            Join thousands of professionals who are already creating stunning presentations with AEDRIN
+            Join thousands of professionals who are already creating stunning presentations with EasyDecks.ai
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/signup">

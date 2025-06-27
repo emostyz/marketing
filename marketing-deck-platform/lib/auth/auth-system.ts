@@ -37,7 +37,7 @@ export interface AuthSession {
 const mockUsers: User[] = [
   {
     id: 1,
-    email: 'demo@aedrin.com',
+    email: 'demo@easydecks.ai',
     name: 'Demo User',
     avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=3b82f6&color=ffffff',
     subscription: 'pro',
@@ -46,7 +46,7 @@ const mockUsers: User[] = [
   },
   {
     id: 2,
-    email: 'admin@aedrin.com',
+    email: 'admin@easydecks.ai',
     name: 'Admin User',
     avatar: 'https://ui-avatars.com/api/?name=Admin+User&background=10b981&color=ffffff',
     subscription: 'enterprise',
@@ -310,7 +310,11 @@ export class AuthSystem {
         // Check for demo user
         const demoUser = cookieStore.get('demo-user')?.value
         if (demoUser === 'true') {
-          return mockUsers[0] // Return demo user
+          // Return demo user with proper UUID
+          return {
+            ...mockUsers[0],
+            id: 1 // Keep numeric ID for mock system compatibility
+          }
         }
         return null
       }
@@ -380,9 +384,9 @@ export class AuthSystem {
     })
 
     cookieStore.set('user-info', JSON.stringify({
-      id: 1,
+      id: '00000000-0000-0000-0000-000000000001',
       name: 'Demo User',
-      email: 'demo@aedrin.com',
+      email: 'demo@easydecks.ai',
       subscription: 'pro'
     }), {
       httpOnly: false,

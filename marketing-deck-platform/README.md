@@ -118,11 +118,11 @@ While this template is intentionally minimal and to be used as a learning resour
 - https://zerotoshipped.com
 - https://turbostarter.dev
 
-# AEDRIN: Executive-Ready AI Deck Platform
+# EasyDecks.ai: Executive-Ready AI Deck Platform
 
 ## Python Microservice for Data Analysis & Chart Generation
 
-AEDRIN now includes a Python FastAPI microservice that:
+EasyDecks.ai now includes a Python FastAPI microservice that:
 - Receives uploaded CSV/XLSX data and OpenAI-generated Python code for analysis and charting.
 - Executes the code securely using pandas, numpy, and matplotlib/seaborn.
 - Returns real insights, summary tables, and chart images (base64 PNG) to the Next.js backend.

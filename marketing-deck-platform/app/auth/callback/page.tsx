@@ -72,7 +72,7 @@ export default function AuthCallbackPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
       <div className="text-center">
         <Brain className="w-16 h-16 text-green-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-white mb-2">Welcome to AEDRIN!</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Welcome to EasyDecks.ai!</h2>
         <p className="text-gray-400">Redirecting you to your dashboard...</p>
       </div>
     </div>

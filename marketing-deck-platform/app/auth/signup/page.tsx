@@ -450,7 +450,7 @@ export default function SignupPage() {
       <div className="w-full max-w-2xl mx-auto rounded-2xl p-8 bg-gray-900/50 border border-gray-700 shadow-xl backdrop-blur-sm">
         <div className="flex flex-col items-center mb-8">
           <Brain className="w-12 h-12 text-blue-400 mb-4" />
-          <h1 className="text-3xl font-bold mb-2 text-white">Join AEDRIN</h1>
+          <h1 className="text-3xl font-bold mb-2 text-white">Join EasyDecks.ai</h1>
           <p className="text-gray-400 text-center">Create your account and start building amazing presentations</p>
         </div>
         

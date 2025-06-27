@@ -87,7 +87,7 @@ export default function WorldClassUIDemo() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            AEDRIN: Now <span className="text-blue-600">World-Class</span>
+            EasyDecks.ai: Now <span className="text-blue-600">World-Class</span>
           </motion.h1>
           
           <motion.p 

@@ -105,7 +105,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md mx-auto rounded-2xl p-8 bg-gray-900/50 border border-gray-700 shadow-xl backdrop-blur-sm">
         <div className="flex flex-col items-center mb-8">
           <Brain className="w-12 h-12 text-blue-400 mb-4" />
-          <h2 className="text-3xl font-bold mb-2 text-white">Welcome to AEDRIN</h2>
+          <h2 className="text-3xl font-bold mb-2 text-white">Welcome to EasyDecks.ai</h2>
           <p className="text-gray-400 text-center">AI-powered marketing decks for visionary teams</p>
         </div>
         

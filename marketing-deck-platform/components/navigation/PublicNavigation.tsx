@@ -117,7 +117,7 @@ export default function PublicNavigation({
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 relative">
           <div className="max-w-7xl mx-auto flex items-center justify-center h-10">
             <span className="font-medium text-center w-full flex items-center justify-center">
-              🚀 AEDRIN is launching soon! Join our early access program and be among the first to experience AI-powered presentations.
+              🚀 EasyDecks.ai is launching soon! Join our early access program and be among the first to experience AI-powered presentations.
             </span>
             {onComingSoonBarClose && (
               <button
@@ -138,7 +138,7 @@ export default function PublicNavigation({
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
             <Brain className="w-8 h-8 text-blue-500" />
-            <span className="text-2xl font-bold text-white">AEDRIN</span>
+            <span className="text-2xl font-bold text-white">EasyDecks.ai</span>
           </Link>
 
           {/* Desktop Navigation */}

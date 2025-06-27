@@ -3,7 +3,7 @@
 /**
  * REAL DATA PROCESSING TEST SUITE
  * 
- * Specifically tests the AEDRIN platform's ability to handle real business data
+ * Specifically tests the EasyDecks.ai platform's ability to handle real business data
  * Uses the actual demo_1000_row_dataset.csv file to validate:
  * 1. File upload and processing
  * 2. Data parsing and type detection

@@ -70,7 +70,7 @@ export default function ContactPage() {
             Get in Touch
           </h1>
           <p className="text-xl text-gray-300 mb-8">
-            Have questions about AEDRIN? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            Have questions about EasyDecks.ai? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
         </div>
       </section>
@@ -169,7 +169,7 @@ export default function ContactPage() {
               <div>
                 <h2 className="text-3xl font-bold text-white mb-6">Contact Information</h2>
                 <p className="text-gray-300 mb-8">
-                  Ready to transform your presentations? Get in touch with our team and discover how AEDRIN can help your business.
+                  Ready to transform your presentations? Get in touch with our team and discover how EasyDecks.ai can help your business.
                 </p>
               </div>
 
@@ -180,7 +180,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-1">Email</h3>
-                    <p className="text-gray-300">hello@aedrin.com</p>
+                    <p className="text-gray-300">hello@easydecks.ai</p>
                     <p className="text-gray-400 text-sm">We'll respond within 24 hours</p>
                   </div>
                 </div>
@@ -233,15 +233,15 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
               <h3 className="text-xl font-semibold text-white mb-3">
-                How quickly can I get started with AEDRIN?
+                How quickly can I get started with EasyDecks.ai?
               </h3>
               <p className="text-gray-300">
-                You can start using AEDRIN immediately with our 14-day free trial. No credit card required, and you can cancel anytime.
+                You can start using EasyDecks.ai immediately with our 14-day free trial. No credit card required, and you can cancel anytime.
               </p>
             </div>
             <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
               <h3 className="text-xl font-semibold text-white mb-3">
-                What file formats does AEDRIN support?
+                What file formats does EasyDecks.ai support?
               </h3>
               <p className="text-gray-300">
                 We support CSV, Excel (.xlsx, .xls), Google Sheets, and JSON files. Our AI can analyze any structured data format.

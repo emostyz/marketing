@@ -34,7 +34,7 @@ async function testCompleteAuthFlow() {
 
     // Step 2: Test Sign In with Real User
     console.log('2️⃣ Testing sign in with real user...');
-    const email = 'test@aedrin.com';
+    const email = 'test@easydecks.ai';
     const password = 'password123';
     
     const { data, error } = await supabase.auth.signInWithPassword({

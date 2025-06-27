@@ -9,7 +9,7 @@ async function testFrontendAuth() {
   console.log('🧪 Testing frontend authentication flow...\n');
   
   try {
-    const email = 'test@aedrin.com';
+    const email = 'test@easydecks.ai';
     const password = 'password123';
     
     console.log('1️⃣ Initial session check...');

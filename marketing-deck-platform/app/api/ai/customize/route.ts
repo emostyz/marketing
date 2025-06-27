@@ -312,6 +312,14 @@ function generateVisualCustomizations(request: CustomizationRequest): VisualCust
     vibrant: {
       primary: ['#ff6b6b', '#4ecdc4', '#ffe66d'],
       gradients: ['linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)']
+    },
+    sales: {
+      primary: ['#2563eb', '#1e40af', '#1d4ed8'],
+      gradients: ['linear-gradient(135deg, #2563eb 0%, #1e40af 100%)']
+    },
+    modern: {
+      primary: ['#6366f1', '#8b5cf6', '#a855f7'],
+      gradients: ['linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)']
     }
   }
   

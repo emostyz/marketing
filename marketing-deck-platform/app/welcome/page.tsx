@@ -35,7 +35,7 @@ export default function WelcomePage() {
     {
       icon: <Zap className="w-6 h-6 text-blue-400" />,
       title: "Upload Your Data",
-      description: "Start by uploading CSV files or connecting your data sources. AEDRIN works best with sales, marketing, and financial data."
+      description: "Start by uploading CSV files or connecting your data sources. EasyDecks.ai works best with sales, marketing, and financial data."
     },
     {
       icon: <Brain className="w-6 h-6 text-purple-400" />,
@@ -107,7 +107,7 @@ export default function WelcomePage() {
             <CheckCircle className="w-10 h-10 text-green-400" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">
-            Welcome to AEDRIN, {user.name}! 🎉
+            Welcome to EasyDecks.ai, {user.name}! 🎉
           </h1>
           <p className="text-xl text-gray-300 mb-6">
             Your account has been created successfully. Let's get you started with AI-powered presentations.
@@ -123,7 +123,7 @@ export default function WelcomePage() {
             <CardHeader>
               <CardTitle className="text-xl text-white flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-yellow-400" />
-                5 Tips to Get the Most Out of AEDRIN
+                5 Tips to Get the Most Out of EasyDecks.ai
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -237,7 +237,7 @@ export default function WelcomePage() {
         <Card className="bg-gray-900/50 border-gray-700 mb-8">
           <CardHeader>
             <CardTitle className="text-xl text-white text-center">
-              What Makes AEDRIN Special?
+              What Makes EasyDecks.ai Special?
             </CardTitle>
           </CardHeader>
           <CardContent>

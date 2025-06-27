@@ -1,7 +1,7 @@
-# ✅ AEDRIN Platform - ALL CRITICAL FIXES COMPLETED
+# ✅ EasyDecks.ai Platform - ALL CRITICAL FIXES COMPLETED
 
 ## 🎯 Summary
-The AEDRIN marketing deck platform is now **FULLY FUNCTIONAL** with all critical issues resolved and all requested features implemented.
+The EasyDecks.ai marketing deck platform is now **FULLY FUNCTIONAL** with all critical issues resolved and all requested features implemented.
 
 ## 🚀 Critical Fixes Implemented
 
@@ -119,7 +119,7 @@ The platform now generates 5 types of professional slides:
 
 ## 🚀 Platform Status: FULLY FUNCTIONAL
 
-The AEDRIN platform now delivers on its core promise:
+The EasyDecks.ai platform now delivers on its core promise:
 > **"Upload your data, get a beautiful marketing deck"**
 
 Users can:

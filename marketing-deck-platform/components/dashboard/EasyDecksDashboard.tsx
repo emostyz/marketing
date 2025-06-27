@@ -30,7 +30,7 @@ interface DashboardData {
   }>;
 }
 
-export function AedrinDashboard() {
+export function EasyDecksDashboard() {
   const [data, setData] = useState<DashboardData>({
     presentations: 24,
     insights: 142,
@@ -66,7 +66,7 @@ export function AedrinDashboard() {
       >
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">AEDRIN Dashboard</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">EasyDecks.ai Dashboard</h1>
             <p className="text-slate-400 text-lg">Transform data into stunning presentations</p>
           </div>
           <div className="flex gap-3">

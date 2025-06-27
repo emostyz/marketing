@@ -93,11 +93,11 @@ export async function POST(request: NextRequest) {
     // Mock email content
     const emailContent = {
       to: email,
-      subject: `You're invited to join ${process.env.NEXT_PUBLIC_APP_NAME || 'AEDRIN'}`,
+      subject: `You're invited to join ${process.env.NEXT_PUBLIC_APP_NAME || 'EasyDecks.ai'}`,
       body: `
         Hello ${full_name || 'there'},
         
-        You've been invited to join ${process.env.NEXT_PUBLIC_APP_NAME || 'AEDRIN'} by an administrator.
+        You've been invited to join ${process.env.NEXT_PUBLIC_APP_NAME || 'EasyDecks.ai'} by an administrator.
         
         ${message ? `Personal message: ${message}` : ''}
         
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         This invitation expires in 7 days.
         
         Best regards,
-        The ${process.env.NEXT_PUBLIC_APP_NAME || 'AEDRIN'} Team
+        The ${process.env.NEXT_PUBLIC_APP_NAME || 'EasyDecks.ai'} Team
       `
     }
 

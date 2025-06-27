@@ -62,7 +62,7 @@ interface WorldClassAnalysis {
   }>
 }
 
-interface WorldClassSlide {
+export interface WorldClassSlide {
   id: string
   type: 'executive_summary' | 'key_findings' | 'deep_analysis' | 'recommendations' | 'implementation' | 'risks' | 'next_steps'
   title: string

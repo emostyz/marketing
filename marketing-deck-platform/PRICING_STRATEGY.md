@@ -1,8 +1,8 @@
-# AEDRIN Pricing Strategy
+# EasyDecks.ai Pricing Strategy
 
 ## Executive Summary
 
-AEDRIN's pricing strategy is designed to maximize profitability while providing exceptional value to customers. Our three-tier model targets different market segments with clear value propositions and ensures sustainable revenue growth.
+EasyDecks.ai's pricing strategy is designed to maximize profitability while providing exceptional value to customers. Our three-tier model targets different market segments with clear value propositions and ensures sustainable revenue growth.
 
 ## Pricing Tiers
 
@@ -233,7 +233,7 @@ AEDRIN's pricing strategy is designed to maximize profitability while providing 
 
 ## Conclusion
 
-This pricing strategy positions AEDRIN as a premium AI presentation platform while ensuring strong profitability. The three-tier model provides clear value progression and targets different market segments effectively. With projected ARR of $5M in Year 1 and $17M in Year 2, this strategy supports sustainable growth and profitability.
+This pricing strategy positions EasyDecks.ai as a premium AI presentation platform while ensuring strong profitability. The three-tier model provides clear value progression and targets different market segments effectively. With projected ARR of $5M in Year 1 and $17M in Year 2, this strategy supports sustainable growth and profitability.
 
 The key success factors are:
 1. **Clear value proposition** for each tier

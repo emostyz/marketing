@@ -152,7 +152,7 @@ export default function DemoPage() {
             </h1>
           </div>
           <p className="text-xl text-blue-200 mb-4">
-            Experience how AEDRIN transforms your data into executive-ready presentations
+            Experience how EasyDecks.ai transforms your data into executive-ready presentations
           </p>
           <div className="flex items-center justify-center space-x-4">
             <Badge variant="secondary" className="bg-blue-900/50 text-blue-200">
@@ -255,7 +255,7 @@ export default function DemoPage() {
               {file ? `Uploading ${file.name}...` : 'Upload Your Data to Continue'}
             </Button>
             <p className="text-blue-300 mt-4">
-              Upload CSV, Excel, or JSON files to see how AEDRIN transforms your data
+              Upload CSV, Excel, or JSON files to see how EasyDecks.ai transforms your data
             </p>
             {file && (
               <div className="mt-4 text-green-400">
@@ -348,7 +348,7 @@ export default function DemoPage() {
             <Button 
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg font-semibold transition-colors"
             >
-              🚀 Get Started with AEDRIN
+              🚀 Get Started with EasyDecks.ai
             </Button>
           </Link>
         </div>

@@ -1,7 +1,7 @@
 # Supabase Feedback Loop Implementation
 
 ## Overview
-This document outlines the comprehensive feedback loop implemented with Supabase for the AEDRIN platform. The system captures, tracks, and analyzes all user interactions, system events, and business metrics to provide actionable insights and improve the platform continuously.
+This document outlines the comprehensive feedback loop implemented with Supabase for the EasyDecks.ai platform. The system captures, tracks, and analyzes all user interactions, system events, and business metrics to provide actionable insights and improve the platform continuously.
 
 ## Database Schema
 The feedback loop utilizes the following Supabase tables:
@@ -271,6 +271,6 @@ ClientTracker.trackFeatureUsage('ai_analysis', 'started', {
 4. **Global Distribution:** Multi-region event collection
 
 ## Conclusion
-The implemented Supabase feedback loop provides comprehensive visibility into system performance, user behavior, and business metrics. This data-driven approach enables continuous improvement of the AEDRIN platform, ensuring optimal user experience and business success.
+The implemented Supabase feedback loop provides comprehensive visibility into system performance, user behavior, and business metrics. This data-driven approach enables continuous improvement of the EasyDecks.ai platform, ensuring optimal user experience and business success.
 
 The system captures over 50 different event types, processes thousands of events daily, and provides actionable insights for product development, system optimization, and business growth.

@@ -5,7 +5,7 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { EventTracker } from '@/components/analytics/EventTracker';
 
 export const metadata: Metadata = {
-  title: 'AEDRIN - AI-Powered Presentation Platform',
+  title: 'EasyDecks.ai - AI-Powered Presentation Platform',
   description: 'Transform your data into stunning executive presentations with AI',
 };
 
@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen bg-gray-950 text-white antialiased">
         <ErrorBoundary>
           <AuthProvider>
             <EventTracker>

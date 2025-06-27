@@ -20,7 +20,7 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          AEDRIN: AI-Powered Marketing Decks<br />for Visionary Teams
+          EasyDecks.ai: AI-Powered Marketing Decks<br />for Visionary Teams
         </motion.h1>
         <motion.p
           className="text-xl md:text-2xl text-blue-200 mb-8"
@@ -28,10 +28,10 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
         >
-          AEDRIN (aedrin.ai) transforms your marketing data into stunning, executive-ready presentations in minutes.
+          EasyDecks.ai (EasyDecks.ai) transforms your marketing data into stunning, executive-ready presentations in minutes.
         </motion.p>
         <div className="flex flex-col md:flex-row gap-4 justify-center">
-          <Button>Get Started with AEDRIN</Button>
+          <Button>Get Started with EasyDecks.ai</Button>
           <Button variant="outline">See Live Demo</Button>
         </div>
       </section>
@@ -40,7 +40,7 @@ export default function LandingPage() {
       <section className="w-full flex justify-center mb-16">
         <div className="w-[420px] h-[260px] bg-white/10 border border-white/20 rounded-2xl shadow-[0_0_30px_#3B82F680] flex items-center justify-center text-blue-300 font-mono text-lg">
           {/* Replace with react-three-fiber 3D preview */}
-          [3D AEDRIN Dashboard Preview Coming Soon]
+          [3D EasyDecks.ai Dashboard Preview Coming Soon]
         </div>
       </section>
 
@@ -79,7 +79,7 @@ export default function LandingPage() {
       {/* Testimonial Carousel Placeholder */}
       <section className="w-full max-w-3xl mb-24">
         <Card className="text-center py-8">
-          <div className="italic text-blue-100 mb-4">“AEDRIN made our marketing data sing. The decks are beautiful, the AI narrative is spot on, and our execs are blown away.”</div>
+          <div className="italic text-blue-100 mb-4">“EasyDecks.ai made our marketing data sing. The decks are beautiful, the AI narrative is spot on, and our execs are blown away.”</div>
           <div className="font-grotesk text-lg text-white">— VP Marketing, Global SaaS</div>
         </Card>
       </section>

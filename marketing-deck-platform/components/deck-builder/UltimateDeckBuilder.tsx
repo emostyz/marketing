@@ -24,6 +24,7 @@ import { useTierLimits } from '@/lib/hooks/useTierLimits'
 import UpgradePrompt from '@/components/ui/UpgradePrompt'
 import { useEnterpriseAccess } from '@/lib/hooks/useEnterpriseAccess'
 import { SimpleRealTimeFlow } from './SimpleRealTimeFlow'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
 // import { Progress } from '@/components/ui/progress'
 
 // Helper function to convert file to base64
@@ -142,7 +143,7 @@ const AIAnalysisStep = ({ status, progress }: { status: string, progress: number
 
 export function UltimateDeckBuilder({ className = '' }: { className?: string }) {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user, loading, startSessionKeeper, stopSessionKeeper } = useAuth()
   const { checkLimit, incrementUsage, rollbackUsage, upgradePlan, subscription } = useTierLimits()
   const { isEnterprise, getAIEndpoint, getAIConfig } = useEnterpriseAccess()
 
@@ -159,14 +160,15 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
     )
   }
 
-  // Don't render if no user (middleware will handle redirect)
+  // Redirect to login if no user
   if (!user) {
+    router.push('/auth/login')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-950">
         <div className="text-center">
           <Brain className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold text-white mb-2">Authenticating...</h2>
-          <p className="text-gray-400">Please wait...</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Redirecting to Login</h2>
+          <p className="text-gray-400">Please sign in to continue...</p>
         </div>
       </div>
     )
@@ -330,7 +332,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
         
         if (data.success && data.files && data.files.length > 0) {
           // Convert upload result to the format expected by deck builder
-          const processedFiles = data.files.map((file: any, index: number) => ({
+          const processedFiles = (data.files || []).map((file: any, index: number) => ({
             id: `uploaded-${index}`,
             name: file.fileName,
             type: file.fileType,
@@ -405,7 +407,14 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   const prevStep = () => setCurrentStep(prev => prev - 1)
   
   const handleDataContextUpdate = async (newContext: any) => {
-    setIntakeData(prev => ({ ...prev, context: { ...prev.context, ...newContext } }))
+    setIntakeData(prev => {
+      const updatedData = { ...prev, context: { ...prev.context, ...newContext } }
+      
+      // Save draft immediately for persistence
+      saveDraft(updatedData)
+      
+      return updatedData
+    })
     
     // Save to user profile immediately
     try {
@@ -426,19 +435,111 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   }
 
   const handleTimeFrameUpdate = (newTimeFrame: any) => {
-    setIntakeData(prev => ({ 
-      ...prev, 
-      timeFrame: { ...prev.timeFrame, ...newTimeFrame },
-      requirements: {
-        ...prev.requirements,
-        comparisonTypes: newTimeFrame.comparisons || [],
-        includeComparisons: (newTimeFrame.comparisons || []).length > 0
+    setIntakeData(prev => {
+      const updatedData = { 
+        ...prev, 
+        timeFrame: { ...prev.timeFrame, ...newTimeFrame },
+        requirements: {
+          ...prev.requirements,
+          comparisonTypes: newTimeFrame.comparisons || [],
+          includeComparisons: (newTimeFrame.comparisons || []).length > 0
+        }
       }
-    }))
+      
+      // Save draft for persistence
+      saveDraft(updatedData)
+      
+      return updatedData
+    })
   }
 
   const handleFilesUpdate = (newFiles: any) => {
-    setIntakeData(prev => ({ ...prev, files: newFiles }))
+    setIntakeData(prev => {
+      const updatedData = { ...prev, files: newFiles }
+      saveDraft(updatedData)
+      return updatedData
+    })
+  }
+
+  // Draft persistence functions
+  const saveDraft = async (data: any) => {
+    try {
+      // Save to localStorage for immediate recovery
+      const draftKey = `easydecks-intake-draft-${user?.id || 'demo'}`
+      localStorage.setItem(draftKey, JSON.stringify({
+        data,
+        timestamp: Date.now(),
+        currentStep,
+        userId: user?.id
+      }))
+
+      // Also save to server for authenticated users
+      if (user && !user.demo) {
+        await fetch('/api/drafts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            draftData: data,
+            type: 'intake',
+            currentStep
+          })
+        })
+      }
+
+      console.log('💾 Draft saved successfully')
+    } catch (error) {
+      console.error('❌ Failed to save draft:', error)
+    }
+  }
+
+  const loadDraft = () => {
+    try {
+      const draftKey = `easydecks-intake-draft-${user?.id || 'demo'}`
+      const saved = localStorage.getItem(draftKey)
+      
+      if (saved) {
+        const draft = JSON.parse(saved)
+        
+        // Check if draft is recent (within 24 hours)
+        if (Date.now() - draft.timestamp < 24 * 60 * 60 * 1000) {
+          console.log('📖 Loading saved draft')
+          setIntakeData(draft.data)
+          setCurrentStep(draft.currentStep || 1)
+          
+          toast.success('Draft restored successfully!', {
+            duration: 3000,
+            icon: '📖'
+          })
+          
+          return true
+        } else {
+          // Clean up old draft
+          localStorage.removeItem(draftKey)
+        }
+      }
+    } catch (error) {
+      console.error('❌ Failed to load draft:', error)
+    }
+    
+    return false
+  }
+
+  // Load draft on component mount
+  useEffect(() => {
+    if (user) {
+      loadDraft()
+    }
+  }, [user])
+
+  // Clear draft when analysis completes successfully
+  const clearDraft = () => {
+    try {
+      const draftKey = `easydecks-intake-draft-${user?.id || 'demo'}`
+      localStorage.removeItem(draftKey)
+      console.log('🗑️ Draft cleared after successful completion')
+    } catch (error) {
+      console.error('❌ Failed to clear draft:', error)
+    }
   }
 
   const regenerateSlide = async (slideIndex: number, customPrompt?: string) => {
@@ -580,7 +681,8 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
               context={analysisContext}
               onComplete={(deckId: string) => {
                 console.log('🎉 Real-time analysis complete, navigating to deck:', deckId)
-                router.push(`/deck-builder/${deckId}`)
+                clearDraft() // Clear draft after successful completion
+                router.push(`/editor/${deckId}`) // Navigate to slide editor to view/edit deck
               }}
               onBack={() => {
                 setCurrentStep(4) // Go back to upload step
@@ -627,7 +729,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
             }
 
             // Convert analysis result to professional slides format with validation
-            const convertedSlides = analysisResult.slideStructure?.map((slideData: any, index: number) => {
+            const convertedSlides = (analysisResult.slideStructure || []).map((slideData: any, index: number) => {
               // Validate individual slide data
               if (!validateSlideData(slideData)) {
                 console.warn(`⚠️ Invalid slide data at index ${index}, using fallback`)
@@ -640,7 +742,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
               }
 
               // Validate and process charts
-              const validatedCharts = slideData.charts?.filter(validateChartData).map((chart: any, chartIndex: number) => ({
+              const validatedCharts = (slideData.charts || []).filter(validateChartData).map((chart: any, chartIndex: number) => ({
                 id: `chart_${Date.now()}_${chartIndex}`,
                 type: ['area', 'bar', 'line', 'scatter', 'pie'].includes(chart.type) ? chart.type : 'area',
                 title: chart.message || chart.title || 'Data Visualization',
@@ -771,6 +873,44 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
               presentationId={`presentation_${Date.now()}`}
               initialSlides={convertedSlides}
               onRegenerateSlide={regenerateSlide}
+              onAIEnhancement={async (slideId: string, request: string) => {
+                // Enhanced AI integration for real-time slide improvements
+                try {
+                  const brainV2 = new EnhancedBrainV2()
+                  const currentSlide = convertedSlides.find(s => s.id === slideId)
+                  
+                  if (!currentSlide) return null
+                  
+                  const enhancementResult = await brainV2.enhanceSlideContent({
+                    slide: currentSlide,
+                    userRequest: request,
+                    dataContext: parsedData[0],
+                    businessContext: intakeData.context
+                  })
+                  
+                  return enhancementResult
+                } catch (error) {
+                  console.error('AI enhancement failed:', error)
+                  return null
+                }
+              }}
+              onAnalyzeData={async (dataPoints: any[]) => {
+                // Real-time data analysis for new data added to slides
+                try {
+                  const brainV2 = new EnhancedBrainV2()
+                  return await brainV2.analyzeNewDataPoints(dataPoints, intakeData.context)
+                } catch (error) {
+                  console.error('Data analysis failed:', error)
+                  return null
+                }
+              }}
+              aiContext={{
+                businessGoals: intakeData.context.businessGoals,
+                timeframe: intakeData.context.timeFrame,
+                decisionMakers: intakeData.context.decisionMakers,
+                originalData: parsedData[0],
+                analysisInsights: analysisResult.insights
+              }}
               onSave={async (slides) => {
                 try {
                   console.log('Saving world-class presentation with advanced analytics:', slides)
@@ -917,7 +1057,8 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
   console.log('[UltimateDeckBuilder] Render, currentStep:', currentStep);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-950 text-white py-8 px-4">
+    <UnifiedLayout requireAuth={true} className="bg-gray-950">
+      <div className="min-h-screen flex flex-col bg-gray-950 text-white py-8 px-4">
       <div className="flex-1 flex flex-col justify-center">
         <div className="max-w-6xl mx-auto w-full flex flex-col justify-center items-center gap-8">
           {/* Page Header */}
@@ -1021,7 +1162,8 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
           }}
         />
       )}
-    </div>
+      </div>
+    </UnifiedLayout>
   )
 }
 

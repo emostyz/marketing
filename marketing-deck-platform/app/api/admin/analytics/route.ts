@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(20)
 
-    const recentActivity = recentActivityData?.map(event => ({
+    const recentActivity = recentActivityData?.map((event: any) => ({
       id: event.id,
       type: event.event_type,
       user: event.profiles?.full_name || event.profiles?.email || 'Unknown User',

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Saved Drafts - EasyDecks.ai</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            padding: 20px; 
+            background: #f8fafc; 
+            margin: 0;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .draft-section { 
+            background: white; 
+            padding: 24px; 
+            margin: 16px 0; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .draft-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .draft-item.found {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        .draft-item.empty {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+        button { 
+            padding: 12px 24px; 
+            margin: 8px 4px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .primary { background: #3b82f6; color: white; }
+        .primary:hover { background: #2563eb; }
+        .success { background: #10b981; color: white; }
+        .success:hover { background: #059669; }
+        .danger { background: #ef4444; color: white; }
+        .danger:hover { background: #dc2626; }
+        .secondary { background: #64748b; color: white; }
+        .secondary:hover { background: #475569; }
+        pre { 
+            background: #1e293b; 
+            color: #e2e8f0; 
+            padding: 16px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            font-size: 14px;
+            margin: 12px 0;
+        }
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .metadata-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .metadata-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .metadata-value {
+            color: #111827;
+            margin-top: 4px;
+        }
+        .no-drafts {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        .actions {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Draft Viewer - EasyDecks.ai Marketing Deck Platform</h1>
+        <p>View and manage your saved intake form drafts</p>
+    </div>
+    
+    <div class="draft-section">
+        <h2>🔍 Scan for Drafts</h2>
+        <p>Click below to scan localStorage for saved drafts:</p>
+        <button class="primary" onclick="scanForDrafts()">🔍 Scan for Drafts</button>
+        <button class="secondary" onclick="clearAllDrafts()">🗑️ Clear All Drafts</button>
+        <button class="success" onclick="createTestDraft()">🧪 Create Test Draft</button>
+    </div>
+    
+    <div class="draft-section">
+        <h2>📂 Found Drafts</h2>
+        <div id="drafts-container">
+            <div class="no-drafts">Click "Scan for Drafts" to begin...</div>
+        </div>
+    </div>
+
+    <script>
+        let foundDrafts = [];
+
+        function scanForDrafts() {
+            console.log('🔍 Scanning localStorage for drafts...');
+            
+            foundDrafts = [];
+            const container = document.getElementById('drafts-container');
+            container.innerHTML = '<div style="text-align: center; padding: 20px;">🔄 Scanning...</div>';
+            
+            // Look for draft keys
+            const draftPatterns = [
+                /^easydecks-intake-draft-/,
+                /^deck-draft-/,
+                /^presentation-draft-/,
+                /^.*draft.*$/i
+            ];
+            
+            const allKeys = Object.keys(localStorage);
+            console.log(`📋 Found ${allKeys.length} localStorage keys:`, allKeys);
+            
+            // Check each pattern
+            draftPatterns.forEach((pattern, patternIndex) => {
+                const matchingKeys = allKeys.filter(key => pattern.test(key));
+                
+                matchingKeys.forEach(key => {
+                    try {
+                        const rawValue = localStorage.getItem(key);
+                        let parsedValue;
+                        
+                        try {
+                            parsedValue = JSON.parse(rawValue);
+                        } catch (parseError) {
+                            parsedValue = { raw: rawValue };
+                        }
+                        
+                        foundDrafts.push({
+                            key,
+                            value: parsedValue,
+                            raw: rawValue,
+                            size: rawValue ? rawValue.length : 0,
+                            pattern: patternIndex
+                        });
+                        
+                        console.log(`✅ Found draft: ${key}`, parsedValue);
+                    } catch (error) {
+                        console.error(`❌ Error processing ${key}:`, error);
+                    }
+                });
+            });
+            
+            displayDrafts();
+        }
+        
+        function displayDrafts() {
+            const container = document.getElementById('drafts-container');
+            
+            if (foundDrafts.length === 0) {
+                container.innerHTML = `
+                    <div class="no-drafts">
+                        <h3>📭 No Drafts Found</h3>
+                        <p>No drafts were found in localStorage.</p>
+                        <p><strong>Possible reasons:</strong></p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li>You haven't started the intake form yet</li>
+                            <li>Drafts were cleared or expired</li>
+                            <li>You're in incognito/private mode</li>
+                            <li>Browser storage is disabled</li>
+                        </ul>
+                        <p><em>Try creating a test draft or going through the intake form.</em></p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `<p><strong>Found ${foundDrafts.length} draft(s):</strong></p>`;
+            
+            foundDrafts.forEach((draft, index) => {
+                const timestamp = draft.value.timestamp ? new Date(draft.value.timestamp) : 'Unknown';
+                const isEasyDecksDraft = draft.key.includes('easydecks-intake-draft');
+                
+                html += `
+                    <div class="draft-item ${isEasyDecksDraft ? 'found' : 'empty'}">
+                        <h4>${isEasyDecksDraft ? '✅' : '📄'} ${draft.key}</h4>
+                        
+                        <div class="metadata">
+                            <div class="metadata-item">
+                                <div class="metadata-label">Size</div>
+                                <div class="metadata-value">${formatBytes(draft.size)}</div>
+                            </div>
+                            <div class="metadata-item">
+                                <div class="metadata-label">Timestamp</div>
+                                <div class="metadata-value">${timestamp}</div>
+                            </div>
+                            ${draft.value.currentStep ? `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Current Step</div>
+                                <div class="metadata-value">${draft.value.currentStep}</div>
+                            </div>
+                            ` : ''}
+                            ${draft.value.userId ? `
+                            <div class="metadata-item">
+                                <div class="metadata-label">User ID</div>
+                                <div class="metadata-value">${draft.value.userId}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${isEasyDecksDraft && draft.value.data ? `
+                        <h5>📋 Draft Content Summary:</h5>
+                        <div class="metadata">
+                            ${draft.value.data.context?.industry ? `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Industry</div>
+                                <div class="metadata-value">${draft.value.data.context.industry}</div>
+                            </div>
+                            ` : ''}
+                            ${draft.value.data.context?.targetAudience ? `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Target Audience</div>
+                                <div class="metadata-value">${draft.value.data.context.targetAudience}</div>
+                            </div>
+                            ` : ''}
+                            ${draft.value.data.files ? `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Files</div>
+                                <div class="metadata-value">${draft.value.data.files.length} file(s)</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        ` : ''}
+                        
+                        <div class="actions">
+                            <button class="secondary" onclick="viewDraftDetails(${index})">📖 View Details</button>
+                            <button class="success" onclick="loadDraftInApp('${draft.key}')">🚀 Load in App</button>
+                            <button class="danger" onclick="deleteDraft('${draft.key}')">🗑️ Delete</button>
+                        </div>
+                        
+                        <div id="details-${index}" style="display: none;">
+                            <h5>📄 Raw Data:</h5>
+                            <pre>${JSON.stringify(draft.value, null, 2)}</pre>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function viewDraftDetails(index) {
+            const detailsDiv = document.getElementById(`details-${index}`);
+            detailsDiv.style.display = detailsDiv.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function loadDraftInApp(draftKey) {
+            // Open the deck builder with instructions to load this draft
+            const url = `/deck-builder/new?loadDraft=${encodeURIComponent(draftKey)}`;
+            window.open(url, '_blank');
+            
+            alert(`Opening deck builder with draft: ${draftKey}\n\nThe draft should be automatically loaded when the page opens.`);
+        }
+        
+        function deleteDraft(draftKey) {
+            if (confirm(`Are you sure you want to delete draft: ${draftKey}?`)) {
+                localStorage.removeItem(draftKey);
+                console.log(`🗑️ Deleted draft: ${draftKey}`);
+                scanForDrafts(); // Refresh the list
+            }
+        }
+        
+        function clearAllDrafts() {
+            if (confirm('Are you sure you want to clear ALL drafts? This cannot be undone.')) {
+                foundDrafts.forEach(draft => {
+                    localStorage.removeItem(draft.key);
+                });
+                console.log('🗑️ Cleared all drafts');
+                scanForDrafts(); // Refresh the list
+            }
+        }
+        
+        function createTestDraft() {
+            const testDraft = {
+                data: {
+                    context: {
+                        description: 'Test Revenue Analysis for Demo',
+                        industry: 'Technology',
+                        targetAudience: 'Executives',
+                        businessContext: 'Quarterly review for stakeholders',
+                        keyMetrics: 'Revenue, Growth Rate, Customer Acquisition'
+                    },
+                    files: [
+                        {
+                            name: 'test-revenue-data.csv',
+                            status: 'success',
+                            datasetId: 'test_dataset_123'
+                        }
+                    ],
+                    timeFrame: {
+                        startDate: '2024-01-01',
+                        endDate: '2024-06-30',
+                        comparisons: ['YoY', 'QoQ']
+                    }
+                },
+                timestamp: Date.now(),
+                currentStep: 3,
+                userId: 'demo-user'
+            };
+            
+            const draftKey = `easydecks-intake-draft-demo-user`;
+            localStorage.setItem(draftKey, JSON.stringify(testDraft));
+            
+            console.log('🧪 Created test draft:', testDraft);
+            alert('✅ Test draft created! Click "Scan for Drafts" to see it.');
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Auto-scan on page load
+        setTimeout(scanForDrafts, 500);
+    </script>
+</body>
+</html>

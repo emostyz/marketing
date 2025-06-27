@@ -162,7 +162,7 @@ function DeckBuilderErrorFallback() {
         <p className="text-sm text-gray-500 mt-6">
           If this problem persists, please{' '}
           <a
-            href="mailto:support@aedrin.com"
+            href="mailto:support@easydecks.ai"
             className="text-blue-600 hover:text-blue-700 underline"
           >
             contact support

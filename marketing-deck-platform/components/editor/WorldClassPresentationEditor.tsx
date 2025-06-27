@@ -3,20 +3,36 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, useAnimation } from 'framer-motion'
 import { 
-  ChevronLeft, ChevronRight, Play, Save, Download, Settings, Plus, Grid, Eye, EyeOff,
+  ChevronLeft, ChevronRight, Play, Pause, Save, Download, Settings, Plus, Grid, Eye, EyeOff,
   ZoomIn, ZoomOut, Undo, Redo, Copy, ClipboardPaste, Delete, Move, Type, Image as ImageIcon,
   BarChart3, Circle, Square, Triangle, Palette, AlignLeft, AlignCenter, AlignRight,
   Bold, Italic, Underline, MoreHorizontal, Maximize2, Minimize2, RefreshCw, MessageSquare, Users,
-  Brain
+  Brain, Trash2, Layers, Group, Ungroup, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown,
+  Timer, MessageCircle, Target
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import EnhancedSlideRenderer from './EnhancedSlideRenderer'
-import WorldClassSlideRenderer from '@/components/slides/WorldClassSlideRenderer'
+import SlideCanvas from './SlideCanvas'
 import { EnhancedAutoSave, type AutoSaveState } from '@/lib/auto-save/enhanced-auto-save'
+import UnifiedLayout from '@/components/layout/UnifiedLayout'
+import PropertiesPanel from './PropertiesPanel'
+import ChartEditor from './ChartEditor'
+import ImageUploader from './ImageUploader'
+import ShapeCreator from './ShapeCreator'
+import BusinessContextWizard from './BusinessContextWizard'
+import { PresentationPreview } from '@/components/deck-builder/PresentationPreview'
+
+// Simple BusinessContext type for now
+interface BusinessContext {
+  companyName?: string
+  industry?: string
+  primaryGoal?: string
+  targetAudience?: string
+}
 
 interface SlideElement {
   id: string
@@ -28,6 +44,9 @@ interface SlideElement {
   style?: any
   isLocked?: boolean
   metadata?: any
+  chartData?: any[]
+  chartType?: string
+  isVisible?: boolean
 }
 
 interface Slide {
@@ -46,6 +65,20 @@ interface Slide {
   keyTakeaways?: string[]
   aiInsights?: any
   notes?: string
+  transition?: {
+    type: 'slide' | 'fade' | 'zoom' | 'flip' | 'cube' | 'push'
+    direction?: 'left' | 'right' | 'up' | 'down'
+    duration?: number
+    easing?: string
+  }
+  elementAnimations?: {
+    [elementId: string]: {
+      entrance: 'fadeIn' | 'slideIn' | 'zoomIn' | 'bounceIn' | 'flipIn'
+      exit?: 'fadeOut' | 'slideOut' | 'zoomOut' | 'bounceOut' | 'flipOut'
+      delay?: number
+      duration?: number
+    }
+  }
 }
 
 interface WorldClassPresentationEditorProps {
@@ -54,6 +87,15 @@ interface WorldClassPresentationEditorProps {
   onSave?: (slides: Slide[]) => void
   onExport?: (format: string) => void
   onRegenerateSlide?: (slideIndex: number, customPrompt?: string) => Promise<any>
+  onAIEnhancement?: (slideId: string, request: string) => Promise<any>
+  onAnalyzeData?: (dataPoints: any[]) => Promise<any>
+  aiContext?: {
+    businessGoals?: string[]
+    timeframe?: string
+    decisionMakers?: string[]
+    originalData?: any
+    analysisInsights?: any[]
+  }
 }
 
 export default function WorldClassPresentationEditor({
@@ -61,7 +103,10 @@ export default function WorldClassPresentationEditor({
   initialSlides = [],
   onSave,
   onExport,
-  onRegenerateSlide
+  onRegenerateSlide,
+  onAIEnhancement,
+  onAnalyzeData,
+  aiContext
 }: WorldClassPresentationEditorProps) {
   // Convert initial slides to our format
   const convertInitialSlides = useCallback((slides: any[]): Slide[] => {
@@ -72,7 +117,7 @@ export default function WorldClassPresentationEditor({
       subtitle: slide.subtitle,
       content: slide.content,
       elements: slide.elements || [],
-      background: slide.background || { type: 'solid', value: '#0f172a' },
+      background: slide.background || { type: 'solid', value: '#ffffff' },
       style: slide.style || 'modern',
       layout: slide.layout || 'default',
       animation: slide.animation,
@@ -84,44 +129,70 @@ export default function WorldClassPresentationEditor({
     }))
   }, [])
 
-  const [slides, setSlides] = useState<Slide[]>(() => convertInitialSlides(initialSlides))
+  // Load presentation data if presentationId is provided
+  useEffect(() => {
+    if (presentationId && presentationId !== 'draft') {
+      const loadPresentation = async () => {
+        try {
+          console.log('Loading presentation:', presentationId)
+          const response = await fetch(`/api/presentations/${presentationId}`)
+          if (response.ok) {
+            const data = await response.json()
+            if (data.slides && data.slides.length > 0) {
+              const convertedSlides = convertInitialSlides(data.slides)
+              setSlides(convertedSlides)
+              console.log('Loaded presentation with', convertedSlides.length, 'slides')
+            }
+          } else {
+            console.warn('Presentation not found, using default slides')
+          }
+        } catch (error) {
+          console.error('Error loading presentation:', error)
+        }
+      }
+      loadPresentation()
+    }
+  }, [presentationId, convertInitialSlides])
+
+  const [slides, setSlides] = useState<Slide[]>(() => {
+    const converted = convertInitialSlides(initialSlides)
+    if (converted.length === 0) {
+      return [{
+        id: 'slide_1',
+        number: 1,
+        title: 'New Presentation',
+        elements: [],
+        background: { type: 'solid', value: '#ffffff' }
+      }]
+    }
+    return converted
+  })
+  
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
   const [selectedElement, setSelectedElement] = useState<string | null>(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const [zoom, setZoom] = useState(100)
-  const [isPlaying, setIsPlaying] = useState(false)
   const [showThumbnails, setShowThumbnails] = useState(true)
   const [activeTab, setActiveTab] = useState('design')
-  const [history, setHistory] = useState<Slide[][]>([slides])
-  const [historyIndex, setHistoryIndex] = useState(0)
-  const [clipboard, setClipboard] = useState<SlideElement | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [isRegenerating, setIsRegenerating] = useState(false)
-  const [useWorldClassRenderer, setUseWorldClassRenderer] = useState(true)
-  const [worldClassSlides, setWorldClassSlides] = useState<any[]>(() => convertInitialSlides(initialSlides))
-  const [isCollaborativeMode, setIsCollaborativeMode] = useState(false)
-  const [collaborators, setCollaborators] = useState<Array<{id: string, name: string, avatar: string, cursor?: {x: number, y: number}}>>([])
-  const [comments, setComments] = useState<Array<{id: string, slideId: string, x: number, y: number, text: string, author: string, timestamp: number}>>([])
-  const [showComments, setShowComments] = useState(false)
+  const [showPropertiesPanel, setShowPropertiesPanel] = useState(true)
+  const [showChartEditor, setShowChartEditor] = useState(false)
+  const [showImageUploader, setShowImageUploader] = useState(false)
+  const [showShapeCreator, setShowShapeCreator] = useState(false)
+  const [showBusinessWizard, setShowBusinessWizard] = useState(false)
+  const [editingElement, setEditingElement] = useState<string | null>(null)
+  const [showPresentationMode, setShowPresentationMode] = useState(false)
+  const [draggedSlideIndex, setDraggedSlideIndex] = useState<number | null>(null)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   
-  // Auto-save state
-  const [autoSaveInstance, setAutoSaveInstance] = useState<EnhancedAutoSave | null>(null)
-  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveState | null>(null)
+  // Advanced features state
+  const [history, setHistory] = useState<Slide[][]>([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
+  const [selectedElements, setSelectedElements] = useState<string[]>([])
+  const [groupedElements, setGroupedElements] = useState<{[groupId: string]: string[]}>({})
+  const [showGrid, setShowGrid] = useState(false)
+  const [snapToGrid, setSnapToGrid] = useState(true)
+  const [masterTemplate, setMasterTemplate] = useState<any>(null)
+  const [showTransitionPanel, setShowTransitionPanel] = useState(false)
 
-  // Update slides when initialSlides change
-  useEffect(() => {
-    if (initialSlides && initialSlides.length > 0) {
-      const convertedSlides = convertInitialSlides(initialSlides)
-      setSlides(convertedSlides)
-      setWorldClassSlides(convertedSlides)
-    }
-  }, [initialSlides, convertInitialSlides])
-
-  const slideCanvasRef = useRef<HTMLDivElement>(null)
-  const editorRef = useRef<HTMLDivElement>(null)
-  const controls = useAnimation()
-
-  // PowerPoint-like dimensions (16:9 aspect ratio)
   const SLIDE_WIDTH = 1280
   const SLIDE_HEIGHT = 720
   const THUMBNAIL_WIDTH = 180
@@ -129,278 +200,106 @@ export default function WorldClassPresentationEditor({
 
   const currentSlide = slides[currentSlideIndex]
 
-  // Smooth animations for slide transitions
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0,
-      scale: 0.95
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-      scale: 1
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
-      opacity: 0,
-      scale: 0.95
-    })
-  }
-
-  const thumbnailVariants = {
-    idle: { scale: 1, y: 0 },
-    hover: { scale: 1.05, y: -5 },
-    active: { scale: 1.1, y: -8, boxShadow: '0 10px 30px rgba(59, 130, 246, 0.4)' }
-  }
-
-  // Navigation functions
-  const goToSlide = useCallback((index: number) => {
-    if (index >= 0 && index < slides.length) {
-      setCurrentSlideIndex(index)
-    }
-  }, [slides.length])
-
-  const nextSlide = useCallback(() => {
-    if (currentSlideIndex < slides.length - 1) {
-      goToSlide(currentSlideIndex + 1)
-    }
-  }, [currentSlideIndex, slides.length, goToSlide])
-
-  const prevSlide = useCallback(() => {
-    if (currentSlideIndex > 0) {
-      goToSlide(currentSlideIndex - 1)
-    }
-  }, [currentSlideIndex, goToSlide])
-
-  // History management
-  const addToHistory = useCallback((newSlides: Slide[]) => {
+  // History management for undo/redo
+  const saveToHistory = useCallback((newSlides: Slide[]) => {
     const newHistory = history.slice(0, historyIndex + 1)
     newHistory.push([...newSlides])
+    
+    // Limit history to 50 entries
+    if (newHistory.length > 50) {
+      newHistory.shift()
+    } else {
+      setHistoryIndex(prev => prev + 1)
+    }
+    
     setHistory(newHistory)
-    setHistoryIndex(newHistory.length - 1)
   }, [history, historyIndex])
 
   const undo = useCallback(() => {
     if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1)
-      setSlides([...history[historyIndex - 1]])
+      const previousState = history[historyIndex - 1]
+      setSlides([...previousState])
+      setHistoryIndex(prev => prev - 1)
     }
   }, [history, historyIndex])
 
   const redo = useCallback(() => {
     if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1)
-      setSlides([...history[historyIndex + 1]])
+      const nextState = history[historyIndex + 1]
+      setSlides([...nextState])
+      setHistoryIndex(prev => prev + 1)
     }
   }, [history, historyIndex])
 
-  // Element manipulation
-  const copyElement = useCallback(() => {
-    if (selectedElement) {
-      const element = currentSlide.elements.find(el => el.id === selectedElement)
-      if (element) {
-        setClipboard({ ...element, id: `${element.id}_copy_${Date.now()}` })
-      }
-    }
-  }, [selectedElement, currentSlide])
-
-  const pasteElement = useCallback(() => {
-    if (clipboard) {
-      const newElement = {
-        ...clipboard,
-        id: `${clipboard.id}_paste_${Date.now()}`,
-        position: {
-          x: clipboard.position.x + 20,
-          y: clipboard.position.y + 20
-        }
-      }
-      
-      const newSlides = [...slides]
-      newSlides[currentSlideIndex].elements.push(newElement)
-      setSlides(newSlides)
-      addToHistory(newSlides)
-      setSelectedElement(newElement.id)
-    }
-  }, [clipboard, slides, currentSlideIndex, addToHistory])
-
-  const deleteElement = useCallback(() => {
-    if (selectedElement) {
-      const newSlides = [...slides]
-      newSlides[currentSlideIndex].elements = newSlides[currentSlideIndex].elements.filter(
-        el => el.id !== selectedElement
-      )
-      setSlides(newSlides)
-      addToHistory(newSlides)
-      setSelectedElement(null)
-    }
-  }, [selectedElement, slides, currentSlideIndex, addToHistory])
-
-  // Slide regeneration
-  const handleRegenerateSlide = useCallback(async () => {
-    if (!onRegenerateSlide) return
-    
-    setIsRegenerating(true)
-    try {
-      const newSlideData = await onRegenerateSlide(currentSlideIndex)
-      if (newSlideData) {
-        const newSlides = [...slides]
-        // Update the current slide with regenerated data while preserving manual edits
-        newSlides[currentSlideIndex] = {
-          ...newSlides[currentSlideIndex],
-          title: newSlideData.title || newSlides[currentSlideIndex].title,
-          content: newSlideData.content || newSlides[currentSlideIndex].content,
-          charts: newSlideData.charts || newSlides[currentSlideIndex].charts,
-          aiInsights: newSlideData.aiInsights || newSlides[currentSlideIndex].aiInsights
-        }
-        setSlides(newSlides)
-        addToHistory(newSlides)
-      }
-    } finally {
-      setIsRegenerating(false)
-    }
-  }, [onRegenerateSlide, currentSlideIndex, slides, addToHistory])
-
-  // Convert slides to WorldClassSlideRenderer format
-  const convertToWorldClassSlides = useCallback(() => {
-    return slides.map((slide, index) => ({
-      id: slide.id,
-      type: slide.title.toLowerCase().includes('title') || index === 0 ? 'title' : 
-            slide.title.toLowerCase().includes('summary') ? 'executive_summary' :
-            slide.title.toLowerCase().includes('data') || slide.title.toLowerCase().includes('overview') ? 'data_overview' :
-            slide.title.toLowerCase().includes('recommendation') ? 'recommendations' :
-            slide.aiInsights?.insightLevel === 'strategic' ? 'insight' :
-            slide.aiInsights?.insightLevel === 'trend' ? 'trend_analysis' :
-            slide.aiInsights?.insightLevel === 'anomaly' ? 'anomaly_detection' :
-            'insight',
-      title: slide.title,
-      subtitle: slide.subtitle,
-      content: {
-        narrative: slide.content?.summary || slide.content,
-        summary: slide.aiInsights?.dataStory || slide.content?.summary || slide.content,
-        keyMetrics: slide.aiInsights?.keyFindings?.map((finding: string, idx: number) => ({
-          name: `Metric ${idx + 1}`,
-          value: finding,
-          change: Math.random() > 0.5 ? `+${Math.floor(Math.random() * 20)}%` : `-${Math.floor(Math.random() * 10)}%`
-        })) || [],
-        recommendations: slide.aiInsights?.recommendations?.map((rec: string, idx: number) => ({
-          title: `Recommendation ${idx + 1}`,
-          description: rec,
-          impact: ['High', 'Medium', 'Low'][idx % 3],
-          timeline: ['Immediate', '1-3 months', '3-6 months'][idx % 3]
-        })) || [],
-        insights: slide.aiInsights ? [{
-          title: slide.title,
-          description: slide.aiInsights.dataStory || slide.content?.summary || 'Strategic insight',
-          businessImplication: slide.aiInsights.businessImpact || 'Strategic business value',
-          recommendation: slide.aiInsights.recommendations?.[0] || 'Take strategic action',
-          confidence: slide.aiInsights.confidence || 85,
-          evidence: {
-            dataPoints: slide.aiInsights.keyFindings || []
-          }
-        }] : [],
-        confidence: slide.aiInsights?.confidence || 85
-      },
-      charts: slide.charts?.map(chart => {
-        console.log('🎯 Converting chart for WorldClass:', chart)
-        return {
-          id: chart.id || `chart_${Date.now()}`,
-          type: chart.chartType || chart.type || 'bar',
-          chartType: chart.chartType || chart.type || 'bar',
-          title: chart.title || 'Data Visualization',
-          description: chart.insights?.[0] || chart.insight || 'Strategic data insights',
-          data: chart.data || [],
-          xAxisKey: chart.xAxisKey || chart.xAxis || 'name',
-          yAxisKey: chart.yAxisKey || chart.yAxis || 'value',
-          xAxis: chart.xAxisKey || chart.xAxis || 'name',
-          yAxis: chart.yAxisKey || chart.yAxis || 'value',
-          insight: chart.insight,
-          configuration: chart.configuration || chart.config || {},
-          customization: {
-            style: 'modern',
-            visualUpgrades: ['gradient', 'shadow'],
-            interactivity: ['hover', 'tooltip'],
-            storytelling: [chart.hiddenPattern || chart.insight || 'Strategic insight'],
-            innovation: ['animated-reveal']
-          }
-        }
-      }) || [],
-      customization: {
-        visualStyle: slide.style === 'mckinsey' ? 'executive' : 'futuristic',
-        innovationLevel: 'advanced',
-        designComplexity: 'moderate',
-        layout: slide.layout || 'standard',
-        animations: slide.animation,
-        colorScheme: slide.customStyles?.accentColor ? [slide.customStyles.accentColor] : [],
-        enableAnimations: true,
-        enableInteractivity: true
-      },
-      metadata: {
-        slideNumber: index + 1,
-        narrativeRole: index === 0 ? 'setup' : 
-                     index < slides.length / 2 ? 'build' :
-                     index === Math.floor(slides.length * 0.7) ? 'climax' :
-                     index < slides.length - 1 ? 'resolve' : 'inspire',
-        visualImpact: slide.aiInsights?.insightLevel === 'strategic' ? 'dramatic' : 'moderate',
-        innovationScore: 85,
-        designComplexity: 'moderate'
-      }
-    }))
-  }, [slides])
-
-  // Update world class slides when slides change
+  // Initialize history
   useEffect(() => {
-    if (useWorldClassRenderer) {
-      setWorldClassSlides(convertToWorldClassSlides())
+    if (history.length === 0) {
+      setHistory([slides])
+      setHistoryIndex(0)
     }
-  }, [slides, useWorldClassRenderer, convertToWorldClassSlides])
+  }, [slides, history.length])
 
-  // Keyboard shortcuts
+  // Add keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
-          case 'z':
-            e.preventDefault()
-            if (e.shiftKey) redo()
-            else undo()
-            break
-          case 'c':
-            e.preventDefault()
-            copyElement()
-            break
-          case 'v':
-            e.preventDefault()
-            pasteElement()
-            break
           case 's':
             e.preventDefault()
-            onSave?.(slides)
+            handleSave()
+            break
+          case 'z':
+            e.preventDefault()
+            if (e.shiftKey) {
+              redo()
+            } else {
+              undo()
+            }
+            break
+          case 'y':
+            e.preventDefault()
+            redo()
+            break
+          case 'g':
+            e.preventDefault()
+            if (e.shiftKey) {
+              // Ungroup elements
+              if (selectedElement) {
+                const groupId = Object.keys(groupedElements).find(id => 
+                  groupedElements[id].includes(selectedElement)
+                )
+                if (groupId) ungroupElements(groupId)
+              }
+            } else {
+              // Group elements
+              if (selectedElements.length > 1) {
+                groupElements(selectedElements)
+              }
+            }
+            break
+          case 'a':
+            e.preventDefault()
+            // Select all elements on current slide
+            const allElementIds = currentSlide.elements.map(el => el.id)
+            setSelectedElements(allElementIds)
+            if (allElementIds.length > 0) {
+              setSelectedElement(allElementIds[0])
+            }
             break
         }
       } else {
         switch (e.key) {
-          case 'ArrowRight':
-            e.preventDefault()
-            nextSlide()
+          case ' ':
+            // Only trigger on space if not typing in an input field
+            if (!['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+              e.preventDefault()
+              setShowPresentationMode(true)
+            }
             break
-          case 'ArrowLeft':
-            e.preventDefault()
-            prevSlide()
-            break
-          case 'Delete':
-            e.preventDefault()
-            deleteElement()
-            break
-          case 'F5':
-            e.preventDefault()
-            setIsPlaying(!isPlaying)
-            break
-          case 'F11':
-            e.preventDefault()
-            setIsFullscreen(!isFullscreen)
+          case 'Escape':
+            // Clear selection
+            setSelectedElement(null)
+            setSelectedElements([])
             break
         }
       }
@@ -408,724 +307,1373 @@ export default function WorldClassPresentationEditor({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [undo, redo, copyElement, pasteElement, nextSlide, prevSlide, deleteElement, onSave, slides, isPlaying, isFullscreen])
+  }, [selectedElements, selectedElement, groupedElements, currentSlide.elements])
 
-  // Initialize auto-save system
-  useEffect(() => {
-    if (presentationId) {
-      const autoSave = new EnhancedAutoSave({
-        debounceMs: 100, // 100ms for near-instant saves
-        maxRetries: 3,
-        saveOnVisibilityChange: true,
-        saveOnBeforeUnload: true,
-        enableVersionHistory: true
-      })
-      
-      autoSave.initialize(presentationId, setAutoSaveStatus)
-      setAutoSaveInstance(autoSave)
-      
-      return () => {
-        autoSave.destroy()
+  // Real element manipulation functions
+  const addElement = useCallback((type: SlideElement['type'], position = { x: 100, y: 100 }) => {
+    const newElement: SlideElement = {
+      id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type,
+      position,
+      size: { 
+        width: type === 'text' ? 200 : type === 'chart' ? 400 : 150, 
+        height: type === 'text' ? 60 : type === 'chart' ? 300 : 150 
+      },
+      rotation: 0,
+      content: type === 'text' ? 'Double-click to edit' : '',
+      style: {
+        fontSize: 16,
+        fontFamily: 'Inter',
+        color: '#000000',
+        backgroundColor: type === 'shape' ? '#3B82F6' : 'transparent',
+        borderColor: '#1E40AF',
+        borderWidth: 0,
+        borderRadius: 0,
+        textAlign: 'left',
+        opacity: 1
+      },
+      chartData: type === 'chart' ? [] : undefined,
+      chartType: type === 'chart' ? 'bar' : undefined,
+      isLocked: false,
+      isVisible: true
+    }
+
+    const newSlides = [...slides]
+    newSlides[currentSlideIndex] = {
+      ...newSlides[currentSlideIndex],
+      elements: [...newSlides[currentSlideIndex].elements, newElement]
+    }
+    
+    setSlides(newSlides)
+    setSelectedElement(newElement.id)
+    
+    if (type === 'chart') {
+      setShowChartEditor(true)
+      setEditingElement(newElement.id)
+    } else if (type === 'image') {
+      setShowImageUploader(true)
+      setEditingElement(newElement.id)
+    } else if (type === 'shape') {
+      setShowShapeCreator(true)
+      setEditingElement(newElement.id)
+    }
+  }, [slides, currentSlideIndex])
+
+  const updateElement = useCallback((elementId: string, updates: Partial<SlideElement>) => {
+    const newSlides = [...slides]
+    const slideIndex = currentSlideIndex
+    const elementIndex = newSlides[slideIndex].elements.findIndex(el => el.id === elementId)
+    
+    if (elementIndex !== -1) {
+      newSlides[slideIndex].elements[elementIndex] = {
+        ...newSlides[slideIndex].elements[elementIndex],
+        ...updates
+      }
+      saveToHistory(slides) // Save current state before change
+      setSlides(newSlides)
+      if (onSave) {
+        onSave(newSlides)
       }
     }
-  }, [presentationId])
+  }, [slides, currentSlideIndex, onSave, saveToHistory])
 
-  // Auto-save when slides change
-  useEffect(() => {
-    if (autoSaveInstance && slides.length > 0) {
-      const presentationData = {
-        title: slides[0]?.title || 'Untitled Presentation',
-        slides: slides,
-        metadata: {
-          currentSlideIndex,
-          lastEditedAt: new Date().toISOString(),
-          slideCount: slides.length,
-          editingMode: useWorldClassRenderer ? 'world-class' : 'standard',
-          zoom,
-          fullscreen: isFullscreen
+  const deleteElement = useCallback((elementId: string) => {
+    const newSlides = [...slides]
+    newSlides[currentSlideIndex] = {
+      ...newSlides[currentSlideIndex],
+      elements: newSlides[currentSlideIndex].elements.filter(el => el.id !== elementId)
+    }
+    setSlides(newSlides)
+    setSelectedElement(null)
+  }, [slides, currentSlideIndex])
+
+  const duplicateElement = useCallback((elementId: string) => {
+    const element = slides[currentSlideIndex].elements.find(el => el.id === elementId)
+    if (element) {
+      const duplicatedElement = {
+        ...element,
+        id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        position: {
+          x: element.position.x + 20,
+          y: element.position.y + 20
         }
       }
       
-      autoSaveInstance.registerChange('slides_updated', presentationData)
-    }
-  }, [slides, autoSaveInstance, currentSlideIndex, useWorldClassRenderer, zoom, isFullscreen])
-
-  // Comment creation function
-  const createComment = useCallback((x: number, y: number) => {
-    if (!showComments || !currentSlide) return
-    
-    const commentText = prompt('Add a comment:')
-    if (commentText && commentText.trim()) {
-      const newComment = {
-        id: `comment_${Date.now()}`,
-        slideId: currentSlide.id,
-        x: x,
-        y: y,
-        text: commentText.trim(),
-        author: 'Current User', // In a real app, this would be the logged-in user
-        timestamp: Date.now()
+      const newSlides = [...slides]
+      newSlides[currentSlideIndex] = {
+        ...newSlides[currentSlideIndex],
+        elements: [...newSlides[currentSlideIndex].elements, duplicatedElement]
       }
-      setComments([...comments, newComment])
+      setSlides(newSlides)
+      setSelectedElement(duplicatedElement.id)
     }
-  }, [showComments, currentSlide, comments])
+  }, [slides, currentSlideIndex])
 
-  // Handle slide canvas double-click for comments
-  const handleSlideDoubleClick = useCallback((event: React.MouseEvent) => {
-    if (!showComments) return
+  const addTextElement = useCallback(() => {
+    addElement('text')
+  }, [addElement])
+
+  const addImageElement = useCallback(() => {
+    addElement('image')
+  }, [addElement])
+
+  const addChartElement = useCallback(() => {
+    addElement('chart')
+  }, [addElement])
+
+  const addShapeElement = useCallback(() => {
+    addElement('shape')
+  }, [addElement])
+
+  // Element layering functions
+  const bringToFront = useCallback((elementId: string) => {
+    const newSlides = [...slides]
+    const slide = newSlides[currentSlideIndex]
+    const elementIndex = slide.elements.findIndex(el => el.id === elementId)
     
-    const rect = slideCanvasRef.current?.getBoundingClientRect()
-    if (rect) {
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
-      createComment(x, y)
+    if (elementIndex !== -1) {
+      const element = slide.elements[elementIndex]
+      slide.elements.splice(elementIndex, 1)
+      slide.elements.push(element)
+      
+      saveToHistory(slides)
+      setSlides(newSlides)
     }
-  }, [showComments, createComment])
+  }, [slides, currentSlideIndex, saveToHistory])
 
-  // Calculate slide scale to fit viewport
-  const calculateSlideScale = useCallback(() => {
-    if (!slideCanvasRef.current) return 1
+  const sendToBack = useCallback((elementId: string) => {
+    const newSlides = [...slides]
+    const slide = newSlides[currentSlideIndex]
+    const elementIndex = slide.elements.findIndex(el => el.id === elementId)
     
-    const container = slideCanvasRef.current.parentElement
-    if (!container) return 1
-    
-    const containerWidth = container.clientWidth - (showThumbnails ? 240 : 60)
-    const containerHeight = container.clientHeight - 120 // Account for toolbar
-    
-    const scaleX = containerWidth / SLIDE_WIDTH
-    const scaleY = containerHeight / SLIDE_HEIGHT
-    
-    return Math.min(scaleX, scaleY, zoom / 100)
-  }, [showThumbnails, zoom])
+    if (elementIndex !== -1) {
+      const element = slide.elements[elementIndex]
+      slide.elements.splice(elementIndex, 1)
+      slide.elements.unshift(element)
+      
+      saveToHistory(slides)
+      setSlides(newSlides)
+    }
+  }, [slides, currentSlideIndex, saveToHistory])
 
-  const slideScale = calculateSlideScale()
+  const moveLayerUp = useCallback((elementId: string) => {
+    const newSlides = [...slides]
+    const slide = newSlides[currentSlideIndex]
+    const elementIndex = slide.elements.findIndex(el => el.id === elementId)
+    
+    if (elementIndex !== -1 && elementIndex < slide.elements.length - 1) {
+      const temp = slide.elements[elementIndex]
+      slide.elements[elementIndex] = slide.elements[elementIndex + 1]
+      slide.elements[elementIndex + 1] = temp
+      
+      saveToHistory(slides)
+      setSlides(newSlides)
+    }
+  }, [slides, currentSlideIndex, saveToHistory])
+
+  const moveLayerDown = useCallback((elementId: string) => {
+    const newSlides = [...slides]
+    const slide = newSlides[currentSlideIndex]
+    const elementIndex = slide.elements.findIndex(el => el.id === elementId)
+    
+    if (elementIndex > 0) {
+      const temp = slide.elements[elementIndex]
+      slide.elements[elementIndex] = slide.elements[elementIndex - 1]
+      slide.elements[elementIndex - 1] = temp
+      
+      saveToHistory(slides)
+      setSlides(newSlides)
+    }
+  }, [slides, currentSlideIndex, saveToHistory])
+
+  // Element grouping functions
+  const groupElements = useCallback((elementIds: string[]) => {
+    if (elementIds.length < 2) return
+    
+    const groupId = `group_${Date.now()}`
+    setGroupedElements(prev => ({
+      ...prev,
+      [groupId]: elementIds
+    }))
+    
+    // Select the group (first element as primary)
+    setSelectedElement(elementIds[0])
+    setSelectedElements(elementIds)
+    
+    // Save to history
+    saveToHistory(slides)
+  }, [slides, saveToHistory])
+
+  const ungroupElements = useCallback((groupId: string) => {
+    const elementsInGroup = groupedElements[groupId]
+    
+    setGroupedElements(prev => {
+      const newGroups = { ...prev }
+      delete newGroups[groupId]
+      return newGroups
+    })
+    
+    // Clear selection
+    setSelectedElement(null)
+    setSelectedElements([])
+    
+    // Save to history
+    saveToHistory(slides)
+  }, [groupedElements, slides, saveToHistory])
+
+  // Transition and animation functions
+  const updateSlideTransition = useCallback((slideIndex: number, transition: Slide['transition']) => {
+    const newSlides = [...slides]
+    newSlides[slideIndex] = {
+      ...newSlides[slideIndex],
+      transition
+    }
+    setSlides(newSlides)
+    saveToHistory(slides)
+  }, [slides, saveToHistory])
+
+  const updateElementAnimation = useCallback((elementId: string, animation: NonNullable<Slide['elementAnimations']>[string]) => {
+    const newSlides = [...slides]
+    const currentSlide = newSlides[currentSlideIndex]
+    
+    currentSlide.elementAnimations = {
+      ...currentSlide.elementAnimations,
+      [elementId]: animation
+    }
+    
+    setSlides(newSlides)
+    saveToHistory(slides)
+  }, [slides, currentSlideIndex, saveToHistory])
+
+  const removeElementAnimation = useCallback((elementId: string) => {
+    const newSlides = [...slides]
+    const currentSlide = newSlides[currentSlideIndex]
+    
+    if (currentSlide.elementAnimations) {
+      const newAnimations = { ...currentSlide.elementAnimations }
+      delete newAnimations[elementId]
+      currentSlide.elementAnimations = newAnimations
+    }
+    
+    setSlides(newSlides)
+    saveToHistory(slides)
+  }, [slides, currentSlideIndex, saveToHistory])
+
+  const addNewSlide = useCallback(() => {
+    const newSlide: Slide = {
+      id: `slide_${Date.now()}`,
+      number: slides.length + 1,
+      title: `Slide ${slides.length + 1}`,
+      elements: [],
+      background: { type: 'solid', value: '#ffffff' }
+    }
+    
+    const newSlides = [...slides, newSlide]
+    setSlides(newSlides)
+    setCurrentSlideIndex(slides.length)
+    
+    if (onSave) {
+      onSave(newSlides)
+    }
+  }, [slides, onSave])
+
+  const deleteSlide = useCallback((slideIndex: number) => {
+    if (slides.length <= 1) return // Don't delete the last slide
+    
+    const newSlides = slides.filter((_, index) => index !== slideIndex)
+    // Renumber slides
+    const renumberedSlides = newSlides.map((slide, index) => ({
+      ...slide,
+      number: index + 1
+    }))
+    
+    setSlides(renumberedSlides)
+    
+    // Adjust current slide index
+    if (currentSlideIndex >= slideIndex) {
+      setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))
+    }
+    
+    if (onSave) {
+      onSave(renumberedSlides)
+    }
+  }, [slides, currentSlideIndex, onSave])
+
+  const duplicateSlide = useCallback((slideIndex: number) => {
+    const slideToClone = slides[slideIndex]
+    const duplicatedSlide: Slide = {
+      ...slideToClone,
+      id: `slide_${Date.now()}`,
+      number: slides.length + 1,
+      title: `${slideToClone.title} (Copy)`,
+      elements: slideToClone.elements.map(element => ({
+        ...element,
+        id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      }))
+    }
+    
+    const newSlides = [...slides, duplicatedSlide]
+    setSlides(newSlides)
+    setCurrentSlideIndex(slides.length)
+    
+    if (onSave) {
+      onSave(newSlides)
+    }
+  }, [slides, onSave])
+
+  const moveSlide = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    
+    const newSlides = [...slides]
+    const [movedSlide] = newSlides.splice(fromIndex, 1)
+    newSlides.splice(toIndex, 0, movedSlide)
+    
+    // Renumber slides
+    const renumberedSlides = newSlides.map((slide, index) => ({
+      ...slide,
+      number: index + 1
+    }))
+    
+    setSlides(renumberedSlides)
+    
+    // Update current slide index if needed
+    if (currentSlideIndex === fromIndex) {
+      setCurrentSlideIndex(toIndex)
+    } else if (fromIndex < currentSlideIndex && toIndex >= currentSlideIndex) {
+      setCurrentSlideIndex(currentSlideIndex - 1)
+    } else if (fromIndex > currentSlideIndex && toIndex <= currentSlideIndex) {
+      setCurrentSlideIndex(currentSlideIndex + 1)
+    }
+    
+    if (onSave) {
+      onSave(renumberedSlides)
+    }
+  }, [slides, currentSlideIndex, onSave])
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedSlideIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', index.toString())
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    if (draggedSlideIndex !== null) {
+      moveSlide(draggedSlideIndex, dropIndex)
+      setDraggedSlideIndex(null)
+    }
+  }
+
+  const handleDragEnd = () => {
+    setDraggedSlideIndex(null)
+  }
+
+  const handleSave = useCallback(async () => {
+    setSaveStatus('saving')
+    try {
+      if (onSave) {
+        await onSave(slides)
+        setSaveStatus('saved')
+        // Show saved status for 2 seconds
+        setTimeout(() => setSaveStatus('idle'), 2000)
+      } else {
+        // If no onSave callback, save to localStorage as fallback
+        const presentationData = {
+          id: presentationId || 'draft',
+          slides,
+          lastModified: new Date().toISOString(),
+          version: '1.0'
+        }
+        localStorage.setItem(`presentation_${presentationId || 'draft'}`, JSON.stringify(presentationData))
+        setSaveStatus('saved')
+        setTimeout(() => setSaveStatus('idle'), 2000)
+      }
+    } catch (error) {
+      console.error('Save failed:', error)
+      setSaveStatus('error')
+      setTimeout(() => setSaveStatus('idle'), 3000)
+    }
+  }, [slides, onSave, presentationId])
+
+  const handleExport = useCallback(async (format: string) => {
+    try {
+      if (onExport) {
+        await onExport(format)
+      } else {
+        // Fallback export functionality
+        const dataStr = JSON.stringify(slides, null, 2)
+        const dataBlob = new Blob([dataStr], { type: 'application/json' })
+        const url = URL.createObjectURL(dataBlob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `presentation_${new Date().toISOString().split('T')[0]}.json`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+      }
+    } catch (error) {
+      console.error('Export failed:', error)
+    }
+  }, [slides, onExport])
 
   return (
-    <TooltipProvider>
-      <div className={cn(
-        "h-screen bg-gray-900 flex flex-col overflow-hidden",
-        isFullscreen && "fixed inset-0 z-50"
-      )}>
-        {/* Top Toolbar */}
-        <motion.div 
-          className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between shadow-lg"
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <div className="flex items-center space-x-4">
-            {/* File Operations */}
-            <div className="flex items-center space-x-2">
+    <UnifiedLayout requireAuth={true} hideFooter={true} className="bg-gray-950">
+      <TooltipProvider>
+        <div className="h-screen bg-gray-950 text-white flex flex-col overflow-hidden">
+          {/* Top Toolbar */}
+          <motion.div 
+            className="bg-gray-900/50 border-b border-gray-800 px-4 py-2 flex items-center justify-between shadow-lg backdrop-blur-sm"
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <div className="flex items-center space-x-4">
+              {/* File Operations */}
+              <div className="flex items-center space-x-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={handleSave}
+                      disabled={saveStatus === 'saving'}
+                      className={cn(
+                        "text-white hover:bg-gray-700/50",
+                        saveStatus === 'saved' && "text-green-400",
+                        saveStatus === 'error' && "text-red-400"
+                      )}
+                    >
+                      <Save className={cn(
+                        "w-4 h-4", 
+                        saveStatus === 'saving' && "animate-spin"
+                      )} />
+                      {saveStatus === 'saving' && <span className="ml-1 text-xs">Saving...</span>}
+                      {saveStatus === 'saved' && <span className="ml-1 text-xs">Saved</span>}
+                      {saveStatus === 'error' && <span className="ml-1 text-xs">Error</span>}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Save (Ctrl+S)</TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleExport('json')}
+                      className="text-white hover:bg-gray-700/50"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Export</TooltipContent>
+                </Tooltip>
+              </div>
+
+              <Separator orientation="vertical" className="h-6 bg-gray-600" />
+
+              {/* Add Elements */}
+              <div className="flex items-center space-x-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={addTextElement}
+                      className="text-white hover:bg-gray-700/50"
+                    >
+                      <Type className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Add Text</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={addImageElement}
+                      className="text-white hover:bg-gray-700/50"
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Add Image</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={addChartElement}
+                      className="text-white hover:bg-gray-700/50"
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Add Chart</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={addShapeElement}
+                      className="text-white hover:bg-gray-700/50"
+                    >
+                      <Circle className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Add Shape</TooltipContent>
+                </Tooltip>
+              </div>
+
+              <Separator orientation="vertical" className="h-6 bg-gray-600" />
+
+              {/* Advanced Edit Tools */}
+              <div className="flex items-center space-x-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={undo}
+                      disabled={historyIndex <= 0}
+                      className="text-white hover:bg-gray-700/50"
+                    >
+                      <Undo className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={redo}
+                      disabled={historyIndex >= history.length - 1}
+                      className="text-white hover:bg-gray-700/50"
+                    >
+                      <Redo className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Redo (Ctrl+Y)</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setShowGrid(!showGrid)}
+                      className={cn(
+                        "text-white hover:bg-gray-700/50",
+                        showGrid && "bg-gray-700/50"
+                      )}
+                    >
+                      <Grid className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Toggle Grid</TooltipContent>
+                </Tooltip>
+              </div>
+
+              {/* Layering Controls */}
+              {selectedElement && (
+                <>
+                  <Separator orientation="vertical" className="h-6 bg-gray-600" />
+                  <div className="flex items-center space-x-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => bringToFront(selectedElement)}
+                          className="text-white hover:bg-gray-700/50"
+                        >
+                          <ChevronsUp className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Bring to Front</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => moveLayerUp(selectedElement)}
+                          className="text-white hover:bg-gray-700/50"
+                        >
+                          <ArrowUp className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Move Up</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => moveLayerDown(selectedElement)}
+                          className="text-white hover:bg-gray-700/50"
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Move Down</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => sendToBack(selectedElement)}
+                          className="text-white hover:bg-gray-700/50"
+                        >
+                          <ChevronsDown className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Send to Back</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </>
+              )}
+
+              {/* Grouping Controls */}
+              {selectedElements.length > 1 && (
+                <>
+                  <Separator orientation="vertical" className="h-6 bg-gray-600" />
+                  <div className="flex items-center space-x-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => groupElements(selectedElements)}
+                          className="text-white hover:bg-gray-700/50"
+                        >
+                          <Group className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Group Elements (Ctrl+G)</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </>
+              )}
+
+              {/* Ungroup Controls - Show when a grouped element is selected */}
+              {selectedElement && Object.values(groupedElements).some(group => group.includes(selectedElement)) && (
+                <>
+                  <Separator orientation="vertical" className="h-6 bg-gray-600" />
+                  <div className="flex items-center space-x-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            const groupId = Object.keys(groupedElements).find(id => 
+                              groupedElements[id].includes(selectedElement!)
+                            )
+                            if (groupId) ungroupElements(groupId)
+                          }}
+                          className="text-white hover:bg-gray-700/50"
+                        >
+                          <Ungroup className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Ungroup Elements (Ctrl+Shift+G)</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </>
+              )}
+
+              <Separator orientation="vertical" className="h-6 bg-gray-600" />
+
+              {/* AI Features */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onSave?.(slides)}
-                    className="text-white hover:bg-gray-700"
+                    onClick={() => setShowBusinessWizard(true)}
+                    className="text-purple-400 hover:bg-purple-900/20 border border-purple-500/30"
                   >
-                    <Save className="w-4 h-4" />
+                    <Brain className="w-4 h-4 mr-2" />
+                    <span className="text-sm">AI Generate</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Save (Ctrl+S)</TooltipContent>
+                <TooltipContent>Generate slides with AI</TooltipContent>
               </Tooltip>
               
+              <Separator orientation="vertical" className="h-6 bg-gray-600" />
+              
+              {/* Transitions & Animations */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onExport?.('pdf')}
-                    className="text-white hover:bg-gray-700"
+                    onClick={() => setShowTransitionPanel(!showTransitionPanel)}
+                    className={cn(
+                      "text-amber-400 hover:bg-amber-900/20 border border-amber-500/30",
+                      showTransitionPanel && "bg-amber-900/20"
+                    )}
                   >
-                    <Download className="w-4 h-4" />
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Transitions</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Export</TooltipContent>
+                <TooltipContent>Configure slide transitions and animations</TooltipContent>
+              </Tooltip>
+
+              <Separator orientation="vertical" className="h-6 bg-gray-600" />
+              
+              {/* Presentation Mode */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowPresentationMode(true)}
+                    className="text-green-400 hover:bg-green-900/20 border border-green-500/30"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Present</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Start full-screen presentation</TooltipContent>
               </Tooltip>
             </div>
 
-            <Separator orientation="vertical" className="h-6 bg-gray-600" />
-
-            {/* Edit Operations */}
-            <div className="flex items-center space-x-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={undo}
-                    disabled={historyIndex <= 0}
-                    className="text-white hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    <Undo className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={redo}
-                    disabled={historyIndex >= history.length - 1}
-                    className="text-white hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    <Redo className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={copyElement}
-                    disabled={!selectedElement}
-                    className="text-white hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Copy (Ctrl+C)</TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={pasteElement}
-                    disabled={!clipboard}
-                    className="text-white hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    <ClipboardPaste className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Paste (Ctrl+V)</TooltipContent>
-              </Tooltip>
+            <div className="flex items-center space-x-4">
+              {/* Zoom Controls */}
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setZoom(Math.max(25, zoom - 25))}
+                  className="text-white hover:bg-gray-700/50"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <span className="text-sm text-gray-300 min-w-[3rem] text-center">{zoom}%</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setZoom(Math.min(200, zoom + 25))}
+                  className="text-white hover:bg-gray-700/50"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
+          </motion.div>
 
-            <Separator orientation="vertical" className="h-6 bg-gray-600" />
-
-            {/* Insert Elements */}
-            <div className="flex items-center space-x-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-white hover:bg-gray-700">
-                    <Type className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Add Text Box</TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-white hover:bg-gray-700">
-                    <ImageIcon className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Insert Image</TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-white hover:bg-gray-700">
-                    <BarChart3 className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Insert Chart</TooltipContent>
-              </Tooltip>
-            </div>
-
-            <Separator orientation="vertical" className="h-6 bg-gray-600" />
-
-            {/* AI Features */}
-            <div className="flex items-center space-x-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleRegenerateSlide}
-                    disabled={!onRegenerateSlide || isRegenerating}
-                    className="text-white hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    <RefreshCw className={cn("w-4 h-4", isRegenerating && "animate-spin")} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Regenerate Slide with AI</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-
-          {/* Center - Slide Navigation */}
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={prevSlide}
-              disabled={currentSlideIndex === 0}
-              className="text-white hover:bg-gray-700 disabled:opacity-50"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            
-            <span className="text-white font-medium px-3 py-1 bg-gray-700 rounded-md">
-              {currentSlideIndex + 1} / {slides.length}
-            </span>
-            
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={nextSlide}
-              disabled={currentSlideIndex === slides.length - 1}
-              className="text-white hover:bg-gray-700 disabled:opacity-50"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Right - View Controls */}
-          <div className="flex items-center space-x-4">
-            {/* Zoom Controls */}
-            <div className="flex items-center space-x-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setZoom(Math.max(25, zoom - 25))}
-                className="text-white hover:bg-gray-700"
-              >
-                <ZoomOut className="w-4 h-4" />
-              </Button>
-              
-              <span className="text-white text-sm w-12 text-center">{zoom}%</span>
-              
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setZoom(Math.min(200, zoom + 25))}
-                className="text-white hover:bg-gray-700"
-              >
-                <ZoomIn className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <Separator orientation="vertical" className="h-6 bg-gray-600" />
-
-            {/* View Options */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setShowThumbnails(!showThumbnails)}
-                  className="text-white hover:bg-gray-700"
-                >
-                  {showThumbnails ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Toggle Slide Panel</TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="text-white hover:bg-gray-700"
-                >
-                  <Play className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Start Slideshow (F5)</TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setUseWorldClassRenderer(!useWorldClassRenderer)}
-                  className={cn(
-                    "text-white hover:bg-gray-700",
-                    useWorldClassRenderer ? "bg-blue-600 hover:bg-blue-700" : ""
-                  )}
-                >
-                  <Brain className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Toggle World-Class AI Renderer</TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setIsCollaborativeMode(!isCollaborativeMode)}
-                  className={cn(
-                    "text-white hover:bg-gray-700",
-                    isCollaborativeMode ? "bg-green-600 hover:bg-green-700" : ""
-                  )}
-                >
-                  <Users className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Toggle Collaborative Mode</TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setShowComments(!showComments)}
-                  className={cn(
-                    "text-white hover:bg-gray-700",
-                    showComments ? "bg-yellow-600 hover:bg-yellow-700" : ""
-                  )}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Toggle Comments</TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setIsFullscreen(!isFullscreen)}
-                  className="text-white hover:bg-gray-700"
-                >
-                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Toggle Fullscreen (F11)</TooltipContent>
-            </Tooltip>
-          </div>
-        </motion.div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Slide Thumbnails Panel */}
-          <AnimatePresence>
+          {/* Main Content Area */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Slide Thumbnails */}
             {showThumbnails && (
               <motion.div 
-                className="w-60 bg-gray-800 border-r border-gray-700 overflow-y-auto"
+                className="w-60 bg-gray-900/30 border-r border-gray-800 p-4 overflow-y-auto"
                 initial={{ x: -240 }}
                 animate={{ x: 0 }}
-                exit={{ x: -240 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
-                <div className="p-4">
-                  <h3 className="text-white font-semibold mb-4">Slides</h3>
-                  <div className="space-y-3">
-                    {slides.map((slide, index) => (
-                      <motion.div
-                        key={slide.id}
-                        className={cn(
-                          "relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-200",
-                          index === currentSlideIndex 
-                            ? "border-blue-500 ring-2 ring-blue-500/30" 
-                            : "border-gray-600 hover:border-gray-500"
-                        )}
-                        variants={thumbnailVariants}
-                        initial="idle"
-                        whileHover="hover"
-                        animate={index === currentSlideIndex ? "active" : "idle"}
-                        onClick={() => goToSlide(index)}
-                      >
-                        <div 
-                          className="relative overflow-hidden"
-                          style={{ width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT }}
-                        >
-                          {/* Miniature slide preview */}
-                          <div className="absolute inset-0 transform scale-[0.14] origin-top-left">
-                            <EnhancedSlideRenderer 
-                              slide={slide}
-                              scale={1}
-                              isActive={false}
-                            />
-                          </div>
-                          
-                          {/* Overlay with slide number */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end justify-between p-2">
-                            <div className="text-white text-xs font-semibold bg-black/40 backdrop-blur-sm rounded px-2 py-1">
-                              {slide.number}
-                            </div>
-                            {slide.aiInsights?.confidence && (
-                              <div className="text-blue-400 text-xs bg-blue-500/20 backdrop-blur-sm rounded px-2 py-1">
-                                AI: {slide.aiInsights.confidence}%
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-                      </motion.div>
-                    ))}
-                  </div>
-                  
+                <div className="space-y-3">
                   {/* Add New Slide Button */}
                   <motion.button
-                    className="w-full mt-4 p-4 border-2 border-dashed border-gray-600 rounded-lg hover:border-gray-500 transition-colors duration-200 text-gray-400 hover:text-gray-300"
+                    onClick={addNewSlide}
+                    className="w-full p-4 border-2 border-dashed border-gray-500 rounded-lg text-gray-400 hover:border-blue-500 hover:text-blue-400 transition-all duration-200 flex flex-col items-center justify-center gap-2"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Plus className="w-6 h-6 mx-auto mb-2" />
-                    <span className="text-sm">Add Slide</span>
+                    <Plus className="w-8 h-8" />
+                    <span className="text-sm font-medium">Add New Slide</span>
                   </motion.button>
+
+                  {slides.map((slide, index) => (
+                    <motion.div
+                      key={slide.id}
+                      className={cn(
+                        "relative cursor-pointer rounded-lg border-2 transition-all duration-200 group",
+                        currentSlideIndex === index 
+                          ? "border-blue-500 shadow-lg shadow-blue-500/25" 
+                          : "border-gray-600 hover:border-gray-500",
+                        draggedSlideIndex === index && "opacity-50"
+                      )}
+                      onClick={() => setCurrentSlideIndex(index)}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      whileHover={{ scale: draggedSlideIndex === null ? 1.02 : 1 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div 
+                        className="relative overflow-hidden bg-white border border-gray-600 rounded"
+                        style={{ width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT }}
+                      >
+                        {/* Miniature slide preview */}
+                        <div 
+                          className="absolute inset-0 transform origin-top-left"
+                          style={{ 
+                            transform: `scale(${THUMBNAIL_WIDTH / SLIDE_WIDTH})`,
+                            width: SLIDE_WIDTH,
+                            height: SLIDE_HEIGHT
+                          }}
+                        >
+                          <SlideCanvas
+                            slide={slide}
+                            selectedElement={null}
+                            onElementSelect={() => {}}
+                            onElementUpdate={() => {}}
+                            onSlideUpdate={() => {}}
+                            onElementDelete={deleteElement}
+                            onElementDuplicate={duplicateElement}
+                            zoom={100}
+                            isEditable={false}
+                            className="w-full h-full"
+                          />
+                        </div>
+                        
+                        {/* Overlay with slide number */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end justify-between p-2">
+                          <div className="text-white text-xs font-semibold bg-black/40 backdrop-blur-sm rounded px-2 py-1">
+                            {slide.number}
+                          </div>
+                        </div>
+                        
+                        {/* Slide actions - only show on hover */}
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              duplicateSlide(index)
+                            }}
+                            className="p-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
+                            title="Duplicate slide"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                          {slides.length > 1 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                deleteSlide(index)
+                              }}
+                              className="p-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs"
+                              title="Delete slide"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Main Slide Editor */}
+            <div className="flex-1 flex flex-col bg-gray-900">
+              {/* Slide Canvas Container */}
+              <div className="flex-1 overflow-hidden">
+                {currentSlide && (
+                  <SlideCanvas
+                    slide={currentSlide}
+                    selectedElement={selectedElement}
+                    selectedElements={selectedElements}
+                    onElementSelect={(elementId, event) => {
+                      if (event?.ctrlKey || event?.metaKey) {
+                        // Multi-selection with Ctrl/Cmd+click
+                        if (elementId) {
+                          if (selectedElements.includes(elementId)) {
+                            // Remove from selection
+                            const newSelection = selectedElements.filter(id => id !== elementId)
+                            setSelectedElements(newSelection)
+                            setSelectedElement(newSelection.length > 0 ? newSelection[0] : null)
+                          } else {
+                            // Add to selection
+                            const newSelection = [...selectedElements, elementId]
+                            setSelectedElements(newSelection)
+                            setSelectedElement(elementId)
+                          }
+                        }
+                      } else {
+                        // Single selection
+                        setSelectedElement(elementId)
+                        setSelectedElements(elementId ? [elementId] : [])
+                      }
+                    }}
+                    onElementUpdate={(elementId, updates) => {
+                      updateElement(elementId, updates)
+                    }}
+                    onSlideUpdate={(slideId, updates) => {
+                      const newSlides = [...slides]
+                      const slideIndex = newSlides.findIndex(s => s.id === slideId)
+                      if (slideIndex !== -1) {
+                        newSlides[slideIndex] = { ...newSlides[slideIndex], ...updates }
+                        setSlides(newSlides)
+                        if (onSave) {
+                          onSave(newSlides)
+                        }
+                      }
+                    }}
+                    onElementDelete={deleteElement}
+                    onElementDuplicate={duplicateElement}
+                    zoom={zoom}
+                    isEditable={true}
+                    showGrid={showGrid}
+                    snapToGrid={snapToGrid}
+                    className="w-full h-full"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Properties Panel */}
+            {activeTab === 'design' && (
+              <PropertiesPanel
+                selectedElement={currentSlide.elements.find(el => el.id === selectedElement) || null}
+                onElementUpdate={updateElement}
+                onAddElement={addElement}
+                onDeleteElement={deleteElement}
+                onDuplicateElement={duplicateElement}
+                isVisible={showPropertiesPanel}
+                onToggleVisibility={() => setShowPropertiesPanel(!showPropertiesPanel)}
+                locked={!!selectedElement}
+              />
+            )}
+          </div>
+
+          {/* Transition Configuration Panel */}
+          <AnimatePresence>
+            {showTransitionPanel && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-gray-800 border-t border-gray-700 overflow-hidden"
+              >
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-white">Transitions & Animations</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowTransitionPanel(false)}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Slide Transitions */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-amber-400 flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4" />
+                        Slide Transition
+                      </h4>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">Transition Type</label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {['slide', 'fade', 'zoom', 'flip', 'cube', 'push'].map((type) => (
+                              <Button
+                                key={type}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateSlideTransition(currentSlideIndex, {
+                                  ...currentSlide.transition,
+                                  type: type as any
+                                })}
+                                className={cn(
+                                  "text-xs",
+                                  currentSlide.transition?.type === type
+                                    ? "bg-amber-900/40 border-amber-500 text-amber-400"
+                                    : "border-gray-600 text-gray-300 hover:border-amber-500/50"
+                                )}
+                              >
+                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">Direction</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {['left', 'right', 'up', 'down'].map((direction) => (
+                              <Button
+                                key={direction}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateSlideTransition(currentSlideIndex, {
+                                  ...currentSlide.transition,
+                                  direction: direction as any
+                                })}
+                                className={cn(
+                                  "text-xs",
+                                  currentSlide.transition?.direction === direction
+                                    ? "bg-amber-900/40 border-amber-500 text-amber-400"
+                                    : "border-gray-600 text-gray-300 hover:border-amber-500/50"
+                                )}
+                              >
+                                {direction.charAt(0).toUpperCase() + direction.slice(1)}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">Duration (ms)</label>
+                          <input
+                            type="range"
+                            min="200"
+                            max="2000"
+                            step="100"
+                            value={currentSlide.transition?.duration || 500}
+                            onChange={(e) => updateSlideTransition(currentSlideIndex, {
+                              ...currentSlide.transition,
+                              duration: parseInt(e.target.value)
+                            })}
+                            className="w-full accent-amber-500"
+                          />
+                          <div className="text-xs text-gray-400 text-center mt-1">
+                            {currentSlide.transition?.duration || 500}ms
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Element Animations */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-purple-400 flex items-center gap-2">
+                        <Timer className="w-4 h-4" />
+                        Element Animation
+                      </h4>
+                      
+                      {selectedElement ? (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-xs text-gray-400 mb-1 block">Entrance Effect</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {['fadeIn', 'slideIn', 'zoomIn', 'bounceIn', 'flipIn'].map((entrance) => (
+                                <Button
+                                  key={entrance}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateElementAnimation(selectedElement, {
+                                    ...currentSlide.elementAnimations?.[selectedElement],
+                                    entrance: entrance as any
+                                  })}
+                                  className={cn(
+                                    "text-xs",
+                                    currentSlide.elementAnimations?.[selectedElement]?.entrance === entrance
+                                      ? "bg-purple-900/40 border-purple-500 text-purple-400"
+                                      : "border-gray-600 text-gray-300 hover:border-purple-500/50"
+                                  )}
+                                >
+                                  {entrance.replace(/([A-Z])/g, ' $1').trim()}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs text-gray-400 mb-1 block">Delay (ms)</label>
+                            <input
+                              type="range"
+                              min="0"
+                              max="2000"
+                              step="100"
+                              value={currentSlide.elementAnimations?.[selectedElement]?.delay || 0}
+                              onChange={(e) => updateElementAnimation(selectedElement, {
+                                ...currentSlide.elementAnimations?.[selectedElement],
+                                delay: parseInt(e.target.value)
+                              })}
+                              className="w-full accent-purple-500"
+                            />
+                            <div className="text-xs text-gray-400 text-center mt-1">
+                              {currentSlide.elementAnimations?.[selectedElement]?.delay || 0}ms
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs text-gray-400 mb-1 block">Duration (ms)</label>
+                            <input
+                              type="range"
+                              min="100"
+                              max="1500"
+                              step="50"
+                              value={currentSlide.elementAnimations?.[selectedElement]?.duration || 300}
+                              onChange={(e) => updateElementAnimation(selectedElement, {
+                                ...currentSlide.elementAnimations?.[selectedElement],
+                                duration: parseInt(e.target.value)
+                              })}
+                              className="w-full accent-purple-500"
+                            />
+                            <div className="text-xs text-gray-400 text-center mt-1">
+                              {currentSlide.elementAnimations?.[selectedElement]?.duration || 300}ms
+                            </div>
+                          </div>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeElementAnimation(selectedElement)}
+                            className="w-full text-xs border-red-600 text-red-400 hover:bg-red-900/20"
+                          >
+                            Remove Animation
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center text-gray-400 text-sm py-8">
+                          Select an element to configure animations
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Main Slide Editor */}
-          <div className="flex-1 flex flex-col bg-gray-900">
-            {/* Slide Canvas Container */}
-            <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
-              <motion.div
-                ref={slideCanvasRef}
-                className="relative bg-white rounded-lg shadow-2xl overflow-hidden"
-                style={{
-                  width: SLIDE_WIDTH * slideScale,
-                  height: SLIDE_HEIGHT * slideScale,
-                  transformOrigin: 'center center'
-                }}
-                onDoubleClick={handleSlideDoubleClick}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              >
-                {/* Slide Background */}
-                <div 
-                  className="absolute inset-0"
-                  style={{
-                    background: currentSlide?.background?.type === 'gradient' 
-                      ? `linear-gradient(${currentSlide.background.gradient?.direction || '135deg'}, ${currentSlide.background.gradient?.from || '#0f172a'}, ${currentSlide.background.gradient?.to || '#1e293b'})`
-                      : currentSlide?.background?.value || '#ffffff'
-                  }}
-                />
-
-                {/* Enhanced Slide Content */}
-                {useWorldClassRenderer && worldClassSlides.length > 0 ? (
-                  <div className="absolute inset-0 overflow-hidden">
-                    <WorldClassSlideRenderer
-                      slide={worldClassSlides[currentSlideIndex] || currentSlide}
-                      isActive={true}
-                      className="w-full h-full"
-                    />
-                  </div>
-                ) : (
-                  <EnhancedSlideRenderer 
-                    slide={currentSlide}
-                    scale={slideScale}
-                    isActive={true}
-                  />
-                )}
-
-                {/* Draggable Elements Overlay */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <AnimatePresence>
-                    {currentSlide?.elements?.map((element) => (
-                      <motion.div
-                        key={element.id}
-                        className={cn(
-                          "absolute cursor-move border-2 border-transparent rounded pointer-events-auto",
-                          selectedElement === element.id && "border-blue-500 ring-2 ring-blue-500/30"
-                        )}
-                        style={{
-                          left: element.position.x * slideScale,
-                          top: element.position.y * slideScale,
-                          width: element.size.width * slideScale,
-                          height: element.size.height * slideScale,
-                          transform: `rotate(${element.rotation}deg)`
-                        }}
-                        onClick={() => setSelectedElement(element.id)}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        whileHover={{ scale: 1.02 }}
-                        drag
-                        dragMomentum={false}
-                        onDragStart={() => setIsDragging(true)}
-                        onDragEnd={() => setIsDragging(false)}
-                      >
-                        <div 
-                          className="w-full h-full backdrop-blur-sm bg-black/20 rounded border border-white/20"
-                          style={{
-                            ...element.style,
-                            fontSize: element.style?.fontSize ? `${element.style.fontSize * slideScale}px` : undefined
-                          }}
-                        >
-                          {element.type === 'text' && (
-                            <div className="w-full h-full flex items-center justify-center p-2">
-                              <span className="text-white text-center">
-                                {element.content}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+          {/* Enhanced Footer/Status Bar */}
+          <motion.div 
+            className="bg-gray-900/80 border-t border-gray-800 px-4 py-3 flex items-center justify-between text-sm text-gray-300 backdrop-blur-sm"
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span>Live Editor</span>
+              </div>
+              
+              <div className="text-gray-400">
+                Slide {currentSlideIndex + 1} of {slides.length}
+              </div>
+              
+              {selectedElements.length > 1 && (
+                <div className="flex items-center space-x-2 text-purple-400">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                  <span>{selectedElements.length} elements selected</span>
                 </div>
-
-                {/* Slide Border for Visual Polish */}
-                <div className="absolute inset-0 rounded-lg ring-1 ring-gray-200 pointer-events-none" />
-              </motion.div>
+              )}
+              
+              {selectedElement && selectedElements.length <= 1 && (
+                <div className="flex items-center space-x-2 text-blue-400">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span>Element selected</span>
+                </div>
+              )}
+              
+              {Object.keys(groupedElements).length > 0 && (
+                <div className="flex items-center space-x-2 text-green-400">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span>{Object.keys(groupedElements).length} groups</span>
+                </div>
+              )}
+              
+              <div className="text-gray-400">
+                Elements: {currentSlide?.elements?.length || 0}
+              </div>
             </div>
-          </div>
+            
+            <div className="flex items-center space-x-6">
+              {saveStatus !== 'idle' && (
+                <div className={cn(
+                  "flex items-center space-x-2 text-xs",
+                  saveStatus === 'saving' && "text-yellow-400",
+                  saveStatus === 'saved' && "text-green-400",
+                  saveStatus === 'error' && "text-red-400"
+                )}>
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    saveStatus === 'saving' && "bg-yellow-400 animate-pulse",
+                    saveStatus === 'saved' && "bg-green-400",
+                    saveStatus === 'error' && "bg-red-400"
+                  )}></div>
+                  <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Save Error'}</span>
+                </div>
+              )}
+              
+              <div className="text-gray-400">
+                Canvas: {SLIDE_WIDTH} × {SLIDE_HEIGHT}
+              </div>
+              
+              <div className="text-gray-400">
+                Zoom: {zoom}%
+              </div>
+              
+              <div className="flex items-center space-x-2 text-gray-400">
+                <span>Keyboard shortcuts:</span>
+                <Badge variant="secondary" className="text-xs px-1 py-0.5">Ctrl+S</Badge>
+                <span className="text-gray-500">Save</span>
+                <Badge variant="secondary" className="text-xs px-1 py-0.5">Space</Badge>
+                <span className="text-gray-500">Present</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Collaborative Features Panel */}
+        {/* Modals */}
         <AnimatePresence>
-          {isCollaborativeMode && (
-            <motion.div
-              className="fixed right-4 top-1/2 transform -translate-y-1/2 w-80 bg-gray-800 rounded-lg border border-gray-700 shadow-2xl z-50"
-              initial={{ x: 320, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 320, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            >
-              <div className="p-4 border-b border-gray-700">
-                <h3 className="text-white font-semibold flex items-center space-x-2">
-                  <Users className="w-5 h-5" />
-                  <span>Collaborators</span>
-                </h3>
-              </div>
-              
-              <div className="p-4 max-h-60 overflow-y-auto">
-                {collaborators.length === 0 ? (
-                  <div className="text-gray-400 text-center py-8">
-                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No active collaborators</p>
-                    <p className="text-sm mt-1">Share this presentation to collaborate</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {collaborators.map((collaborator) => (
-                      <div key={collaborator.id} className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-medium">
-                          {collaborator.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-white text-sm font-medium">{collaborator.name}</div>
-                          <div className="text-gray-400 text-xs">
-                            {collaborator.cursor ? 'Active' : 'Viewing'}
-                          </div>
-                        </div>
-                        <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="p-4 border-t border-gray-700">
-                <Button 
-                  size="sm" 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  onClick={() => {
-                    // Demo: Add a sample collaborator
-                    const sampleCollaborator = {
-                      id: `user_${Date.now()}`,
-                      name: `User ${collaborators.length + 1}`,
-                      avatar: '',
-                      cursor: { x: Math.random() * 800, y: Math.random() * 600 }
+          {showChartEditor && (
+            <ChartEditor
+              isOpen={showChartEditor}
+              datasetId={slides[0]?.metadata?.datasetId}
+              uploadedData={slides[0]?.metadata?.uploadedData}
+              chartConfig={editingElement ? {
+                type: (currentSlide.elements.find(el => el.id === editingElement)?.chartType || 'bar') as any,
+                title: currentSlide.elements.find(el => el.id === editingElement)?.content || 'Chart from Your Data',
+                data: currentSlide.elements.find(el => el.id === editingElement)?.chartData || [],
+                xAxis: 'name',
+                yAxis: ['value'],
+                colors: ['#3B82F6', '#EF4444', '#10B981'],
+                showLegend: true,
+                showGrid: true,
+                animate: true,
+                height: 300
+              } : null}
+              onSave={(chartConfig) => {
+                if (editingElement) {
+                  updateElement(editingElement, {
+                    chartData: chartConfig.data || [],
+                    chartType: chartConfig.type || 'bar',
+                    content: chartConfig.title || 'Chart'
+                  })
+                }
+                setShowChartEditor(false)
+                setEditingElement(null)
+              }}
+              onClose={() => {
+                setShowChartEditor(false)
+                setEditingElement(null)
+              }}
+            />
+          )}
+          
+          {showImageUploader && (
+            <ImageUploader
+              onSelect={(image) => {
+                if (editingElement) {
+                  updateElement(editingElement, {
+                    content: image.url,
+                    size: {
+                      width: Math.min(image.width, 400),
+                      height: Math.min(image.height, 300)
                     }
-                    setCollaborators([...collaborators, sampleCollaborator])
-                  }}
-                >
-                  Invite Collaborator
-                </Button>
-              </div>
-            </motion.div>
+                  })
+                }
+                setShowImageUploader(false)
+                setEditingElement(null)
+              }}
+              onClose={() => {
+                setShowImageUploader(false)
+                setEditingElement(null)
+              }}
+            />
+          )}
+          
+          {showShapeCreator && (
+            <ShapeCreator
+              onCreate={(shapeConfig) => {
+                if (editingElement) {
+                  updateElement(editingElement, {
+                    content: shapeConfig.type,
+                    style: shapeConfig.style,
+                    size: shapeConfig.size
+                  })
+                }
+                setShowShapeCreator(false)
+                setEditingElement(null)
+              }}
+              onClose={() => {
+                setShowShapeCreator(false)
+                setEditingElement(null)
+              }}
+            />
+          )}
+          
+          {showBusinessWizard && (
+            <BusinessContextWizard
+              onComplete={async (context: BusinessContext, userData?: any[]) => {
+                // Simple slide generation for now
+                const newSlide: Slide = {
+                  id: `slide_${Date.now()}`,
+                  number: slides.length + 1,
+                  title: `${context.companyName || 'Company'} Analysis`,
+                  subtitle: context.primaryGoal || 'Business Overview',
+                  elements: [{
+                    id: `element_${Date.now()}`,
+                    type: 'text',
+                    position: { x: 100, y: 200 },
+                    size: { width: 600, height: 200 },
+                    rotation: 0,
+                    content: `Welcome to ${context.companyName || 'Our Company'}\n\n${context.primaryGoal || 'Business objectives and analysis'}`,
+                    style: {
+                      fontSize: '24px',
+                      color: '#000000',
+                      fontFamily: 'Inter, sans-serif',
+                      textAlign: 'center'
+                    }
+                  }],
+                  background: { type: 'gradient', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+                  style: 'ai-generated',
+                  layout: 'title'
+                }
+                
+                setSlides([...slides, newSlide])
+                setCurrentSlideIndex(slides.length)
+                setShowBusinessWizard(false)
+                
+                if (onSave) {
+                  onSave([...slides, newSlide])
+                }
+              }}
+              onClose={() => setShowBusinessWizard(false)}
+            />
+          )}
+          
+          {showPresentationMode && (
+            <PresentationPreview
+              presentation={{
+                title: 'Current Presentation',
+                slides: slides.map(slide => ({
+                  ...slide,
+                  duration: 5 // 5 seconds per slide default
+                }))
+              }}
+              isOpen={showPresentationMode}
+              onClose={() => setShowPresentationMode(false)}
+              startSlideIndex={currentSlideIndex}
+            />
           )}
         </AnimatePresence>
-
-        {/* Comments Overlay */}
-        {showComments && (
-          <div className="absolute inset-0 pointer-events-none z-40">
-            {comments
-              .filter(comment => comment.slideId === currentSlide?.id)
-              .map((comment) => (
-                <motion.div
-                  key={comment.id}
-                  className="absolute pointer-events-auto"
-                  style={{
-                    left: `${comment.x}px`,
-                    top: `${comment.y}px`
-                  }}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  whileHover={{ scale: 1.1 }}
-                >
-                  <div className="bg-yellow-400 text-black p-2 rounded-lg shadow-lg max-w-xs">
-                    <div className="text-xs font-medium mb-1">{comment.author}</div>
-                    <div className="text-sm">{comment.text}</div>
-                    <div className="text-xs opacity-60 mt-1">
-                      {new Date(comment.timestamp).toLocaleTimeString()}
-                    </div>
-                  </div>
-                  {/* Comment pointer */}
-                  <div className="w-3 h-3 bg-yellow-400 transform rotate-45 -mt-1 ml-4"></div>
-                </motion.div>
-              ))}
-          </div>
-        )}
-
-        {/* Status Bar */}
-        <motion.div 
-          className="bg-gray-800 border-t border-gray-700 px-4 py-2 flex items-center justify-between text-sm text-gray-400"
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <div className="flex items-center space-x-4">
-            <span>Slide {currentSlideIndex + 1} of {slides.length}</span>
-            {selectedElement && <span>• Element selected</span>}
-            {isDragging && <span>• Dragging</span>}
-            {isCollaborativeMode && <span>• Collaborative Mode</span>}
-            {collaborators.length > 0 && <span>• {collaborators.length} collaborator{collaborators.length === 1 ? '' : 's'}</span>}
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <span>Zoom: {Math.round(slideScale * 100)}%</span>
-            {/* Auto-save status indicator */}
-            {autoSaveStatus && (
-              <div className="flex items-center space-x-2">
-                <span className={cn(
-                  "text-xs px-2 py-1 rounded flex items-center gap-1",
-                  autoSaveStatus.status === 'saving' && "bg-yellow-500/20 text-yellow-400",
-                  autoSaveStatus.status === 'saved' && "bg-green-500/20 text-green-400",
-                  autoSaveStatus.status === 'error' && "bg-red-500/20 text-red-400",
-                  autoSaveStatus.status === 'offline' && "bg-gray-500/20 text-gray-400",
-                  autoSaveStatus.status === 'idle' && "bg-blue-500/20 text-blue-400"
-                )}>
-                  {autoSaveStatus.status === 'saving' && '💾 Saving...'}
-                  {autoSaveStatus.status === 'saved' && '✅ Auto-saved'}
-                  {autoSaveStatus.status === 'error' && '❌ Save failed'}
-                  {autoSaveStatus.status === 'offline' && '📶 Offline'}
-                  {autoSaveStatus.status === 'idle' && '📝 Ready'}
-                </span>
-                {autoSaveStatus.lastSaved && autoSaveStatus.status === 'saved' && (
-                  <span className="text-xs text-gray-500">
-                    {new Date(autoSaveStatus.lastSaved).toLocaleTimeString()}
-                  </span>
-                )}
-              </div>
-            )}
-            {!autoSaveStatus && <span>• Ready</span>}
-          </div>
-        </motion.div>
-      </div>
-    </TooltipProvider>
+      </TooltipProvider>
+    </UnifiedLayout>
   )
 }

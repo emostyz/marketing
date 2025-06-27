@@ -241,7 +241,7 @@ export const TEMPLATE_DEFINITIONS: Record<string, PresentationTemplate> = {
       bodyFont: 'Inter'
     },
     metadata: {
-      author: 'AEDRIN Team',
+      author: 'EasyDecks.ai Team',
       version: '1.0',
       tags: ['analytics', 'data', 'modern', 'charts'],
       isPremium: false,

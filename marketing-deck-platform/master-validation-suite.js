@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * MASTER VALIDATION SUITE FOR AEDRIN PLATFORM
+ * MASTER VALIDATION SUITE FOR EasyDecks.ai PLATFORM
  * 
- * Comprehensive test orchestrator that validates the complete AEDRIN platform
+ * Comprehensive test orchestrator that validates the complete EasyDecks.ai platform
  * by running multiple specialized test suites in sequence to prove the system
  * works end-to-end with real business data.
  * 
@@ -14,7 +14,7 @@
  * 4. Performance Benchmarks - Speed and efficiency testing
  * 5. Export Quality Validation - Output format testing
  * 
- * This suite provides definitive proof that AEDRIN can handle real business
+ * This suite provides definitive proof that EasyDecks.ai can handle real business
  * scenarios and produce professional, beautiful presentations from actual data.
  */
 
@@ -501,7 +501,7 @@ class MasterValidationSuite {
 
   printMasterSummary(report) {
     console.log('\n' + '='.repeat(80));
-    console.log('🚀 AEDRIN PLATFORM MASTER VALIDATION SUMMARY');
+    console.log('🚀 EasyDecks.ai PLATFORM MASTER VALIDATION SUMMARY');
     console.log('='.repeat(80));
     
     console.log(`📊 Overall Score: ${report.businessReadiness.score}/100 (Grade: ${report.businessReadiness.grade})`);
@@ -534,13 +534,13 @@ class MasterValidationSuite {
     });
 
     console.log('\n' + (report.productionReadiness.ready ? 
-      '🎉 SYSTEM VALIDATED: AEDRIN is ready for production deployment!' :
+      '🎉 SYSTEM VALIDATED: EasyDecks.ai is ready for production deployment!' :
       '⚠️ ACTION REQUIRED: Address issues before production deployment'));
     console.log('='.repeat(80));
   }
 
   async runMasterValidation() {
-    this.log('🚀 Starting AEDRIN Platform Master Validation Suite...', 'production');
+    this.log('🚀 Starting EasyDecks.ai Platform Master Validation Suite...', 'production');
     
     try {
       // Step 1: System Health Check

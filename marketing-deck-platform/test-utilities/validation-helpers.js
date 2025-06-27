@@ -1,7 +1,7 @@
 /**
- * VALIDATION HELPERS FOR AEDRIN E2E TESTING
+ * VALIDATION HELPERS FOR EasyDecks.ai E2E TESTING
  * 
- * Utility functions to support comprehensive testing of the AEDRIN platform
+ * Utility functions to support comprehensive testing of the EasyDecks.ai platform
  * These helpers provide reusable validation logic for different components
  */
 

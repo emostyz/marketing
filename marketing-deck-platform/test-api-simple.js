@@ -1,57 +1,73 @@
-// Simple test for the enhanced analyze API
-async function testAPI() {
-  console.log('🧪 Testing Enhanced Analyze API...\n')
+const http = require('http');
 
-  try {
-    const response = await fetch('http://localhost:3000/api/openai/enhanced-analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data: [
-          { month: 'Jan', sales: 100, profit: 20 },
-          { month: 'Feb', sales: 120, profit: 25 },
-          { month: 'Mar', sales: 140, profit: 30 }
-        ],
-        context: {
-          businessGoals: 'Increase sales and profitability',
-          targetAudience: 'executive',
-          keyQuestions: ['What are the growth trends?'],
-          industry: 'Technology',
-          dataDescription: 'Monthly sales and profit data',
-          influencingFactors: ['Market conditions']
-        },
-        timeFrame: {
-          primaryPeriod: { start: '2024-01-01', end: '2024-03-31', label: 'Q1 2024' },
-          analysisType: 'm/m'
-        },
-        requirements: {
-          slideCount: 3,
-          targetDuration: 5,
-          structure: 'ai_suggested',
-          keyPoints: ['Growth trends'],
-          audienceType: 'executive',
-          presentationStyle: 'formal'
-        },
-        userFeedback: []
-      })
-    })
-
-    console.log('Response status:', response.status)
-    const result = await response.json()
-    console.log('Response body:', JSON.stringify(result, null, 2))
-
-    if (result.success) {
-      console.log('✅ API test PASSED')
-      return true
-    } else {
-      console.log('❌ API test FAILED:', result.error)
-      return false
-    }
-
-  } catch (error) {
-    console.log('❌ API test ERROR:', error.message)
-    return false
+const data = JSON.stringify({
+  datasetId: 'demo-dataset-test',
+  context: {
+    audience: 'executives',
+    goal: 'analyze sales performance',
+    timeLimit: 15,
+    industry: 'technology',
+    decision: 'strategic planning',
+    businessContext: 'quarterly review',
+    description: 'Sales data analysis for Q4 review'
   }
-}
+});
 
-testAPI() 
+const options = {
+  hostname: 'localhost',
+  port: 3002,
+  path: '/api/deck/generate-world-class',
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Content-Length': data.length
+  }
+};
+
+console.log('🚀 Testing world-class deck generation...');
+
+const req = http.request(options, (res) => {
+  console.log(`📊 Response status: ${res.statusCode}`);
+  
+  let body = '';
+  res.on('data', (chunk) => {
+    body += chunk;
+  });
+  
+  res.on('end', () => {
+    try {
+      if (res.statusCode === 200) {
+        const result = JSON.parse(body);
+        console.log('✅ SUCCESS\!');
+        console.log('📈 Generated slides:', result.slides?.length || 0);
+        console.log('📝 Deck title:', result.title);
+        console.log('🏷️ Deck ID:', result.deckId);
+        
+        if (result.slides && result.slides.length > 0) {
+          console.log('\n🎯 First slide details:');
+          console.log('- Title:', result.slides[0].title);
+          console.log('- Type:', result.slides[0].type);  
+          console.log('- Content items:', result.slides[0].content?.length || 0);
+          console.log('- Charts:', result.slides[0].charts?.length || 0);
+          
+          console.log('\n📊 Total slides with charts:', 
+            result.slides.filter(s => s.charts && s.charts.length > 0).length);
+        }
+      } else {
+        console.log('❌ FAILED with status:', res.statusCode);
+        console.log('Error:', body.substring(0, 1000));
+      }
+    } catch (error) {
+      console.log('💥 Failed to parse response:', error.message);
+      console.log('Raw response:', body.substring(0, 500));
+    }
+  });
+});
+
+req.on('error', (error) => {
+  console.log('💥 Request failed:', error.message);
+});
+
+req.write(data);
+req.end();
+EOF < /dev/null

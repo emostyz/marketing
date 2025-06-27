@@ -591,7 +591,7 @@ export default function OnboardingPage() {
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center mb-8">
           <Brain className="w-16 h-16 mx-auto mb-4 text-blue-400" />
-          <h1 className="text-3xl font-bold text-white mb-2">Complete Your AEDRIN Profile</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Complete Your EasyDecks.ai Profile</h1>
           <p className="text-gray-400">Help us personalize your experience</p>
         </div>
 

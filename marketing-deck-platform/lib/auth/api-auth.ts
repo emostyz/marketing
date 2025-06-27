@@ -64,8 +64,8 @@ export async function getAuthenticatedUser(): Promise<AuthResult> {
     // Fallback to demo mode - check if demo session exists in localStorage (client-side)
     // For server-side, we'll allow demo mode as fallback
     const demoUser: AuthenticatedUser = {
-      id: 'demo-user',
-      email: 'demo@aedrin.com',
+      id: '00000000-0000-0000-0000-000000000001',
+      email: 'demo@easydecks.ai',
       name: 'Demo User',
       subscription: 'pro',
       demo: true,
@@ -129,8 +129,8 @@ export async function getAuthenticatedUserWithDemo(): Promise<{ user: Authentica
     // Return demo user as fallback
     return {
       user: {
-        id: 'demo-user',
-        email: 'demo@aedrin.com',
+        id: '00000000-0000-0000-0000-000000000001',
+        email: 'demo@easydecks.ai',
         name: 'Demo User',
         subscription: 'pro',
         demo: true,

@@ -2,13 +2,13 @@ import { Metadata } from 'next'
 
 // Base site configuration
 export const siteConfig = {
-  name: 'AEDRIN',
-  title: 'AEDRIN - AI-Powered Marketing Deck Platform',
+  name: 'EasyDecks.ai',
+  title: 'EasyDecks.ai - AI-Powered Marketing Deck Platform',
   description: 'Transform your data into compelling presentations with AI. Upload business data and generate professional, insight-driven marketing decks automatically.',
-  url: 'https://aedrin.com',
+  url: 'https://easydecks.ai',
   ogImage: '/og-image.png',
   twitterCard: 'summary_large_image',
-  twitterCreator: '@aedrin',
+  twitterCreator: '@easydecksai',
   keywords: [
     'AI presentations',
     'marketing decks',
@@ -39,12 +39,12 @@ export const defaultMetadata: Metadata = {
   keywords: siteConfig.keywords,
   authors: [
     {
-      name: 'AEDRIN Team',
+      name: 'EasyDecks.ai Team',
       url: siteConfig.url
     }
   ],
-  creator: 'AEDRIN',
-  publisher: 'AEDRIN',
+  creator: 'EasyDecks.ai',
+  publisher: 'EasyDecks.ai',
   formatDetection: {
     email: false,
     address: false,
@@ -139,8 +139,8 @@ export const createOrganizationStructuredData = () => ({
   logo: `${siteConfig.url}/logo.png`,
   description: siteConfig.description,
   sameAs: [
-    'https://twitter.com/aedrin',
-    'https://linkedin.com/company/aedrin'
+    'https://twitter.com/easydecksai',
+    'https://linkedin.com/company/easydecksai'
   ],
   contactPoint: {
     '@type': 'ContactPoint',

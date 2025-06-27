@@ -201,7 +201,7 @@ Return JSON format with acts, pacing, and key story elements.`
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -421,7 +421,7 @@ Return JSON format.`
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",

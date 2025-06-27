@@ -179,7 +179,7 @@ async function testAPIAvailability() {
 
 // Main test runner
 async function runUploadFlowTests() {
-  console.log('🧪 AEDRIN Upload Flow Test Suite');
+  console.log('🧪 EasyDecks.ai Upload Flow Test Suite');
   console.log('================================\n');
 
   const results = {

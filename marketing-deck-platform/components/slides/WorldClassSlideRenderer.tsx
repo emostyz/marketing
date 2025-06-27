@@ -9,6 +9,8 @@ import {
   ReferenceLine, ReferenceArea
 } from 'recharts'
 import TremorChartRenderer from '@/components/charts/TremorChartRenderer'
+import WorldClassTremorChart from '@/components/charts/WorldClassTremorChart'
+import SlideCodeExportButton from '@/components/editor/SlideCodeExportButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -80,7 +82,8 @@ const PROFESSIONAL_COLORS = {
     accent: '#f59e0b',
     success: '#10b981',
     warning: '#f59e0b',
-    error: '#ef4444'
+    error: '#ef4444',
+    chart: ['#667eea', '#764ba2', '#1e3c72', '#2a5298', '#60a5fa', '#93c5fd']
   },
   modern: {
     primary: ['#7c3aed', '#a855f7', '#c084fc', '#ddd6fe'],
@@ -88,7 +91,8 @@ const PROFESSIONAL_COLORS = {
     accent: '#06b6d4',
     success: '#10b981',
     warning: '#f59e0b',
-    error: '#ef4444'
+    error: '#ef4444',
+    chart: ['#7c3aed', '#a855f7', '#c084fc', '#ddd6fe', '#06b6d4', '#10b981']
   },
   premium: {
     primary: ['#1f2937', '#374151', '#6b7280', '#9ca3af'],
@@ -96,7 +100,8 @@ const PROFESSIONAL_COLORS = {
     accent: '#d97706',
     success: '#059669',
     warning: '#d97706',
-    error: '#dc2626'
+    error: '#dc2626',
+    chart: ['#1f2937', '#374151', '#6b7280', '#9ca3af', '#d97706', '#059669']
   }
 }
 
@@ -224,21 +229,29 @@ const WorldClassSlideRenderer: React.FC<WorldClassSlideRendererProps> = ({
           
           <Tooltip 
             contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              border: 'none',
+              backgroundColor: 'rgba(255, 255, 255, 0.98)',
+              border: '1px solid rgba(0,0,0,0.1)',
               borderRadius: '12px',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-              fontSize: '14px'
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15)',
+              fontSize: '14px',
+              fontWeight: '500'
             }}
+            formatter={(value: any, name: string) => [
+              typeof value === 'number' ? value.toLocaleString() : value,
+              name === 'value' ? 'Performance' : name === 'trend' ? 'Trend' : name
+            ]}
+            labelFormatter={(label: string) => `Period: ${label}`}
           />
           
           <Area
             type="monotone"
             dataKey="value"
-            stroke={colorPalette.primary[0]}
+            stroke={colorPalette.chart[0]}
             strokeWidth={3}
             fill={`url(#gradient_${chartId})`}
             animationDuration={chartAnimations ? 2000 : 0}
+            dot={{ fill: colorPalette.chart[0], strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, stroke: colorPalette.chart[0], strokeWidth: 2, fill: '#fff' }}
           />
           
           {chart.showTrendline && (
@@ -252,6 +265,27 @@ const WorldClassSlideRenderer: React.FC<WorldClassSlideRendererProps> = ({
               animationDuration={chartAnimations ? 2500 : 0}
             />
           )}
+          
+          {/* Enhanced milestone annotations with better styling */}
+          {chart.annotations?.map((annotation: any, i: number) => (
+            <ReferenceLine 
+              key={i}
+              x={annotation.period} 
+              stroke={annotation.type === 'success' ? colorPalette.success : colorPalette.warning}
+              strokeWidth={2}
+              strokeDasharray="3 3"
+              label={{
+                value: annotation.text,
+                position: "top",
+                offset: 10,
+                style: { 
+                  fontSize: '11px', 
+                  fontWeight: '600',
+                  fill: annotation.type === 'success' ? colorPalette.success : colorPalette.warning
+                }
+              }}
+            />
+          ))}
           
           {/* Key milestone annotations */}
           {chart.milestones?.map((milestone: any, i: number) => (
@@ -276,9 +310,15 @@ const WorldClassSlideRenderer: React.FC<WorldClassSlideRendererProps> = ({
         <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
           <defs>
             <linearGradient id={`barGradient_${chartId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={colorPalette.primary[0]} stopOpacity={1}/>
-              <stop offset="95%" stopColor={colorPalette.primary[1]} stopOpacity={0.8}/>
+              <stop offset="5%" stopColor={colorPalette.chart[0]} stopOpacity={1}/>
+              <stop offset="95%" stopColor={colorPalette.chart[1]} stopOpacity={0.8}/>
             </linearGradient>
+            {data.map((_, i) => (
+              <linearGradient key={i} id={`barGradient_${chartId}_${i}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={colorPalette.chart[i % colorPalette.chart.length]} stopOpacity={1}/>
+                <stop offset="95%" stopColor={colorPalette.chart[(i + 1) % colorPalette.chart.length]} stopOpacity={0.7}/>
+              </linearGradient>
+            ))}
           </defs>
           
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -287,21 +327,31 @@ const WorldClassSlideRenderer: React.FC<WorldClassSlideRendererProps> = ({
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 12, fill: '#6b7280' }}
+            angle={-45}
+            textAnchor="end"
+            height={80}
           />
           <YAxis 
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 12, fill: '#6b7280' }}
+            tickFormatter={(value) => typeof value === 'number' ? value.toLocaleString() : value}
           />
           
           <Tooltip 
             contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              border: 'none',
+              backgroundColor: 'rgba(255, 255, 255, 0.98)',
+              border: '1px solid rgba(0,0,0,0.1)',
               borderRadius: '12px',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-              fontSize: '14px'
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15)',
+              fontSize: '14px',
+              fontWeight: '500'
             }}
+            formatter={(value: any, name: string) => [
+              typeof value === 'number' ? value.toLocaleString() : value,
+              name === 'value' ? 'Performance' : name
+            ]}
+            labelFormatter={(label: string) => `Category: ${label}`}
           />
           
           <Bar 
@@ -309,6 +359,8 @@ const WorldClassSlideRenderer: React.FC<WorldClassSlideRendererProps> = ({
             fill={`url(#barGradient_${chartId})`}
             radius={[8, 8, 0, 0]}
             animationDuration={chartAnimations ? 1500 : 0}
+            strokeWidth={1}
+            stroke="rgba(255,255,255,0.3)"
           />
         </BarChart>
       </ResponsiveContainer>
@@ -874,6 +926,70 @@ const WorldClassSlideRenderer: React.FC<WorldClassSlideRendererProps> = ({
           </div>
         )}
 
+        {/* AI-Generated Elements */}
+        {activeSlide.elements && activeSlide.elements.length > 0 && (
+          <div className="mb-6">
+            {activeSlide.elements.map((element: any, index: number) => {
+              // Render text elements
+              if (element.type === 'text' || element.type === 'title') {
+                return (
+                  <div 
+                    key={element.id || index} 
+                    className="mb-4"
+                    style={{
+                      fontSize: element.style?.fontSize || 16,
+                      fontWeight: element.style?.fontWeight || 400,
+                      color: element.style?.color || '#1a1a1a',
+                      fontFamily: element.style?.fontFamily || 'Inter, sans-serif',
+                      textAlign: element.style?.textAlign || 'left',
+                      padding: element.style?.padding || '0',
+                      background: element.style?.background || 'transparent',
+                      borderRadius: element.style?.borderRadius || 0,
+                      boxShadow: element.style?.boxShadow || 'none',
+                      ...element.style
+                    }}
+                  >
+                    {element.content}
+                  </div>
+                )
+              }
+              
+              // Render chart elements using the chart renderer
+              if (element.type === 'chart' && element.chartConfig) {
+                return (
+                  <div key={element.id || index} className="mb-6">
+                    <TremorChartRenderer 
+                      chart={element.chartConfig}
+                      className="w-full"
+                    />
+                  </div>
+                )
+              }
+              
+              // Render metric elements
+              if (element.type === 'metric') {
+                return (
+                  <div key={element.id || index} className="bg-white rounded-lg p-4 shadow-md border border-gray-100 mb-4">
+                    <p className="text-2xl font-bold text-gray-900">{element.content.value}</p>
+                    <p className="text-sm font-medium text-gray-600">{element.content.label}</p>
+                  </div>
+                )
+              }
+              
+              // Render callout elements
+              if (element.type === 'callout') {
+                return (
+                  <div key={element.id || index} className="bg-blue-50 rounded-lg p-4 border-l-4 border-l-blue-500 mb-4">
+                    <p className="text-gray-800">{element.content}</p>
+                  </div>
+                )
+              }
+              
+              return null
+            })}
+          </div>
+        )}
+
         {/* Charts Section - FIXED WITH TREMOR CHARTS */}
         {renderChartsSection()}
 
@@ -922,6 +1038,20 @@ const WorldClassSlideRenderer: React.FC<WorldClassSlideRendererProps> = ({
           </div>
         </div>
       )}
+
+      {/* Slide Code Export Button */}
+      <SlideCodeExportButton
+        slide={{
+          ...activeSlide,
+          number: slideIndex + 1,
+          elements: [], // Will be populated from actual slide elements
+          layout: { type: 'content' },
+          theme: { name: 'Professional' },
+          background: { type: 'solid', value: '#ffffff' }
+        }}
+        position="top-right"
+        size="md"
+      />
     </div>
   )
 }

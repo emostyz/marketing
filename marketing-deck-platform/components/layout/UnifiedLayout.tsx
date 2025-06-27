@@ -48,7 +48,7 @@ export default function UnifiedLayout({
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${className}`}>
+    <div className={`min-h-screen flex flex-col bg-gray-950 text-white ${className}`}>
       {!hideNav && (
         <UnifiedNavigation 
           showComingSoonBar={showComingSoonBar}

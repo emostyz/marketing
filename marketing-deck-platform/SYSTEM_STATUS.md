@@ -1,4 +1,4 @@
-# 🎯 AEDRIN Marketing Deck Platform - System Status
+# 🎯 EasyDecks.ai Marketing Deck Platform - System Status
 
 ## ✅ COMPLETE: Enhanced Strategic CSV Analysis System
 

@@ -14,7 +14,7 @@ export default function PublicFooter() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Brain className="w-6 h-6 text-blue-500" />
-              <span className="text-xl font-bold text-white">AEDRIN</span>
+              <span className="text-xl font-bold text-white">EasyDecks.ai</span>
             </div>
             <p className="text-gray-400">
               AI-powered presentation platform for modern businesses. Transform your data into stunning presentations in minutes.
@@ -107,7 +107,7 @@ export default function PublicFooter() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              &copy; {currentYear} AEDRIN. All rights reserved.
+              &copy; {currentYear} EasyDecks.ai. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">

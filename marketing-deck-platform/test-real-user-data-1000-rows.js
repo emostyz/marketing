@@ -324,7 +324,7 @@ async function testPowerPointExport(presentationData) {
 
 // Run comprehensive test
 async function runComprehensiveTest() {
-  console.log('🚀 AEDRIN Platform Test: 1000 Rows x 14 Columns Real User Data');
+  console.log('🚀 EasyDecks.ai Platform Test: 1000 Rows x 14 Columns Real User Data');
   console.log('=' .repeat(70));
   
   const startTime = Date.now();
@@ -380,7 +380,7 @@ async function runComprehensiveTest() {
     // File might not exist
   }
   
-  console.log('\n✨ PROOF: AEDRIN Platform successfully processes real user data!');
+  console.log('\n✨ PROOF: EasyDecks.ai Platform successfully processes real user data!');
 }
 
 // Export for external use

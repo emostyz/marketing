@@ -217,7 +217,7 @@ export const GRADIENT_TECH_TEMPLATE: PresentationTemplate = {
     bodyFont: 'Inter'
   },
   metadata: {
-    author: 'AEDRIN Design Team',
+    author: 'EasyDecks.ai Design Team',
     version: '2.0',
     tags: ['modern', 'gradient', 'tech', 'business'],
     isPremium: true,

@@ -33,11 +33,35 @@ export interface AnalyticsData {
 }
 
 export class UserDataService {
+  // Demo user UUID for consistent identification
+  private static readonly DEMO_USER_ID = '00000000-0000-0000-0000-000000000001'
+
+  // Check if user is demo user
+  private static isDemoUser(userId: string): boolean {
+    return userId === this.DEMO_USER_ID || userId === 'demo-user' || userId === 'demo-test-user' || userId.includes('demo')
+  }
+
   // =====================================================
   // PROFILE MANAGEMENT
   // =====================================================
 
   static async getUserProfile(userId: string) {
+    // Return mock profile for demo user
+    if (this.isDemoUser(userId)) {
+      return {
+        id: this.DEMO_USER_ID,
+        user_id: this.DEMO_USER_ID,
+        email: 'demo@easydecks.ai',
+        full_name: 'Demo User',
+        company_name: 'Demo Company',
+        subscription_tier: 'pro',
+        is_active: true,
+        email_verified: true,
+        created_at: new Date('2024-01-01').toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -74,6 +98,12 @@ export class UserDataService {
   }
 
   static async updateUserStats(userId: string) {
+    // Skip database operations for demo user
+    if (this.isDemoUser(userId)) {
+      console.log('🎭 Demo user stats update skipped')
+      return true
+    }
+
     try {
       const { error } = await supabase.rpc('update_user_profile_stats', {
         user_uuid: userId
@@ -92,6 +122,36 @@ export class UserDataService {
   // =====================================================
 
   static async getUserPresentations(userId: string, limit = 50) {
+    // Return demo presentations for demo user
+    if (this.isDemoUser(userId)) {
+      return [
+        {
+          id: 'demo-presentation-1',
+          user_id: this.DEMO_USER_ID,
+          title: 'Sales Performance Analysis',
+          description: 'Quarterly sales data analysis and insights',
+          status: 'completed',
+          is_public: false,
+          slides: [],
+          created_at: new Date('2024-01-15').toISOString(),
+          updated_at: new Date('2024-01-15').toISOString(),
+          last_edited_at: new Date('2024-01-15').toISOString()
+        },
+        {
+          id: 'demo-presentation-2',
+          user_id: this.DEMO_USER_ID,
+          title: 'Market Research Insights',
+          description: 'Consumer behavior and market trends',
+          status: 'draft',
+          is_public: true,
+          slides: [],
+          created_at: new Date('2024-01-10').toISOString(),
+          updated_at: new Date('2024-01-10').toISOString(),
+          last_edited_at: new Date('2024-01-10').toISOString()
+        }
+      ]
+    }
+
     try {
       const { data, error } = await supabase
         .from('presentations')
@@ -110,6 +170,35 @@ export class UserDataService {
   }
 
   static async createPresentation(userId: string, presentationData: any) {
+    // Return mock presentation for demo user
+    if (this.isDemoUser(userId)) {
+      const demoPresentation = {
+        id: `demo-presentation-${Date.now()}`,
+        user_id: this.DEMO_USER_ID,
+        ...presentationData,
+        status: 'draft',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_edited_at: new Date().toISOString(),
+        analytics_data: {
+          timeSpentEditing: 0,
+          slidesCreated: 0,
+          chartsAdded: 0,
+          exportsGenerated: 0
+        }
+      }
+
+      // Track activity
+      await this.trackUserActivity(userId, {
+        activity_type: 'presentation_created',
+        resource_type: 'presentation',
+        resource_id: demoPresentation.id,
+        metadata: { title: presentationData.title }
+      })
+
+      return demoPresentation
+    }
+
     try {
       const { data, error } = await supabase
         .from('presentations')
@@ -282,6 +371,12 @@ export class UserDataService {
   // =====================================================
 
   static async trackUserActivity(userId: string, activityData: ActivityData) {
+    // Skip database operations for demo user
+    if (this.isDemoUser(userId)) {
+      console.log('🎭 Demo user activity tracked:', activityData.activity_type)
+      return true
+    }
+
     try {
       const { error } = await supabase.rpc('track_user_activity', {
         user_uuid: userId,
@@ -605,6 +700,12 @@ export class UserDataService {
   // =====================================================
 
   static async trackApiUsage(userId: string, endpoint: string, method: string, tokens = 0, cost = 0) {
+    // Skip database operations for demo user
+    if (this.isDemoUser(userId)) {
+      console.log('🎭 Demo user API usage tracked:', endpoint, method)
+      return true
+    }
+
     try {
       // NOTE: track_api_usage function must exist in the database with the following signature:
       //   user_uuid UUID, endpoint_path TEXT, request_method TEXT, tokens_consumed INTEGER, cost NUMERIC

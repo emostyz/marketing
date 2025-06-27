@@ -79,7 +79,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   private handleContactSupport = () => {
     // Open support modal or redirect to support page
-    window.open('mailto:support@aedrin.com?subject=Application Error&body=' + encodeURIComponent(
+    window.open('mailto:support@easydecks.ai?subject=Application Error&body=' + encodeURIComponent(
       `I encountered an error in the application:\n\nError: ${this.state.error?.message}\n\nTimestamp: ${new Date().toISOString()}`
     ))
   }

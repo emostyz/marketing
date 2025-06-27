@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server-client';
 import { EventLogger } from '@/lib/services/event-logger';
-import { profileService } from '@/lib/services/profile-service';
+import { ProfileService } from '@/lib/services/profile-service';
 
 // Input validation helper
 function validateProfileInput(data: any) {
@@ -136,6 +136,7 @@ async function handleProfileUpdate(request: NextRequest) {
     }
 
     // Get current profile for comparison
+    const profileService = new ProfileService()
     const currentProfile = await profileService.retrieveProfile(user.id)
 
     const {

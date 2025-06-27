@@ -95,11 +95,11 @@ export default function DashboardPage() {
           {/* Welcome Section */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-white mb-2">
-              {greeting}, {user.name || 'User'}! 👋
+              {greeting}, {user?.name || 'User'}! 👋
             </h2>
             <p className="text-gray-400 text-lg">
-              {user.demo 
-                ? "You're exploring AEDRIN in demo mode. Create up to 5 presentations with unlimited edits!"
+              {user?.demo 
+                ? "You're exploring EasyDecks.ai in demo mode. Create up to 5 presentations with unlimited edits!"
                 : "Ready to create stunning AI-powered marketing presentations?"
               }
             </p>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Demo Mode Info */}
-          {user.demo && (
+          {user?.demo && (
             <Card className="p-6 mb-8 bg-green-900/20 border-green-700/50">
               <div className="flex items-start space-x-4">
                 <Sparkles className="w-6 h-6 text-green-400 mt-1" />
@@ -217,7 +217,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Presentations Created</p>
-                  <p className="text-2xl font-bold text-white">{user.demo ? '0' : '12'}</p>
+                  <p className="text-2xl font-bold text-white">{user?.demo ? '0' : '12'}</p>
                 </div>
                 <FileText className="w-8 h-8 text-blue-400" />
               </div>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">AI Insights Generated</p>
-                  <p className="text-2xl font-bold text-white">{user.demo ? '0' : '47'}</p>
+                  <p className="text-2xl font-bold text-white">{user?.demo ? '0' : '47'}</p>
                 </div>
                 <Brain className="w-8 h-8 text-purple-400" />
               </div>
@@ -237,7 +237,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Team Members</p>
-                  <p className="text-2xl font-bold text-white">{user.demo ? '1' : '3'}</p>
+                  <p className="text-2xl font-bold text-white">{user?.demo ? '1' : '3'}</p>
                 </div>
                 <Users className="w-8 h-8 text-green-400" />
               </div>
@@ -249,12 +249,12 @@ export default function DashboardPage() {
             <div className="text-center">
               <Brain className="w-16 h-16 text-blue-400 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-white mb-4">
-                {user.demo ? 'Explore AEDRIN Demo' : 'Welcome to AEDRIN'}
+                {user?.demo ? 'Explore EasyDecks.ai Demo' : 'Welcome to EasyDecks.ai'}
               </h3>
               <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
-                {user.demo 
+                {user?.demo 
                   ? "Get started by creating your first presentation. Upload your data and let our AI generate insights and beautiful slides in minutes!"
-                  : "Transform your data into compelling presentations with the power of AI. Upload your business data and watch as AEDRIN creates professional, insight-driven presentations automatically."
+                  : "Transform your data into compelling presentations with the power of AI. Upload your business data and watch as EasyDecks.ai creates professional, insight-driven presentations automatically."
                 }
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

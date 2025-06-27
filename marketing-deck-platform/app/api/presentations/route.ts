@@ -10,8 +10,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const status = searchParams.get('status')
     const isPublic = searchParams.get('isPublic')
+    
     // Track API usage
     await UserDataService.trackApiUsage(user.id, '/api/presentations', 'GET')
+    
     // Get user presentations
     let presentations = await UserDataService.getUserPresentations(user.id, limit)
     // Apply filters
@@ -104,7 +106,7 @@ export async function PUT(request: NextRequest) {
     // Track API usage
     await UserDataService.trackApiUsage(user.id, '/api/presentations', 'PUT')
     // Update presentation
-    const updatedPresentation = await UserDataService.updatePresentation(user.id, presentationData.id, {
+    const updatedPresentation = await UserDataService.updatePresentation(presentationData.id, {
       title: presentationData.title,
       description: presentationData.description,
       slides: presentationData.slides,

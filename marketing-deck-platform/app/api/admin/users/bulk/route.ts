@@ -51,7 +51,7 @@ export async function DELETE(request: NextRequest) {
     const { data: deletedUsers, error } = await supabase
       .from('profiles')
       .update({
-        email: supabase.sql`CONCAT('deleted_', id, '@deleted.com')`,
+        email: `deleted_${Date.now()}@deleted.com`,
         full_name: 'Deleted User',
         company_name: null,
         user_role: 'deleted',

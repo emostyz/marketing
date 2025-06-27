@@ -60,7 +60,7 @@ export class PowerPointExporter {
     this.pptx.author = presentation.author;
     this.pptx.company = presentation.company || '';
     this.pptx.title = presentation.title;
-    this.pptx.subject = presentation.subject || 'Data-driven presentation created with AEDRIN';
+    this.pptx.subject = presentation.subject || 'Data-driven presentation created with EasyDecks.ai';
     
     // Set layout (16:9 widescreen)
     this.pptx.layout = 'LAYOUT_16x9';
@@ -158,7 +158,7 @@ export class PowerPointExporter {
         // Company name/branding
         {
           text: {
-            text: 'Generated with AEDRIN',
+            text: 'Generated with EasyDecks.ai',
             options: {
               x: 0.3,
               y: 5.2,

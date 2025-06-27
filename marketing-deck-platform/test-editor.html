@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Slide Editor Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #1a1a1a;
+            color: white;
+        }
+        
+        .editor-container {
+            display: flex;
+            height: calc(100vh - 40px);
+            gap: 20px;
+        }
+        
+        .slide-canvas {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .properties-panel {
+            width: 300px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .toolbar {
+            background: #333;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #45a049;
+        }
+        
+        .draggable-element {
+            position: absolute;
+            cursor: move;
+            border: 2px dashed transparent;
+            min-width: 100px;
+            min-height: 50px;
+        }
+        
+        .draggable-element:hover {
+            border-color: #4CAF50;
+        }
+        
+        .draggable-element.selected {
+            border-color: #2196F3;
+            border-style: solid;
+        }
+        
+        .text-element {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .shape-element {
+            border-radius: 4px;
+        }
+        
+        .status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="status" id="status">Element added!</div>
+    
+    <div class="toolbar">
+        <button class="btn" onclick="addTextElement()">Add Text</button>
+        <button class="btn" onclick="addShape('rectangle')">Add Rectangle</button>
+        <button class="btn" onclick="addShape('circle')">Add Circle</button>
+        <button class="btn" onclick="deleteSelected()">Delete Selected</button>
+        <button class="btn" onclick="clearAll()">Clear All</button>
+    </div>
+    
+    <div class="editor-container">
+        <div class="slide-canvas" id="canvas">
+            <h2 style="position: absolute; top: 20px; left: 20px; color: #666; margin: 0;">Click buttons to add elements, drag to move them</h2>
+        </div>
+        
+        <div class="properties-panel">
+            <h3>Properties Panel</h3>
+            <div id="properties-content">
+                <p>Select an element to edit its properties</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedElement = null;
+        let dragOffset = { x: 0, y: 0 };
+        let isDragging = false;
+        let elementCounter = 0;
+
+        function showStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 2000);
+        }
+
+        function addTextElement() {
+            const canvas = document.getElementById('canvas');
+            const element = document.createElement('div');
+            element.className = 'draggable-element text-element';
+            element.innerHTML = `Text Element ${++elementCounter}`;
+            element.style.left = '100px';
+            element.style.top = '100px';
+            element.style.width = '200px';
+            element.style.height = '50px';
+            
+            setupElementEvents(element);
+            canvas.appendChild(element);
+            showStatus('Text element added!');
+        }
+
+        function addShape(type) {
+            const canvas = document.getElementById('canvas');
+            const element = document.createElement('div');
+            element.className = 'draggable-element shape-element';
+            element.style.left = '200px';
+            element.style.top = '150px';
+            element.style.width = '100px';
+            element.style.height = '100px';
+            
+            if (type === 'rectangle') {
+                element.style.backgroundColor = '#FF6B6B';
+                element.innerHTML = '<div style="text-align: center; line-height: 100px; color: white;">Rect</div>';
+            } else if (type === 'circle') {
+                element.style.backgroundColor = '#4ECDC4';
+                element.style.borderRadius = '50%';
+                element.innerHTML = '<div style="text-align: center; line-height: 100px; color: white;">Circle</div>';
+            }
+            
+            setupElementEvents(element);
+            canvas.appendChild(element);
+            showStatus(`${type} added!`);
+        }
+
+        function setupElementEvents(element) {
+            element.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                selectElement(element);
+                startDrag(e, element);
+            });
+
+            element.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectElement(element);
+            });
+        }
+
+        function selectElement(element) {
+            // Clear previous selection
+            document.querySelectorAll('.draggable-element').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Select new element
+            element.classList.add('selected');
+            selectedElement = element;
+            updatePropertiesPanel(element);
+        }
+
+        function updatePropertiesPanel(element) {
+            const content = document.getElementById('properties-content');
+            const isText = element.classList.contains('text-element');
+            const isShape = element.classList.contains('shape-element');
+            
+            content.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Width:</label>
+                    <input type="number" value="${parseInt(element.style.width)}" 
+                           onchange="updateElementStyle('width', this.value + 'px')" 
+                           style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Height:</label>
+                    <input type="number" value="${parseInt(element.style.height)}" 
+                           onchange="updateElementStyle('height', this.value + 'px')" 
+                           style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                </div>
+
+                ${isShape ? `
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Background Color:</label>
+                    <input type="color" value="${rgbToHex(element.style.backgroundColor)}" 
+                           onchange="updateElementStyle('backgroundColor', this.value)" 
+                           style="width: 100%; height: 40px; border: none; border-radius: 4px;">
+                </div>
+                ` : ''}
+
+                ${isText ? `
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Text:</label>
+                    <input type="text" value="${element.textContent}" 
+                           onchange="updateElementText(this.value)" 
+                           style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                </div>
+                ` : ''}
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Position X:</label>
+                    <input type="number" value="${parseInt(element.style.left)}" 
+                           onchange="updateElementStyle('left', this.value + 'px')" 
+                           style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Position Y:</label>
+                    <input type="number" value="${parseInt(element.style.top)}" 
+                           onchange="updateElementStyle('top', this.value + 'px')" 
+                           style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                </div>
+            `;
+        }
+
+        function updateElementStyle(property, value) {
+            if (selectedElement) {
+                selectedElement.style[property] = value;
+            }
+        }
+
+        function updateElementText(text) {
+            if (selectedElement && selectedElement.classList.contains('text-element')) {
+                selectedElement.textContent = text;
+            }
+        }
+
+        function rgbToHex(rgb) {
+            if (!rgb) return '#FF6B6B';
+            const result = rgb.match(/\d+/g);
+            if (!result) return '#FF6B6B';
+            return '#' + result.map(x => (+x).toString(16).padStart(2, '0')).join('');
+        }
+
+        function startDrag(e, element) {
+            isDragging = true;
+            const rect = element.getBoundingClientRect();
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function drag(e) {
+            if (!isDragging || !selectedElement) return;
+            
+            e.preventDefault();
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            
+            let newX = e.clientX - canvasRect.left - dragOffset.x;
+            let newY = e.clientY - canvasRect.top - dragOffset.y;
+            
+            // Constrain to canvas bounds
+            newX = Math.max(0, Math.min(newX, canvasRect.width - selectedElement.offsetWidth));
+            newY = Math.max(0, Math.min(newY, canvasRect.height - selectedElement.offsetHeight));
+            
+            selectedElement.style.left = newX + 'px';
+            selectedElement.style.top = newY + 'px';
+            
+            // Update properties panel if visible
+            updatePropertiesPanel(selectedElement);
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function deleteSelected() {
+            if (selectedElement) {
+                selectedElement.remove();
+                selectedElement = null;
+                document.getElementById('properties-content').innerHTML = '<p>Select an element to edit its properties</p>';
+                showStatus('Element deleted!');
+            }
+        }
+
+        function clearAll() {
+            const elements = document.querySelectorAll('.draggable-element');
+            elements.forEach(el => el.remove());
+            selectedElement = null;
+            document.getElementById('properties-content').innerHTML = '<p>Select an element to edit its properties</p>';
+            showStatus('All elements cleared!');
+        }
+
+        // Click canvas to deselect
+        document.getElementById('canvas').addEventListener('click', function(e) {
+            if (e.target === this) {
+                document.querySelectorAll('.draggable-element').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                selectedElement = null;
+                document.getElementById('properties-content').innerHTML = '<p>Select an element to edit its properties</p>';
+            }
+        });
+
+        // Show initial status
+        showStatus('Simple Slide Editor loaded! Try adding elements.');
+    </script>
+</body>
+</html>

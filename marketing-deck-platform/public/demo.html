@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real AI Brain Slide Generation Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .slide { 
+            background: white; 
+            width: 800px; 
+            height: 600px; 
+            margin: 20px auto; 
+            padding: 40px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+        }
+        .slide h1 { 
+            font-size: 36px; 
+            color: #1F2937; 
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .slide h2 { 
+            font-size: 24px; 
+            color: #6B7280; 
+            margin-bottom: 30px;
+            font-weight: normal;
+        }
+        .slide h3 {
+            font-size: 28px;
+            color: #1F2937;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .metric-card {
+            background: #F9FAFB;
+            border: 2px solid #3B82F6;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 5px;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 10px;
+        }
+        .metric-trend {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .insight-card {
+            background: #F8FAFC;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .insight-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 10px;
+        }
+        .insight-description {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .insight-impact {
+            font-size: 14px;
+            color: #0F766E;
+            background: #F0FDFA;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #0D9488;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 24px;
+            margin: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .primary { background: #3B82F6; color: white; }
+        .secondary { background: #6B7280; color: white; }
+        .success { background: #10B981; color: white; }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status.loading { background: #DBEAFE; color: #1E40AF; }
+        .status.success { background: #D1FAE5; color: #065F46; }
+        .status.error { background: #FEE2E2; color: #DC2626; }
+        .evidence-list {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 10px;
+        }
+        .evidence-list li {
+            margin: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Real AI Brain Slide Generation</h1>
+        <p>Testing actual slide generation with real business data and AI insights.</p>
+        
+        <div class="controls">
+            <button class="primary" onclick="generateRealSlides()">🧠 Generate Real Slides with AI Brain</button>
+            <button class="secondary" onclick="showTestData()">📊 View Test Data</button>
+        </div>
+        
+        <div id="status"></div>
+        <div id="slides-container"></div>
+    </div>
+
+    <script>
+        // Real test data - SaaS company performance
+        const realBusinessData = [
+            {"Date": "2024-01", "Revenue": 450000, "Customers": 1200, "Region": "North America", "Churn_Rate": 3.2, "CAC": 180, "MRR": 85000, "Growth_Rate": 15.2},
+            {"Date": "2024-02", "Revenue": 520000, "Customers": 1350, "Region": "North America", "Churn_Rate": 2.8, "CAC": 165, "MRR": 95000, "Growth_Rate": 18.5},
+            {"Date": "2024-03", "Revenue": 380000, "Customers": 980, "Region": "Europe", "Churn_Rate": 4.1, "CAC": 220, "MRR": 72000, "Growth_Rate": 8.3},
+            {"Date": "2024-04", "Revenue": 610000, "Customers": 1580, "Region": "North America", "Churn_Rate": 2.9, "CAC": 155, "MRR": 115000, "Growth_Rate": 22.1},
+            {"Date": "2024-05", "Revenue": 420000, "Customers": 1100, "Region": "Europe", "Churn_Rate": 3.8, "CAC": 210, "MRR": 78000, "Growth_Rate": 12.7},
+            {"Date": "2024-06", "Revenue": 550000, "Customers": 1420, "Region": "North America", "Churn_Rate": 2.5, "CAC": 145, "MRR": 125000, "Growth_Rate": 20.8}
+        ];
+
+        const businessContext = {
+            industry: "SaaS",
+            goals: ["Increase Q4 revenue by 40%", "Reduce customer churn", "Expand European market"],
+            targetAudience: "executives",
+            timeHorizon: "Q4 2024",
+            companyName: "TechCorp SaaS",
+            primaryGoal: "Accelerate revenue growth and market expansion"
+        };
+
+        async function generateRealSlides() {
+            const statusDiv = document.getElementById('status');
+            const slidesContainer = document.getElementById('slides-container');
+            
+            statusDiv.innerHTML = '<div class="status loading">🔄 Calling AI Brain API with real business data...</div>';
+            slidesContainer.innerHTML = '';
+
+            try {
+                // Step 1: Get AI Brain insights
+                console.log('🧠 Calling AI Brain with real data...');
+                const response = await fetch('/api/ai/ultimate-brain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: realBusinessData,
+                        context: businessContext
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI Brain API failed: ${response.status}`);
+                }
+
+                const aiResult = await response.json();
+                
+                if (!aiResult.success || !aiResult.analysis) {
+                    throw new Error('Invalid AI Brain response');
+                }
+
+                statusDiv.innerHTML = '<div class="status success">✅ AI Brain generated insights! Creating slides...</div>';
+
+                // Step 2: Generate actual slides using the AI insights
+                generateSlidesFromInsights(aiResult.analysis);
+
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Failed: ${error.message}</div>`;
+                console.error('Slide generation error:', error);
+            }
+        }
+
+        function generateSlidesFromInsights(analysis) {
+            const slidesContainer = document.getElementById('slides-container');
+            
+            // Slide 1: Title Slide
+            const titleSlide = createTitleSlide();
+            
+            // Slide 2: Key Metrics
+            const metricsSlide = createMetricsSlide(analysis);
+            
+            // Slide 3: AI Insights
+            const insightsSlide = createInsightsSlide(analysis);
+            
+            // Slide 4: Recommendations
+            const recommendationsSlide = createRecommendationsSlide(analysis);
+
+            slidesContainer.appendChild(titleSlide);
+            slidesContainer.appendChild(metricsSlide);
+            slidesContainer.appendChild(insightsSlide);
+            slidesContainer.appendChild(recommendationsSlide);
+
+            // Update status
+            document.getElementById('status').innerHTML = 
+                `<div class="status success">🎉 Generated 4 slides with ${analysis.strategicInsights?.length || 0} AI insights!</div>`;
+        }
+
+        function createTitleSlide() {
+            const slide = document.createElement('div');
+            slide.className = 'slide';
+            slide.innerHTML = `
+                <div style="text-align: center; margin-top: 100px;">
+                    <h1>${businessContext.companyName}</h1>
+                    <h2>${businessContext.primaryGoal}</h2>
+                    <div style="margin-top: 40px; font-size: 18px; color: #6B7280;">
+                        Executive Briefing • ${businessContext.timeHorizon}
+                    </div>
+                    <div style="margin-top: 20px; font-size: 14px; color: #9CA3AF;">
+                        AI-Powered Business Analysis
+                    </div>
+                </div>
+            `;
+            return slide;
+        }
+
+        function createMetricsSlide(analysis) {
+            const slide = document.createElement('div');
+            slide.className = 'slide';
+            
+            // Calculate real metrics from data
+            const totalRevenue = realBusinessData.reduce((sum, row) => sum + row.Revenue, 0);
+            const avgCustomers = Math.round(realBusinessData.reduce((sum, row) => sum + row.Customers, 0) / realBusinessData.length);
+            const avgChurn = (realBusinessData.reduce((sum, row) => sum + row.Churn_Rate, 0) / realBusinessData.length).toFixed(1);
+            const avgGrowth = (realBusinessData.reduce((sum, row) => sum + row.Growth_Rate, 0) / realBusinessData.length).toFixed(1);
+
+            slide.innerHTML = `
+                <h3>Key Performance Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">$${(totalRevenue / 1000000).toFixed(1)}M</div>
+                        <div class="metric-label">Total Revenue (6 months)</div>
+                        <div class="metric-trend">↗ Growing</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${avgCustomers}</div>
+                        <div class="metric-label">Average Customers</div>
+                        <div class="metric-trend">↗ +${avgGrowth}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${avgChurn}%</div>
+                        <div class="metric-label">Average Churn Rate</div>
+                        <div class="metric-trend">↘ Needs attention</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${avgGrowth}%</div>
+                        <div class="metric-label">Average Growth Rate</div>
+                        <div class="metric-trend">↗ Strong performance</div>
+                    </div>
+                </div>
+                <div style="margin-top: 30px; font-size: 14px; color: #6B7280; text-align: center;">
+                    Data source: 6 months of operational metrics (Jan-Jun 2024)
+                </div>
+            `;
+            return slide;
+        }
+
+        function createInsightsSlide(analysis) {
+            const slide = document.createElement('div');
+            slide.className = 'slide';
+            
+            const insights = analysis.strategicInsights || [];
+            
+            slide.innerHTML = `
+                <h3>AI-Generated Strategic Insights</h3>
+                ${insights.slice(0, 2).map(insight => `
+                    <div class="insight-card">
+                        <div class="insight-title">${insight.title || 'Strategic Insight'}</div>
+                        <div class="insight-description">${insight.description || 'Analysis of business performance patterns.'}</div>
+                        <div class="insight-impact">
+                            💡 Business Impact: ${insight.businessImplication || 'Strategic recommendation for growth.'}
+                        </div>
+                        <ul class="evidence-list">
+                            ${(insight.evidence || []).map(evidence => `<li>📊 ${evidence}</li>`).join('')}
+                        </ul>
+                    </div>
+                `).join('')}
+                <div style="margin-top: 20px; font-size: 12px; color: #9CA3AF; text-align: right;">
+                    Confidence: ${analysis.overallConfidence || 85}% • Generated by AI Brain
+                </div>
+            `;
+            return slide;
+        }
+
+        function createRecommendationsSlide(analysis) {
+            const slide = document.createElement('div');
+            slide.className = 'slide';
+            
+            const recommendations = analysis.recommendations || [];
+            const insights = analysis.strategicInsights || [];
+            
+            slide.innerHTML = `
+                <h3>Strategic Recommendations</h3>
+                <div style="margin: 30px 0;">
+                    ${recommendations.map((rec, index) => `
+                        <div class="insight-card">
+                            <div class="insight-title">${index + 1}. ${rec.title || 'Strategic Action'}</div>
+                            <div class="insight-description">${rec.description || 'Implementation strategy'}</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; font-size: 12px;">
+                                <div><strong>Timeline:</strong> ${rec.timeline || '90 days'}</div>
+                                <div><strong>Expected ROI:</strong> ${rec.expectedROI ? (rec.expectedROI * 100).toFixed(0) + '%' : 'TBD'}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    
+                    ${insights.slice(0, 1).map(insight => `
+                        <div class="insight-card">
+                            <div class="insight-title">Key Action: ${insight.title}</div>
+                            <div class="insight-impact">
+                                ${insight.businessImplication}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 30px; padding: 15px; background: #F0F9FF; border-radius: 8px; border-left: 4px solid #0EA5E9;">
+                    <strong>Next Steps:</strong> Review recommendations with leadership team and prioritize implementation based on resource availability and strategic impact.
+                </div>
+            `;
+            return slide;
+        }
+
+        function showTestData() {
+            const slidesContainer = document.getElementById('slides-container');
+            slidesContainer.innerHTML = `
+                <div class="slide">
+                    <h3>Real Test Data - SaaS Performance Metrics</h3>
+                    <div style="overflow-x: auto; margin: 20px 0;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #F3F4F6;">
+                                    <th style="padding: 8px; border: 1px solid #D1D5DB;">Date</th>
+                                    <th style="padding: 8px; border: 1px solid #D1D5DB;">Revenue</th>
+                                    <th style="padding: 8px; border: 1px solid #D1D5DB;">Customers</th>
+                                    <th style="padding: 8px; border: 1px solid #D1D5DB;">Region</th>
+                                    <th style="padding: 8px; border: 1px solid #D1D5DB;">Churn %</th>
+                                    <th style="padding: 8px; border: 1px solid #D1D5DB;">Growth %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${realBusinessData.map(row => `
+                                    <tr>
+                                        <td style="padding: 8px; border: 1px solid #D1D5DB;">${row.Date}</td>
+                                        <td style="padding: 8px; border: 1px solid #D1D5DB;">$${row.Revenue.toLocaleString()}</td>
+                                        <td style="padding: 8px; border: 1px solid #D1D5DB;">${row.Customers}</td>
+                                        <td style="padding: 8px; border: 1px solid #D1D5DB;">${row.Region}</td>
+                                        <td style="padding: 8px; border: 1px solid #D1D5DB;">${row.Churn_Rate}%</td>
+                                        <td style="padding: 8px; border: 1px solid #D1D5DB;">${row.Growth_Rate}%</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 20px; padding: 15px; background: #FFFBEB; border-radius: 6px;">
+                        <strong>Data Summary:</strong> 6 months of SaaS performance data showing revenue growth, customer acquisition, and regional performance differences.
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

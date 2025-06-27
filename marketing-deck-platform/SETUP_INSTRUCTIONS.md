@@ -1,4 +1,4 @@
-# 🚀 AEDRIN Platform - Setup Instructions
+# 🚀 EasyDecks.ai Platform - Setup Instructions
 
 ## 🎯 Current Status
 ✅ **Server is RUNNING** at http://localhost:3000  
@@ -47,7 +47,7 @@ npm install @supabase/supabase-js
 - Create Presentation: http://localhost:3000/editor/new
 
 ### 2. **Test Login**
-- Email: `demo@aedrin.com`
+- Email: `demo@easydecks.ai`
 - Password: `password123`
 - OR click "Try Demo" button
 
@@ -156,4 +156,4 @@ npm test
 npm install
 ```
 
-Your AEDRIN platform is **90% complete** and ready for professional use! 🎉
+Your EasyDecks.ai platform is **90% complete** and ready for professional use! 🎉

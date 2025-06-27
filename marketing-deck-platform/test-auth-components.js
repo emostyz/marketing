@@ -13,7 +13,7 @@ const mockUser = {
 
 const mockDemoUser = {
   id: 'demo-user',
-  email: 'demo@aedrin.com',
+  email: 'demo@easydecks.ai',
   name: 'Demo User',
   subscription: 'pro',
   demo: true

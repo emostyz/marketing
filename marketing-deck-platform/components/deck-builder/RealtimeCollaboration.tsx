@@ -206,7 +206,7 @@ export function RealtimeCollaboration({
     const demoCollaborators: Collaborator[] = [
       {
         id: '2',
-        userId: 'demo-user-1',
+        userId: '00000000-0000-0000-0000-000000000001',
         userName: 'Sarah Chen',
         userEmail: 'sarah@company.com',
         userAvatar: '👩‍💼',
@@ -227,7 +227,7 @@ export function RealtimeCollaboration({
       },
       {
         id: '3',
-        userId: 'demo-user-2',
+        userId: '00000000-0000-0000-0000-000000000001',
         userName: 'Marcus Rodriguez',
         userEmail: 'marcus@company.com',
         userAvatar: '👨‍💻',
@@ -253,7 +253,7 @@ export function RealtimeCollaboration({
     const demoCursors: CollaboratorCursor[] = [
       {
         id: 'cursor-2',
-        userId: 'demo-user-1',
+        userId: '00000000-0000-0000-0000-000000000001',
         userName: 'Sarah Chen',
         userAvatar: '👩‍💼',
         position: { x: 450, y: 300 },
@@ -270,7 +270,7 @@ export function RealtimeCollaboration({
     const demoActivities: CollaborationActivity[] = [
       {
         id: 'activity-1',
-        userId: 'demo-user-1',
+        userId: '00000000-0000-0000-0000-000000000001',
         userName: 'Sarah Chen',
         userAvatar: '👩‍💼',
         action: 'added_element',
@@ -280,7 +280,7 @@ export function RealtimeCollaboration({
       },
       {
         id: 'activity-2',
-        userId: 'demo-user-2',
+        userId: '00000000-0000-0000-0000-000000000001',
         userName: 'Marcus Rodriguez',
         userAvatar: '👨‍💻',
         action: 'added_comment',

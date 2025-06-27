@@ -1,5 +1,5 @@
 /**
- * AEDRIN Slide QA System
+ * EasyDecks.ai Slide QA System
  * Comprehensive quality assurance for slide generation with OpenAI validation
  */
 

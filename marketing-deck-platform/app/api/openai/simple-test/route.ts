@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { OpenAIFallback } from '@/lib/ai/openai-fallback'
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,6 +8,18 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) {
       return NextResponse.json({ error: 'No OpenAI API key' }, { status: 500 })
+    }
+    
+    // Check if OpenAI is available
+    const isAvailable = await OpenAIFallback.checkOpenAIAvailability()
+    if (!isAvailable) {
+      console.log('🎭 Using fallback mode due to OpenAI unavailability')
+      const body = await request.json()
+      const fallbackResponse = OpenAIFallback.createFallbackResponse(body.data || [])
+      return NextResponse.json({
+        ...fallbackResponse,
+        message: 'OpenAI unavailable - using mock analysis'
+      })
     }
     
     const body = await request.json()
@@ -22,7 +35,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4.1',
         messages: [
           {
             role: 'user',

@@ -11,10 +11,10 @@ async function testExistingUsers() {
   try {
     // Test some common email patterns
     const testEmails = [
-      'admin@aedrin.com',
-      'test@aedrin.com',
-      'demo@aedrin.com',
-      'user@aedrin.com',
+      'admin@easydecks.ai',
+      'test@easydecks.ai',
+      'demo@easydecks.ai',
+      'user@easydecks.ai',
       'admin@example.com',
       'test@example.com',
       'demo@example.com',

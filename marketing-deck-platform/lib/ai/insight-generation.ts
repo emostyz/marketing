@@ -3,6 +3,7 @@
 
 import { OpenAI } from 'openai'
 import { AIReadyData } from './data-preparation'
+import { rateLimitedOpenAICall } from './rate-limiter'
 
 export interface Insight {
   id: string
@@ -42,11 +43,26 @@ export interface InsightGenerationResult {
 
 export class InsightGenerationEngine {
   private openai: OpenAI
+  private rateLimitDelay = 1000 // 1 second between calls
+  private lastCallTime = 0
   
   constructor(apiKey?: string) {
     this.openai = new OpenAI({
       apiKey: apiKey || process.env.OPENAI_API_KEY
     })
+  }
+
+  private async rateLimitedCall<T>(fn: () => Promise<T>): Promise<T> {
+    const now = Date.now()
+    const timeSinceLastCall = now - this.lastCallTime
+    
+    if (timeSinceLastCall < this.rateLimitDelay) {
+      const waitTime = this.rateLimitDelay - timeSinceLastCall
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+    }
+    
+    this.lastCallTime = Date.now()
+    return fn()
   }
 
   /**
@@ -403,8 +419,8 @@ export class InsightGenerationEngine {
     try {
       const prompt = this.buildOpportunityPrompt(data, context)
       
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+      const response = await rateLimitedOpenAICall(() => this.openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -417,7 +433,7 @@ export class InsightGenerationEngine {
         ],
         temperature: 0.7,
         response_format: { type: "json_object" }
-      })
+      }), 1500)
 
       const result = JSON.parse(response.choices[0].message.content || '{"opportunities": []}')
       
@@ -551,8 +567,8 @@ Write for C-level executives. Include:
 
 Be confident and specific. Use data from the insights.`
 
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+      const response = await rateLimitedOpenAICall(() => this.openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -565,7 +581,7 @@ Be confident and specific. Use data from the insights.`
         ],
         temperature: 0.3,
         max_tokens: 200
-      })
+      }), 800)
 
       return response.choices[0].message.content || 'Executive summary unavailable'
 
@@ -614,8 +630,8 @@ Think outside the box. Look for:
 
 Return JSON array with creative insights.`
 
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+      const response = await rateLimitedOpenAICall(() => this.openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -628,7 +644,7 @@ Return JSON array with creative insights.`
         ],
         temperature: 0.8, // Higher creativity
         response_format: { type: "json_object" }
-      })
+      }), 1200)
 
       const result = JSON.parse(response.choices[0].message.content || '{"insights": []}')
       
@@ -687,8 +703,8 @@ Think like a strategy consultant. Focus on:
 
 Return JSON with strategic insights that would impress a board of directors.`
 
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+      const response = await rateLimitedOpenAICall(() => this.openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -701,7 +717,7 @@ Return JSON with strategic insights that would impress a board of directors.`
         ],
         temperature: 0.6,
         response_format: { type: "json_object" }
-      })
+      }), 1300)
 
       const result = JSON.parse(response.choices[0].message.content || '{"insights": []}')
       

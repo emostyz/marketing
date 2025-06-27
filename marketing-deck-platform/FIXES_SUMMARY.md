@@ -179,7 +179,7 @@ The marketing deck platform is now fully functional with:
 
 Users can now successfully upload data, generate AI-powered presentations, and edit them in the deck builder. 
 
-# AEDRIN Platform Fixes Summary
+# EasyDecks.ai Platform Fixes Summary
 
 ## Issues Fixed
 

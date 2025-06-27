@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Brain Test - Fallback Mode</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #1a1a1a;
+            color: white;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .status.info {
+            background: #1e3a8a;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .status.success {
+            background: #166534;
+            border-left: 4px solid #22c55e;
+        }
+        
+        .status.warning {
+            background: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .status.error {
+            background: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .insight {
+            background: #2a2a3a;
+            border-left: 4px solid #7c3aed;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .slide-preview {
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .metric {
+            display: inline-block;
+            background: #374151;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 AI Brain Test - Fallback Mode Demo</h1>
+        
+        <div class="card">
+            <h2>OpenAI Status Check</h2>
+            <p>This demo shows how the AI brain handles OpenAI quota/billing issues with intelligent fallback.</p>
+            
+            <div id="openai-status" class="status info">
+                <strong>Status:</strong> Checking OpenAI availability...
+            </div>
+            
+            <button class="btn" onclick="checkOpenAI()" id="check-btn">Check OpenAI Status</button>
+            <button class="btn" onclick="testAnalysis()" id="analyze-btn" disabled>Test Analysis</button>
+            <button class="btn" onclick="generateSlides()" id="slides-btn" disabled>Generate Slides</button>
+        </div>
+        
+        <div class="card" id="results-section" style="display: none;">
+            <h2>Analysis Results</h2>
+            <div id="results-content"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Expected Behavior:</h3>
+            <ul>
+                <li>✅ Detect OpenAI quota exceeded (429 error)</li>
+                <li>🎭 Automatically switch to fallback mode</li>
+                <li>📊 Generate realistic mock insights and analysis</li>
+                <li>📑 Create professional slide structure</li>
+                <li>⚡ Return results immediately without API delays</li>
+                <li>🔄 Graceful degradation - user doesn't notice the difference</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let isChecking = false;
+        let openaiAvailable = false;
+
+        async function checkOpenAI() {
+            if (isChecking) return;
+            
+            isChecking = true;
+            const statusEl = document.getElementById('openai-status');
+            const checkBtn = document.getElementById('check-btn');
+            
+            statusEl.innerHTML = '<div class="loading"></div>Checking OpenAI API status...';
+            statusEl.className = 'status info';
+            checkBtn.disabled = true;
+            
+            try {
+                // Test OpenAI availability through our endpoint
+                const response = await fetch('/api/test-env');
+                const data = await response.json();
+                
+                if (data.environment?.openai) {
+                    // Key is present, now test if it works
+                    try {
+                        const testResponse = await fetch('/api/openai/simple-test', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ data: [{ test: 'data' }] })
+                        });
+                        
+                        const testData = await testResponse.json();
+                        
+                        if (testData.fallbackMode) {
+                            statusEl.innerHTML = '🎭 <strong>OpenAI Unavailable</strong> - Using fallback mode (quota exceeded)';
+                            statusEl.className = 'status warning';
+                            openaiAvailable = false;
+                        } else {
+                            statusEl.innerHTML = '✅ <strong>OpenAI Available</strong> - API is working normally';
+                            statusEl.className = 'status success';
+                            openaiAvailable = true;
+                        }
+                    } catch (error) {
+                        statusEl.innerHTML = '❌ <strong>OpenAI Error</strong> - ' + error.message;
+                        statusEl.className = 'status error';
+                        openaiAvailable = false;
+                    }
+                } else {
+                    statusEl.innerHTML = '⚠️ <strong>No OpenAI Key</strong> - API key not configured';
+                    statusEl.className = 'status error';
+                    openaiAvailable = false;
+                }
+                
+                // Enable test buttons
+                document.getElementById('analyze-btn').disabled = false;
+                document.getElementById('slides-btn').disabled = false;
+                
+            } catch (error) {
+                statusEl.innerHTML = '❌ <strong>Server Error</strong> - ' + error.message;
+                statusEl.className = 'status error';
+            } finally {
+                isChecking = false;
+                checkBtn.disabled = false;
+            }
+        }
+
+        async function testAnalysis() {
+            const resultsSection = document.getElementById('results-section');
+            const resultsContent = document.getElementById('results-content');
+            
+            resultsSection.style.display = 'block';
+            resultsContent.innerHTML = '<div class="loading"></div>Running AI analysis...';
+            
+            try {
+                const testData = [
+                    { revenue: 50000, month: 'Jan', customers: 120, satisfaction: 8.5 },
+                    { revenue: 65000, month: 'Feb', customers: 140, satisfaction: 8.7 },
+                    { revenue: 58000, month: 'Mar', customers: 130, satisfaction: 8.3 },
+                    { revenue: 72000, month: 'Apr', customers: 160, satisfaction: 9.1 }
+                ];
+                
+                const context = {
+                    companyName: 'Demo Company',
+                    industry: 'Technology',
+                    primaryGoal: 'Increase revenue and customer satisfaction'
+                };
+                
+                const response = await fetch('/api/ai/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: testData, context })
+                });
+                
+                const result = await response.json();
+                
+                let html = '';
+                
+                if (result.metadata?.fallbackMode) {
+                    html += '<div class="status warning">🎭 <strong>Fallback Mode Active</strong> - Generated mock analysis due to OpenAI unavailability</div>';
+                } else {
+                    html += '<div class="status success">✅ <strong>Real AI Analysis</strong> - Generated using OpenAI API</div>';
+                }
+                
+                // Show insights
+                if (result.data?.insights?.insights) {
+                    html += '<h3>📊 Generated Insights:</h3>';
+                    result.data.insights.insights.forEach((insight, i) => {
+                        html += `
+                            <div class="insight">
+                                <h4>${insight.title}</h4>
+                                <p><strong>Type:</strong> ${insight.type} | <strong>Confidence:</strong> ${insight.confidence}%</p>
+                                <p>${insight.description}</p>
+                                <p><strong>Business Impact:</strong> ${insight.businessImplication}</p>
+                                <p><strong>Recommendation:</strong> ${insight.actionableRecommendation}</p>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // Show metrics
+                html += '<h3>📈 Analysis Metrics:</h3>';
+                html += `<div class="metric">Confidence: ${result.metadata.confidence}%</div>`;
+                html += `<div class="metric">Insights: ${result.metadata.totalInsights}</div>`;
+                html += `<div class="metric">Processing: ${result.metadata.processingTimeMs}ms</div>`;
+                
+                resultsContent.innerHTML = html;
+                
+            } catch (error) {
+                resultsContent.innerHTML = `<div class="status error">❌ <strong>Analysis Failed:</strong> ${error.message}</div>`;
+            }
+        }
+
+        async function generateSlides() {
+            const resultsSection = document.getElementById('results-section');
+            const resultsContent = document.getElementById('results-content');
+            
+            resultsSection.style.display = 'block';
+            resultsContent.innerHTML = '<div class="loading"></div>Generating slides...';
+            
+            try {
+                const testData = [
+                    { metric: 'Revenue', q1: 150000, q2: 180000, q3: 165000, q4: 220000 },
+                    { metric: 'Customers', q1: 450, q2: 520, q3: 490, q4: 640 },
+                    { metric: 'Satisfaction', q1: 8.2, q2: 8.5, q3: 8.1, q4: 8.9 }
+                ];
+                
+                const context = {
+                    companyName: 'Demo Corp',
+                    industry: 'SaaS',
+                    primaryGoal: 'Quarterly performance review'
+                };
+                
+                const response = await fetch('/api/ai/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: testData, context })
+                });
+                
+                const result = await response.json();
+                
+                let html = '';
+                
+                if (result.metadata?.fallbackMode) {
+                    html += '<div class="status warning">🎭 <strong>Fallback Mode</strong> - Generated mock slides due to OpenAI quota</div>';
+                } else {
+                    html += '<div class="status success">✅ <strong>AI Generated</strong> - Created using OpenAI API</div>';
+                }
+                
+                // Show slide structure
+                if (result.data?.slideStructure) {
+                    html += '<h3>📑 Generated Slide Structure:</h3>';
+                    result.data.slideStructure.forEach((slide, i) => {
+                        html += `
+                            <div class="slide-preview">
+                                <h4>Slide ${i + 1}: ${slide.title}</h4>
+                                <p><strong>Type:</strong> ${slide.type}</p>
+                                ${slide.subtitle ? `<p><strong>Subtitle:</strong> ${slide.subtitle}</p>` : ''}
+                                ${slide.content?.summary ? `<p><strong>Summary:</strong> ${slide.content.summary}</p>` : ''}
+                                ${slide.keyTakeaways ? `<p><strong>Key Points:</strong> ${slide.keyTakeaways.join(', ')}</p>` : ''}
+                            </div>
+                        `;
+                    });
+                }
+                
+                resultsContent.innerHTML = html;
+                
+            } catch (error) {
+                resultsContent.innerHTML = `<div class="status error">❌ <strong>Slide Generation Failed:</strong> ${error.message}</div>`;
+            }
+        }
+
+        // Auto-check on page load
+        window.addEventListener('load', () => {
+            setTimeout(checkOpenAI, 1000);
+        });
+    </script>
+</body>
+</html>

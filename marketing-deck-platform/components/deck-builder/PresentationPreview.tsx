@@ -156,6 +156,123 @@ export function PresentationPreview({
     resetSlideTimer()
   }, [currentSlideIndex])
 
+  // Transition helper functions
+  const getSlideTransitionInitial = (slide: any) => {
+    const transition = slide?.transition
+    if (!transition) return { x: 100, opacity: 0 }
+
+    switch (transition.type) {
+      case 'fade':
+        return { opacity: 0 }
+      case 'slide':
+        switch (transition.direction) {
+          case 'left': return { x: -100, opacity: 0 }
+          case 'right': return { x: 100, opacity: 0 }
+          case 'up': return { y: -100, opacity: 0 }
+          case 'down': return { y: 100, opacity: 0 }
+          default: return { x: 100, opacity: 0 }
+        }
+      case 'zoom':
+        return { scale: 0.8, opacity: 0 }
+      case 'flip':
+        return { rotateY: 90, opacity: 0 }
+      case 'cube':
+        return { rotateX: -90, opacity: 0 }
+      case 'push':
+        return { x: transition.direction === 'left' ? -100 : 100, opacity: 1 }
+      default:
+        return { x: 100, opacity: 0 }
+    }
+  }
+
+  const getSlideTransitionAnimate = (slide: any) => {
+    return { x: 0, y: 0, scale: 1, opacity: 1, rotateX: 0, rotateY: 0 }
+  }
+
+  const getSlideTransitionExit = (slide: any) => {
+    const transition = slide?.transition
+    if (!transition) return { x: -100, opacity: 0 }
+
+    switch (transition.type) {
+      case 'fade':
+        return { opacity: 0 }
+      case 'slide':
+        switch (transition.direction) {
+          case 'left': return { x: 100, opacity: 0 }
+          case 'right': return { x: -100, opacity: 0 }
+          case 'up': return { y: 100, opacity: 0 }
+          case 'down': return { y: -100, opacity: 0 }
+          default: return { x: -100, opacity: 0 }
+        }
+      case 'zoom':
+        return { scale: 1.2, opacity: 0 }
+      case 'flip':
+        return { rotateY: -90, opacity: 0 }
+      case 'cube':
+        return { rotateX: 90, opacity: 0 }
+      case 'push':
+        return { x: transition.direction === 'left' ? 100 : -100, opacity: 1 }
+      default:
+        return { x: -100, opacity: 0 }
+    }
+  }
+
+  const getSlideTransitionConfig = (slide: any) => {
+    const transition = slide?.transition
+    const duration = (transition?.duration || 500) / 1000 // Convert to seconds
+    
+    return {
+      type: 'spring',
+      stiffness: 300,
+      damping: 30,
+      duration
+    }
+  }
+
+  // Element animation helper function
+  const getElementAnimation = (element: any, slideAnimations: any) => {
+    const animation = slideAnimations?.[element.id]
+    if (!animation) return {}
+
+    const delay = (animation.delay || 0) / 1000
+    const duration = (animation.duration || 300) / 1000
+
+    switch (animation.entrance) {
+      case 'fadeIn':
+        return {
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          transition: { delay, duration }
+        }
+      case 'slideIn':
+        return {
+          initial: { x: -50, opacity: 0 },
+          animate: { x: 0, opacity: 1 },
+          transition: { delay, duration }
+        }
+      case 'zoomIn':
+        return {
+          initial: { scale: 0.5, opacity: 0 },
+          animate: { scale: 1, opacity: 1 },
+          transition: { delay, duration }
+        }
+      case 'bounceIn':
+        return {
+          initial: { scale: 0.3, opacity: 0 },
+          animate: { scale: 1, opacity: 1 },
+          transition: { delay, duration, type: 'spring', bounce: 0.5 }
+        }
+      case 'flipIn':
+        return {
+          initial: { rotateY: 90, opacity: 0 },
+          animate: { rotateY: 0, opacity: 1 },
+          transition: { delay, duration }
+        }
+      default:
+        return {}
+    }
+  }
+
   if (!isOpen || !presentation) return null
 
   const currentSlide = presentation.slides[currentSlideIndex]
@@ -222,37 +339,84 @@ export function PresentationPreview({
           <div className="flex-1 flex items-center justify-center p-8">
             <motion.div
               key={currentSlideIndex}
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -100, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              initial={getSlideTransitionInitial(currentSlide)}
+              animate={getSlideTransitionAnimate(currentSlide)}
+              exit={getSlideTransitionExit(currentSlide)}
+              transition={getSlideTransitionConfig(currentSlide)}
               className="w-full h-full max-w-5xl max-h-[80vh] bg-white rounded-lg shadow-2xl overflow-hidden"
               style={{ aspectRatio: '16/9' }}
             >
               {/* Slide Content */}
-              <div className="w-full h-full p-8 flex flex-col">
-                <h1 className="text-4xl font-bold text-gray-900 mb-6">
-                  {currentSlide?.title || `Slide ${currentSlideIndex + 1}`}
-                </h1>
-                
-                {/* Mock slide content */}
-                <div className="flex-1 grid grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <h2 className="text-2xl font-semibold text-gray-800">Key Points</h2>
-                    <ul className="space-y-2 text-lg text-gray-700">
-                      <li>• First important point</li>
-                      <li>• Second key insight</li>
-                      <li>• Third critical finding</li>
-                      <li>• Fourth strategic recommendation</li>
-                    </ul>
-                  </div>
-                  <div className="bg-gray-100 rounded-lg p-6 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-32 h-32 bg-blue-500 rounded-lg mx-auto mb-4"></div>
-                      <p className="text-gray-600">Chart or Visual Content</p>
-                    </div>
-                  </div>
-                </div>
+              <div 
+                className="w-full h-full relative overflow-hidden"
+                style={currentSlide?.background ? {
+                  backgroundColor: currentSlide.background.type === 'solid' ? currentSlide.background.value : '#ffffff',
+                  background: currentSlide.background.type === 'gradient' ? currentSlide.background.value : undefined
+                } : { backgroundColor: '#ffffff' }}
+              >
+                {/* Render slide elements */}
+                {currentSlide?.elements?.map((element: any) => {
+                  const elementAnimation = getElementAnimation(element, currentSlide?.elementAnimations)
+                  
+                  return (
+                    <motion.div
+                      key={element.id}
+                      className="absolute"
+                      style={{
+                        left: `${(element.position.x / 1280) * 100}%`,
+                        top: `${(element.position.y / 720) * 100}%`,
+                        width: `${(element.size.width / 1280) * 100}%`,
+                        height: `${(element.size.height / 720) * 100}%`,
+                        transform: `rotate(${element.rotation || 0}deg)`,
+                        fontSize: `${(element.style?.fontSize || 16) * 0.8}px`,
+                        fontFamily: element.style?.fontFamily || 'Inter',
+                        fontWeight: element.style?.fontWeight || 'normal',
+                        color: element.style?.color || '#000000',
+                        backgroundColor: element.style?.backgroundColor || 'transparent',
+                        textAlign: element.style?.textAlign || 'left',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: element.style?.textAlign === 'center' ? 'center' : 
+                                       element.style?.textAlign === 'right' ? 'flex-end' : 'flex-start',
+                        padding: element.type === 'text' ? '8px' : '0',
+                        borderRadius: `${element.style?.borderRadius || 0}px`,
+                        border: element.style?.borderWidth ? `${element.style.borderWidth}px solid ${element.style.borderColor || '#000'}` : 'none',
+                        opacity: element.style?.opacity || 1
+                      }}
+                      {...elementAnimation}
+                    >
+                    {element.type === 'text' && (
+                      <div className="whitespace-pre-wrap overflow-hidden w-full h-full">
+                        {element.content || 'Text element'}
+                      </div>
+                    )}
+                    {element.type === 'image' && element.content && (
+                      <img 
+                        src={element.content} 
+                        alt="Slide element" 
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    {element.type === 'shape' && (
+                      <div 
+                        className="w-full h-full"
+                        style={{
+                          backgroundColor: element.style?.backgroundColor || '#3B82F6',
+                          borderRadius: element.content === 'circle' ? '50%' : '8px'
+                        }}
+                      />
+                    )}
+                    {element.type === 'chart' && (
+                      <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div className="text-center text-gray-600">
+                          <div className="w-16 h-16 bg-blue-500 rounded mx-auto mb-2"></div>
+                          <p className="text-sm">{element.content || 'Chart'}</p>
+                        </div>
+                      </div>
+                    )}
+                    </motion.div>
+                  )
+                })}
               </div>
             </motion.div>
           </div>

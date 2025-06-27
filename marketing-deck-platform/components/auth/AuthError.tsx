@@ -88,11 +88,11 @@ export function AuthError({ error, authError, onRetry, onDismiss, className }: A
         console.log('Password reset requested')
         break
       case 'contact_support':
-        window.open('mailto:support@aedrin.com?subject=Authentication Issue&body=' + 
+        window.open('mailto:support@easydecks.ai?subject=Authentication Issue&body=' + 
           encodeURIComponent(`I'm experiencing an authentication issue:\n\nError: ${error}\n\nPlease help me resolve this.`))
         break
       case 'status_page':
-        window.open('https://status.aedrin.com', '_blank')
+        window.open('https://status.easydecks.ai', '_blank')
         break
       case 'clear_cookies':
         // Clear cookies and reload

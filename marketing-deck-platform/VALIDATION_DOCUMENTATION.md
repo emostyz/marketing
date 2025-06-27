@@ -1,13 +1,13 @@
-# AEDRIN Platform Comprehensive Validation Suite
+# EasyDecks.ai Platform Comprehensive Validation Suite
 
 ## Overview
 
-This comprehensive validation suite proves that the AEDRIN platform can handle real business data and create beautiful, professional presentations. The test suite validates the complete end-to-end user journey from data upload to presentation export using actual business data.
+This comprehensive validation suite proves that the EasyDecks.ai platform can handle real business data and create beautiful, professional presentations. The test suite validates the complete end-to-end user journey from data upload to presentation export using actual business data.
 
 ## Test Components
 
 ### 1. 📊 Real Data Processing Test (`real-data-processing-test.js`)
-**Purpose**: Validates that AEDRIN can process actual business data (1000 rows × 14 columns)
+**Purpose**: Validates that EasyDecks.ai can process actual business data (1000 rows × 14 columns)
 
 **What it tests**:
 - File upload mechanism with demo CSV file
@@ -99,7 +99,7 @@ node master-validation-suite.js
 ```
 
 ### Prerequisites
-1. **Server Running**: Start AEDRIN with `npm run dev`
+1. **Server Running**: Start EasyDecks.ai with `npm run dev`
 2. **Demo Data**: Ensure `demo_1000_row_dataset.csv` exists
 3. **Dependencies**: All npm packages installed
 4. **APIs Available**: Upload, AI analysis, and export endpoints working
@@ -158,11 +158,11 @@ Each test generates detailed JSON reports:
   • AI Insights Generated: 8
   • Slides Created: 10
 
-🎉 SYSTEM VALIDATED: AEDRIN is ready for production deployment!
+🎉 SYSTEM VALIDATED: EasyDecks.ai is ready for production deployment!
 ```
 
 ### What This Proves
-1. **Real Data Handling**: AEDRIN processes actual business data, not just demo data
+1. **Real Data Handling**: EasyDecks.ai processes actual business data, not just demo data
 2. **AI Intelligence**: System generates meaningful insights from real user data
 3. **Professional Output**: Creates beautiful, business-ready presentations
 4. **Full Workflow**: Complete user journey works end-to-end
@@ -202,17 +202,17 @@ NODE_ENV=development ./run-validation.sh all
 
 ## Business Value Demonstration
 
-This validation suite proves AEDRIN delivers on its core value propositions:
+This validation suite proves EasyDecks.ai delivers on its core value propositions:
 
 1. **"Upload your data"** ✅ - Handles real CSV files with 1000+ rows
 2. **"AI analyzes and creates insights"** ✅ - Generates meaningful business insights
 3. **"Beautiful presentations"** ✅ - Professional slides with data visualizations
 4. **"Export to PowerPoint"** ✅ - Industry-standard presentation formats
 
-The comprehensive testing demonstrates that AEDRIN is not just a prototype, but a production-ready platform capable of handling real business scenarios and producing professional results that meet enterprise standards.
+The comprehensive testing demonstrates that EasyDecks.ai is not just a prototype, but a production-ready platform capable of handling real business scenarios and producing professional results that meet enterprise standards.
 
 ---
 
 **Last Updated**: December 24, 2024
 **Test Suite Version**: 1.0.0
-**Platform**: AEDRIN Marketing Deck Platform
+**Platform**: EasyDecks.ai Marketing Deck Platform

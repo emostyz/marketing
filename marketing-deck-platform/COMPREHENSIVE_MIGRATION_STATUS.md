@@ -1,4 +1,4 @@
-# COMPREHENSIVE MIGRATION STATUS - AEDRIN PLATFORM
+# COMPREHENSIVE MIGRATION STATUS - EasyDecks.ai PLATFORM
 
 ## ✅ FIXED ISSUES
 
@@ -23,7 +23,7 @@ Since Supabase is not configured, the platform operates in **LOCAL MODE**:
 
 ### Authentication
 - ✅ **Demo Login**: Fully functional, creates mock user sessions
-- ✅ **Mock User System**: Two test users available (demo@aedrin.com, admin@aedrin.com)
+- ✅ **Mock User System**: Two test users available (demo@easydecks.ai, admin@easydecks.ai)
 - ✅ **Cookie-based Sessions**: Working with 24-hour expiration
 - ⚠️ **OAuth**: Disabled until Supabase environment variables are set
 

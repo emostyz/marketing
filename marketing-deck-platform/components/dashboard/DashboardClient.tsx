@@ -88,7 +88,7 @@ export function DashboardClient({ user, drafts }: DashboardClientProps) {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Brain className="w-8 h-8 text-blue-400" />
-            <h1 className="text-2xl font-bold">AEDRIN</h1>
+            <h1 className="text-2xl font-bold">EasyDecks.ai</h1>
           </div>
           <UserHeader />
         </div>

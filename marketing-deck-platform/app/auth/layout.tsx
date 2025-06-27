@@ -2,8 +2,8 @@ import { Metadata } from 'next'
 import { createPageMetadata } from '@/lib/seo/metadata'
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Login & Sign Up - AEDRIN',
-  description: 'Sign in to your AEDRIN account or create a new account to start building AI-powered presentations.',
+  title: 'Login & Sign Up - EasyDecks.ai',
+  description: 'Sign in to your EasyDecks.ai account or create a new account to start building AI-powered presentations.',
   path: '/auth',
   keywords: [
     'login',

@@ -917,7 +917,7 @@ export default function UserProfile() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-8">
         <Brain className="w-16 h-16 text-blue-500 mb-4" />
-        <h2 className="text-3xl font-bold mb-2 text-white">Get Started with AEDRIN</h2>
+        <h2 className="text-3xl font-bold mb-2 text-white">Get Started with EasyDecks.ai</h2>
         <p className="text-gray-400 mb-6 max-w-xl">Sign up or log in to create your profile, save your decks, and unlock powerful AI-driven marketing presentations.</p>
         <div className="flex flex-col sm:flex-row gap-4">
           <a href="/auth/signup" className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-3 font-semibold transition-colors">🚀 Get Started</a>

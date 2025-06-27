@@ -78,7 +78,7 @@ I've completely rebuilt the authentication system for your marketing deck platfo
    - Go to https://github.com/settings/developers
    - Click "New OAuth App"
    - Fill in the details:
-     - Application name: "AEDRIN Marketing Platform"
+     - Application name: "EasyDecks.ai Marketing Platform"
      - Homepage URL: `http://localhost:3002`
      - Authorization callback URL: `https://waddrfstpqkvdfwbxvfw.supabase.co/auth/v1/callback`
 
@@ -95,7 +95,7 @@ I've completely rebuilt the authentication system for your marketing deck platfo
    - Navigate to "Azure Active Directory" > "App registrations"
    - Click "New registration"
    - Fill in the details:
-     - Name: "AEDRIN Marketing Platform"
+     - Name: "EasyDecks.ai Marketing Platform"
      - Redirect URI: `https://waddrfstpqkvdfwbxvfw.supabase.co/auth/v1/callback`
 
 2. **Configure in Supabase**:
@@ -178,7 +178,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 OPENAI_API_KEY=your_openai_api_key_here
 
 # Next.js Configuration
-NEXTAUTH_SECRET=aedrin-secret-key-2024
+NEXTAUTH_SECRET=easydecks-secret-key-2024
 NEXTAUTH_URL=http://localhost:3002
 ```
 

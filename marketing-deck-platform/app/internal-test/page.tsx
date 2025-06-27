@@ -9,7 +9,7 @@ export default function InternalTestPage() {
   // Mock user for testing
   const mockUser = {
     id: 'test-user-123',
-    email: 'test@aedrin.io',
+    email: 'test@easydecks.ai',
     subscriptionStatus: 'pro',
     tokensRemaining: 1000000
   };

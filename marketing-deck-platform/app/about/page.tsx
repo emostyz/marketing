@@ -72,7 +72,7 @@ const timeline = [
   {
     year: '2024',
     title: 'Product Launch',
-    description: 'Launched AEDRIN to the public. 10,000+ users in the first month. Featured in TechCrunch and Forbes.',
+    description: 'Launched EasyDecks.ai to the public. 10,000+ users in the first month. Featured in TechCrunch and Forbes.',
     icon: Star
   },
   {
@@ -130,7 +130,7 @@ const values = [
 ]
 
 const whySection = {
-  title: "Why We Built AEDRIN",
+  title: "Why We Built EasyDecks.ai",
   subtitle: "The story behind the platform that's changing how businesses present data",
   story: [
     {
@@ -150,7 +150,7 @@ const whySection = {
     },
     {
       title: "The Solution",
-      content: "AEDRIN was born from this vision. We built it to be the platform that transforms raw data into compelling narratives, automates the tedious parts of presentation creation, and helps teams focus on what matters most: making decisions that drive business growth.",
+      content: "EasyDecks.ai was born from this vision. We built it to be the platform that transforms raw data into compelling narratives, automates the tedious parts of presentation creation, and helps teams focus on what matters most: making decisions that drive business growth.",
       icon: Rocket
     }
   ]
@@ -169,7 +169,7 @@ export default function AboutPage() {
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
             About
-            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"> AEDRIN</span>
+            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"> EasyDecks.ai</span>
           </h1>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
             We\'re revolutionizing how businesses create and deliver presentations with the power of artificial intelligence.
@@ -177,7 +177,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Why We Built AEDRIN Section */}
+      {/* Why We Built EasyDecks.ai Section */}
       <section className="px-6 py-20 bg-gradient-to-br from-gray-900/50 to-blue-900/20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -245,7 +245,7 @@ export default function AboutPage() {
                 Our Mission
               </h2>
               <p className="text-lg text-gray-300 mb-6">
-                At AEDRIN, we believe that every business deserves access to world-class presentation tools. 
+                At EasyDecks.ai, we believe that every business deserves access to world-class presentation tools. 
                 Our mission is to democratize the creation of compelling, data-driven presentations through 
                 the power of artificial intelligence.
               </p>
@@ -403,7 +403,7 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">Join Us in Shaping the Future</h2>
           <p className="text-xl text-gray-300 mb-8">
-            Ready to transform how your business creates presentations? Start your journey with AEDRIN today.
+            Ready to transform how your business creates presentations? Start your journey with EasyDecks.ai today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/signup">

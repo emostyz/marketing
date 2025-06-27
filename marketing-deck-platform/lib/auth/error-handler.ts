@@ -133,7 +133,7 @@ export class AuthErrorHandler {
     'Demo expired': {
       code: 'DEMO_EXPIRED',
       message: 'Demo session expired',
-      userMessage: 'Your demo session has expired. Create a free account to continue using AEDRIN.',
+      userMessage: 'Your demo session has expired. Create a free account to continue using EasyDecks.ai.',
       category: 'demo',
       severity: 'low',
       recovery: [
