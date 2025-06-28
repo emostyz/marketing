@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server-client'
+import { createClient } from '@/lib/supabase/server'
 
 export interface AuthenticatedUser {
   id: string
@@ -29,16 +29,24 @@ export interface AuthResult {
 export async function getAuthenticatedUser(): Promise<AuthResult> {
   try {
     // First, try to get Supabase session
-    const supabase = await createServerSupabaseClient()
+    const supabase = createClient()
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
+    console.log('🔍 Auth check - Session found:', !!session?.user, 'Error:', sessionError?.message)
+    
     if (!sessionError && session?.user) {
+      console.log('✅ Valid session found for user:', session.user.id)
+      
       // Get user profile from Supabase
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', session.user.id)
         .single()
+
+      if (profileError) {
+        console.log('⚠️ Profile not found, using basic user info:', profileError.message)
+      }
 
       const authenticatedUser: AuthenticatedUser = {
         id: session.user.id,
@@ -55,6 +63,7 @@ export async function getAuthenticatedUser(): Promise<AuthResult> {
         } : null
       }
 
+      console.log('✅ Authenticated user created:', authenticatedUser.id, authenticatedUser.email)
       return {
         user: authenticatedUser,
         isDemo: false
@@ -62,6 +71,7 @@ export async function getAuthenticatedUser(): Promise<AuthResult> {
     }
 
     // No authentication found - return null (no automatic demo fallback)
+    console.log('❌ No valid session found')
     return {
       user: null,
       isDemo: false,
@@ -69,7 +79,7 @@ export async function getAuthenticatedUser(): Promise<AuthResult> {
     }
 
   } catch (error) {
-    console.error('Authentication error:', error)
+    console.error('❌ Authentication error:', error)
     return {
       user: null,
       isDemo: false,
@@ -114,22 +124,28 @@ export async function requireSubscription(minLevel: 'free' | 'pro' | 'enterprise
  * This is specifically for endpoints that should work in demo mode
  */
 export async function getAuthenticatedUserWithDemo(): Promise<{ user: AuthenticatedUser; isDemo: boolean }> {
-  const { user, isDemo } = await getAuthenticatedUser()
+  const authResult = await getAuthenticatedUser()
   
-  if (!user) {
-    // Return demo user as fallback
-    return {
-      user: {
-        id: '00000000-0000-0000-0000-000000000001',
-        email: 'demo@easydecks.ai',
-        name: 'Demo User',
-        subscription: 'pro',
-        demo: true,
-        profile: null
-      },
-      isDemo: true
+  // If we have a real authenticated user, return them
+  if (authResult.user) {
+    console.log('✅ Real authenticated user found:', authResult.user.id)
+    return { 
+      user: authResult.user, 
+      isDemo: false  // Real users are never demo
     }
   }
   
-  return { user, isDemo }
+  // Only return demo user as fallback for unauthenticated requests
+  console.log('⚠️ No authenticated user, returning demo fallback')
+  return {
+    user: {
+      id: '00000000-0000-0000-0000-000000000001',
+      email: 'demo@easydecks.ai',
+      name: 'Demo User',
+      subscription: 'pro',
+      demo: true,
+      profile: null
+    },
+    isDemo: true
+  }
 }

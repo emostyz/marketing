@@ -25,19 +25,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Dataset ID is required' }, { status: 400 })
     }
 
-    // Get authenticated user
+    // Get authenticated user - REQUIRE REAL AUTH for deck generation
     const { user, isDemo } = await getAuthenticatedUserWithDemo()
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    console.log('👤 User:', user.id, '(Demo:', isDemo, ')')
+    // Force isDemo to false for authenticated users - only demo if user.demo is true
+    const isActualDemo = user.demo === true || user.id === '00000000-0000-0000-0000-000000000001'
+    
+    console.log('👤 User:', user.id, '(Actual Demo:', isActualDemo, ', user.demo:', user.demo, ')')
 
     // 1. ACTUALLY fetch the real dataset (handle demo vs real users)
     let dataset: any = null
     let realData: any[] = []
     
-    if (isDemo && datasetId.startsWith('demo-')) {
+    if (isActualDemo && datasetId.startsWith('demo-')) {
       console.log('🎭 Demo dataset detected, using demo data...')
       
       // For demo users, use the demo data that was just uploaded
@@ -50,20 +53,51 @@ export async function POST(request: NextRequest) {
       console.log('✅ Demo dataset created:', dataset.name, '- Rows:', realData.length)
     } else {
       console.log('📥 Fetching real dataset from database...')
-      const { data: dbDataset, error: datasetError } = await supabase
+      
+      // Try to fetch from datasets table first (new format)
+      let dbDataset = null
+      const { data: supabaseDataset, error: supabaseError } = await supabase
         .from('datasets')
         .select('*')
         .eq('id', datasetId)
         .single()
 
-      if (datasetError || !dbDataset) {
-        console.error('❌ Dataset fetch error:', datasetError)
-        return NextResponse.json({ error: 'Dataset not found' }, { status: 404 })
+      if (!supabaseError && supabaseDataset) {
+        dbDataset = supabaseDataset
+        realData = dbDataset.processedData || []
+        console.log('✅ Dataset found in datasets table:', dbDataset.filename, '- Rows:', realData.length)
+      } else {
+        console.log('📋 Trying data_imports table (legacy format)...')
+        
+        // Try data_imports table (legacy drizzle format)
+        const { drizzle } = await import('@/lib/db/drizzle')
+        const { dataImports } = await import('@/lib/db/schema')
+        const { eq } = await import('drizzle-orm')
+        
+        const db = drizzle()
+        const [dataImport] = await db
+          .select()
+          .from(dataImports)
+          .where(eq(dataImports.id, parseInt(datasetId)))
+          .limit(1)
+
+        if (!dataImport) {
+          console.error('❌ Dataset not found in either table:', datasetId)
+          return NextResponse.json({ error: 'Dataset not found' }, { status: 404 })
+        }
+
+        // Convert drizzle format to expected format
+        dbDataset = {
+          id: dataImport.id.toString(),
+          name: dataImport.fileName,
+          filename: dataImport.fileName,
+          processedData: dataImport.rawData || []
+        }
+        realData = dataImport.rawData || []
+        console.log('✅ Dataset found in data_imports table:', dbDataset.name, '- Rows:', realData.length)
       }
 
       dataset = dbDataset
-      realData = dataset.processedData || []
-      console.log('✅ Real dataset found:', dataset.name, '- Rows:', realData.length)
     }
 
     // 2. ANALYZE real data and generate insights  
@@ -77,7 +111,7 @@ export async function POST(request: NextRequest) {
     // 3. ACTUALLY create a deck in the database (handle demo vs real users)
     let deck: any = null
     
-    if (isDemo) {
+    if (isActualDemo) {
       console.log('🎭 Creating demo deck (in-memory)...')
       // For demo users, create a temporary deck object
       deck = {
@@ -186,7 +220,7 @@ export async function POST(request: NextRequest) {
     console.log('📄 Generated', slides.length, 'slides')
 
     // 5. ACTUALLY save the slides to the deck
-    if (isDemo) {
+    if (isActualDemo) {
       console.log('🎭 Demo slides stored in memory')
       // For demo, slides are already generated and ready
       deck.slides = slides

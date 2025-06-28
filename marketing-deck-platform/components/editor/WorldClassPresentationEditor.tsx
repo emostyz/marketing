@@ -8,7 +8,7 @@ import {
   BarChart3, Circle, Square, Triangle, Palette, AlignLeft, AlignCenter, AlignRight,
   Bold, Italic, Underline, MoreHorizontal, Maximize2, Minimize2, RefreshCw, MessageSquare, Users,
   Brain, Trash2, Layers, Group, Ungroup, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown,
-  Timer, MessageCircle, Target
+  Timer, MessageCircle, Target, X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -132,28 +132,92 @@ export default function WorldClassPresentationEditor({
 
   // Load presentation data if presentationId is provided
   useEffect(() => {
-    if (presentationId && presentationId !== 'draft') {
+    if (presentationId && presentationId !== 'draft' && presentationId !== 'unknown') {
       const loadPresentation = async () => {
         try {
-          console.log('Loading presentation:', presentationId)
+          console.log('🔄 Loading presentation:', presentationId)
           const response = await fetch(`/api/presentations/${presentationId}`)
           if (response.ok) {
-            const data = await response.json()
-            if (data.slides && data.slides.length > 0) {
-              const convertedSlides = convertInitialSlides(data.slides)
+            const result = await response.json()
+            console.log('📥 Received presentation data:', result)
+            
+            // Handle different response formats
+            let slides = null
+            if (result.success && result.data?.slides) {
+              // Format from demo deck API: { success: true, data: { slides: [...] } }
+              slides = result.data.slides
+            } else if (result.success && result.presentation?.slides) {
+              // Format from real presentation API: { success: true, presentation: { slides: [...] } }
+              slides = result.presentation.slides
+            } else if (result.slides) {
+              // Direct slides format
+              slides = result.slides
+            }
+            
+            if (slides && slides.length > 0) {
+              // Convert API slide format to editor format
+              const convertedSlides = slides.map((slide: any, index: number) => ({
+                id: slide.id || `slide_${index}`,
+                number: slide.number || index + 1,
+                title: slide.title || `Slide ${index + 1}`,
+                subtitle: slide.subtitle,
+                content: slide.content,
+                // Convert from API element format to editor element format
+                elements: (slide.content || slide.elements || []).map((element: any) => ({
+                  id: element.id || `element_${Date.now()}_${Math.random()}`,
+                  type: element.type || 'text',
+                  position: {
+                    x: element.position?.x || 0,
+                    y: element.position?.y || 0
+                  },
+                  size: {
+                    width: element.position?.width || element.size?.width || 300,
+                    height: element.position?.height || element.size?.height || 100
+                  },
+                  rotation: element.position?.rotation || element.rotation || 0,
+                  content: element.content?.text || element.content || element.text || '',
+                  style: {
+                    fontSize: element.style?.fontSize || 16,
+                    fontWeight: element.style?.fontWeight || 'normal',
+                    color: element.style?.color || '#000000',
+                    backgroundColor: element.style?.backgroundColor || 'transparent',
+                    textAlign: element.style?.textAlign || 'left',
+                    fontFamily: element.style?.fontFamily || 'Inter',
+                    ...element.style
+                  },
+                  isLocked: element.locked || false,
+                  isVisible: !element.hidden,
+                  metadata: element.metadata || {},
+                  chartData: element.content?.data || element.chartData,
+                  chartType: element.content?.type || element.chartType
+                })),
+                background: slide.background || { type: 'solid', value: '#ffffff' },
+                style: slide.style || 'modern',
+                layout: slide.layout || 'default',
+                animation: slide.animation,
+                customStyles: slide.customStyles,
+                charts: slide.charts || [],
+                keyTakeaways: slide.keyTakeaways || [],
+                aiInsights: slide.aiInsights,
+                notes: slide.notes || ''
+              }))
+              
               setSlides(convertedSlides)
-              console.log('Loaded presentation with', convertedSlides.length, 'slides')
+              console.log('✅ Loaded presentation with', convertedSlides.length, 'slides')
+              console.log('📊 Sample slide structure:', convertedSlides[0])
+            } else {
+              console.warn('⚠️ No slides found in presentation data')
             }
           } else {
-            console.warn('Presentation not found, using default slides')
+            console.warn('⚠️ Presentation not found, using default slides')
           }
         } catch (error) {
-          console.error('Error loading presentation:', error)
+          console.error('❌ Error loading presentation:', error)
         }
       }
       loadPresentation()
     }
-  }, [presentationId, convertInitialSlides])
+  }, [presentationId])
 
   const [slides, setSlides] = useState<Slide[]>(() => {
     const converted = convertInitialSlides(initialSlides)
@@ -312,64 +376,88 @@ export default function WorldClassPresentationEditor({
 
   // Real element manipulation functions
   const addElement = useCallback((type: SlideElement['type'], position = { x: 100, y: 100 }) => {
-    const newElement: SlideElement = {
-      id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      type,
-      position,
-      size: { 
-        width: type === 'text' ? 200 : type === 'chart' ? 400 : 150, 
-        height: type === 'text' ? 60 : type === 'chart' ? 300 : 150 
-      },
-      rotation: 0,
-      content: type === 'text' ? 'Double-click to edit' : 
-               type === 'shape' ? 'rectangle' : '',
-      style: {
-        fontSize: 16,
-        fontFamily: 'Inter',
-        color: '#000000',
-        backgroundColor: type === 'shape' ? '#3B82F6' : 'transparent',
-        borderColor: '#1E40AF',
-        borderWidth: 0,
-        borderRadius: 0,
-        textAlign: 'left',
-        opacity: 1
-      },
-      chartData: type === 'chart' ? [
-        { name: 'Q1', value: 400 },
-        { name: 'Q2', value: 300 },
-        { name: 'Q3', value: 500 },
-        { name: 'Q4', value: 450 }
-      ] : undefined,
-      chartType: type === 'chart' ? 'bar' : undefined,
-      metadata: type === 'chart' ? {
-        title: 'Sample Chart',
-        xAxis: 'name',
-        yAxis: 'value',
-        showGrid: true,
-        showLegend: true
-      } : undefined,
-      isLocked: false,
-      isVisible: true
-    }
+    try {
+      // Validate inputs
+      if (!type || !['text', 'image', 'chart', 'shape'].includes(type)) {
+        console.error('Invalid element type:', type)
+        return
+      }
+      
+      if (!position || typeof position.x !== 'number' || typeof position.y !== 'number') {
+        console.error('Invalid position:', position)
+        position = { x: 100, y: 100 }
+      }
+      
+      // Validate current slide exists
+      if (!slides[currentSlideIndex] || !slides[currentSlideIndex].elements) {
+        console.error('Invalid slide or missing elements array')
+        return
+      }
 
-    const newSlides = [...slides]
-    newSlides[currentSlideIndex] = {
-      ...newSlides[currentSlideIndex],
-      elements: [...newSlides[currentSlideIndex].elements, newElement]
-    }
-    
-    setSlides(newSlides)
-    setSelectedElement(newElement.id)
-    
-    if (type === 'chart') {
-      setShowChartEditor(true)
-      setEditingElement(newElement.id)
-    } else if (type === 'image') {
-      setShowImageUploader(true)
-      setEditingElement(newElement.id)
-    } else if (type === 'shape') {
-      setShowShapeCreator(true)
-      setEditingElement(newElement.id)
+      const newElement: SlideElement = {
+        id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        type,
+        position,
+        size: { 
+          width: type === 'text' ? 200 : type === 'chart' ? 400 : 150, 
+          height: type === 'text' ? 60 : type === 'chart' ? 300 : 150 
+        },
+        rotation: 0,
+        content: type === 'text' ? 'Double-click to edit' : 
+                 type === 'shape' ? 'rectangle' : '',
+        style: {
+          fontSize: 16,
+          fontFamily: 'Inter',
+          color: '#000000',
+          backgroundColor: type === 'shape' ? '#3B82F6' : 'transparent',
+          borderColor: '#1E40AF',
+          borderWidth: 0,
+          borderRadius: 0,
+          textAlign: 'left',
+          opacity: 1
+        },
+        chartData: type === 'chart' ? [
+          { name: 'Q1', value: 400 },
+          { name: 'Q2', value: 300 },
+          { name: 'Q3', value: 500 },
+          { name: 'Q4', value: 450 }
+        ] : undefined,
+        chartType: type === 'chart' ? 'bar' : undefined,
+        metadata: type === 'chart' ? {
+          title: 'Sample Chart',
+          xAxis: 'name',
+          yAxis: 'value',
+          showGrid: true,
+          showLegend: true
+        } : undefined,
+        isLocked: false,
+        isVisible: true
+      }
+
+      const newSlides = [...slides]
+      newSlides[currentSlideIndex] = {
+        ...newSlides[currentSlideIndex],
+        elements: [...newSlides[currentSlideIndex].elements, newElement]
+      }
+      
+      setSlides(newSlides)
+      setSelectedElement(newElement.id)
+      
+      console.log(`✅ Added ${type} element:`, newElement.id)
+      
+      if (type === 'chart') {
+        setShowChartEditor(true)
+        setEditingElement(newElement.id)
+      } else if (type === 'image') {
+        setShowImageUploader(true)
+        setEditingElement(newElement.id)
+      } else if (type === 'shape') {
+        setShowShapeCreator(true)
+        setEditingElement(newElement.id)
+      }
+    } catch (error) {
+      console.error('❌ Failed to add element:', error)
+      // Don't crash - just log the error and continue
     }
   }, [slides, currentSlideIndex])
 

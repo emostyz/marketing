@@ -22,7 +22,7 @@ export default function EditorPage() {
   }
 
   return (
-    <UnifiedLayout requireAuth={true} hideFooter={true} className="bg-gray-950">
+    <div className="min-h-screen bg-gray-950">
       <WorldClassPresentationEditor 
         presentationId={params.id as string}
         onSave={(slides) => {
@@ -33,6 +33,6 @@ export default function EditorPage() {
         }}
       />
       <Toaster position="bottom-right" richColors />
-    </UnifiedLayout>
+    </div>
   )
 }

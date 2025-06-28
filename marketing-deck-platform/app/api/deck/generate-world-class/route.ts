@@ -433,18 +433,48 @@ async function generateWorldClassDeck(request: NextRequest) {
     
     // 8. Save to database (with demo support)
     let savedDeck: any
+    const isDemo = datasetId.startsWith('demo-')
     
     if (isDemo) {
-      // Demo mode - generate a mock deck ID and don't save to database
+      // Demo mode - generate a mock deck ID and store in global memory for retrieval
       savedDeck = {
         id: `demo-deck-${Date.now()}`,
         title: deck.title,
         template_name: template.name,
         slide_count: polishedDeck.length,
         user_id: userId,
-        dataset_id: datasetId
+        dataset_id: datasetId,
+        slides: aiEnhancedSlides  // Store the actual slides for retrieval
       }
-      console.log('💾 Demo deck created:', savedDeck.id)
+      
+      // Store in global memory for the presentation API to retrieve
+      global.demoDeckStorage = global.demoDeckStorage || new Map()
+      global.demoDeckStorage.set(savedDeck.id, {
+        id: savedDeck.id,
+        title: savedDeck.title,
+        slides: aiEnhancedSlides,
+        theme: deck.theme || {
+          colors: {
+            primary: '#2563eb',
+            secondary: '#64748b',
+            accent: '#f59e0b',
+            background: '#ffffff',
+            text: '#1e293b'
+          },
+          fonts: {
+            heading: 'Inter',
+            body: 'Inter'
+          }
+        },
+        settings: {
+          aspectRatio: '16:9',
+          slideSize: 'standard'
+        },
+        lastModified: new Date()
+      })
+      
+      console.log('💾 Demo deck created and stored:', savedDeck.id)
+      console.log('📊 Demo deck contains', aiEnhancedSlides.length, 'AI-enhanced slides')
     } else {
       // Real mode - save to database with enhanced persistence
       try {

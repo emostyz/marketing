@@ -37,14 +37,27 @@ export default function UnifiedLayout({
   }
 
   // Redirect to login if auth is required but user is not authenticated
+  // Add a delay to prevent immediate redirects during navigation
   if (requireAuth && !loading && !user) {
     if (typeof window !== 'undefined') {
-      // Use a more gentle redirect to avoid interfering with navigation
-      const currentPath = window.location.pathname
-      const loginUrl = `/auth/login?redirect=${encodeURIComponent(currentPath)}`
-      window.location.href = loginUrl
+      // Only redirect after a short delay to allow auth to complete
+      setTimeout(() => {
+        const currentPath = window.location.pathname
+        const loginUrl = `/auth/login?redirect=${encodeURIComponent(currentPath)}`
+        console.log('🚪 Redirecting to login from UnifiedLayout:', currentPath)
+        window.location.href = loginUrl
+      }, 1000) // 1 second delay
     }
-    return null
+    
+    // Show loading state instead of redirecting immediately
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <div className="text-center">
+          <div className="animate-pulse w-8 h-8 bg-blue-500 rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-400">Checking authentication...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

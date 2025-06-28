@@ -33,64 +33,66 @@ export async function POST(request: NextRequest) {
     
     // Support multiple analysis types
     if (body.analysisType === 'insights_generation') {
-      // For insights generation, we might not have csvData yet - use mock data or fetch from user's uploads
-      const mockInsights = [
-        {
-          id: 'insight-1',
-          type: 'trend',
-          title: 'Revenue Growth Acceleration',
-          description: 'Monthly revenue has increased by 35% over the past quarter, with acceleration in the last two months.',
-          confidence: 0.92,
-          impact: 'high',
-          evidence: ['Q1: $50K', 'Q2: $67K', 'Q3: $90K'],
-          recommendations: [
-            'Capitalize on growth momentum with increased marketing spend',
-            'Scale customer success team to maintain quality',
-            'Consider expanding to new market segments'
-          ],
-          businessImplication: 'Strong growth trajectory suggests successful product-market fit and potential for significant scale.'
-        },
-        {
-          id: 'insight-2',
-          type: 'opportunity',
-          title: 'Customer Acquisition Cost Optimization',
-          description: 'CAC has decreased by 22% while customer lifetime value increased, indicating improved efficiency.',
-          confidence: 0.88,
-          impact: 'medium',
-          evidence: ['CAC: $150 → $117', 'LTV: $450 → $520'],
-          recommendations: [
-            'Double down on high-performing acquisition channels',
-            'Implement referral program to leverage organic growth'
-          ],
-          businessImplication: 'Improved unit economics create foundation for sustainable profitable growth.'
-        },
-        {
-          id: 'insight-3',
-          type: 'risk',
-          title: 'Concentration Risk in Top Customers',
-          description: 'Top 3 customers represent 45% of total revenue, creating dependency risk.',
-          confidence: 0.85,
-          impact: 'medium',
-          evidence: ['Customer A: 18%', 'Customer B: 15%', 'Customer C: 12%'],
-          recommendations: [
-            'Diversify customer base with targeted acquisition',
-            'Strengthen relationships with key accounts',
-            'Develop retention strategies for top customers'
-          ],
-          businessImplication: 'Customer concentration poses risk to revenue stability and requires active management.'
-        }
-      ]
+      console.log('🧠 Getting REAL OpenAI insights (no more mock data!)...')
+      
+      // Get uploaded data - first try from body, then from localStorage simulation
+      let uploadedData = body.data
+      
+      if (!uploadedData || uploadedData.length === 0) {
+        console.log('⚠️ No data in request body, this should come from frontend')
+        throw new Error('No data provided for insights generation. Please upload data first.')
+      }
+
+      console.log(`📊 Analyzing ${uploadedData.length} rows with Ultimate Brain API`)
+
+      // Call Ultimate Brain API for REAL OpenAI analysis
+      const ultimateBrainResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/ai/ultimate-brain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: uploadedData,
+          context: {
+            analysisType: 'insights_generation',
+            industry: body.industry || 'business',
+            goals: ['strategic insights', 'actionable recommendations'],
+            sessionId: sessionId
+          },
+          userFeedback: body.userFeedback || {},
+          learningObjectives: ['Generate strategic business insights', 'Identify key trends and patterns', 'Provide actionable recommendations']
+        })
+      })
+
+      if (!ultimateBrainResponse.ok) {
+        console.error('Ultimate Brain API failed, status:', ultimateBrainResponse.status)
+        const errorText = await ultimateBrainResponse.text()
+        console.error('Ultimate Brain error:', errorText)
+        throw new Error(`Ultimate Brain API failed: ${ultimateBrainResponse.status}`)
+      }
+
+      const ultimateBrainResult = await ultimateBrainResponse.json()
+      console.log('✅ Ultimate Brain API response received')
+
+      // Extract insights from Ultimate Brain response
+      const insights = ultimateBrainResult.analysis?.strategicInsights || []
+      
+      if (insights.length === 0) {
+        console.error('No insights in Ultimate Brain response:', ultimateBrainResult)
+        throw new Error('No insights generated from Ultimate Brain API')
+      }
+
+      console.log(`🎯 SUCCESS: Generated ${insights.length} REAL OpenAI insights!`)
 
       // Update progress to completed
       if (sessionId) {
-        await updateProgress(sessionId, 'first_pass_analysis', 'completed', 100, { insights: mockInsights })
+        await updateProgress(sessionId, 'first_pass_analysis', 'completed', 100, { insights: insights })
       }
 
       return NextResponse.json({ 
         success: true, 
-        insights: mockInsights,
+        insights: insights,
         userId: body.userId,
-        analysisType: body.analysisType
+        analysisType: body.analysisType,
+        source: 'ultimate_brain_openai'
       })
     }
 

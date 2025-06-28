@@ -263,6 +263,11 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
         })
 
         if (!response.ok) {
+          // Don't retry on auth errors to prevent death loop
+          if (response.status === 401 || response.status === 403) {
+            console.log('⚠️ Auth error during save, skipping retry to prevent death loop')
+            return { success: false, authError: true }
+          }
           throw new Error('Failed to save intake progress')
         }
 
@@ -274,17 +279,24 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
       }
     } catch (error) {
       console.error('Failed to save intake progress:', error)
-      // Fallback to localStorage on error
+      // Fallback to localStorage on error but don't throw on auth errors
       localStorage.setItem('intake_progress', JSON.stringify(data))
+      
+      // Don't re-throw auth errors to prevent auto-save retry death loop
+      if (error instanceof Error && error.message.includes('auth')) {
+        console.log('⚠️ Suppressing auth error to prevent auto-save death loop')
+        return { success: false, authError: true }
+      }
+      
       throw error
     }
   }, [user])
 
-  // Auto-save configuration for intake form
+  // Auto-save configuration for intake form - disabled for new presentations to prevent death loop
   const intakeAutoSave = useAutoSave(intakeSessionData, saveIntakeProgress, {
-    enabled: true, // Always enabled
-    interval: 2000, // Save every 2 seconds
-    debounceDelay: 100, // Wait 100ms after last change for instant saves
+    enabled: false, // Disabled to prevent session API death loop on new presentations
+    interval: 30000, // Reduced frequency to 30 seconds
+    debounceDelay: 1000, // Increased debounce to 1 second
     conflictResolution: 'auto' // Auto-resolve conflicts for form data
   })
 

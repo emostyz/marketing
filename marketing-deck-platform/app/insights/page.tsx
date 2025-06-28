@@ -135,10 +135,15 @@ export default function InsightsPage() {
       const analysisResult = await response.json()
       updateStageStatus('Data Analysis', 'completed', 100)
 
-      // Set insights from analysis
-      if (analysisResult.insights) {
-        setInsights(analysisResult.insights)
+      // Set insights from analysis - check both locations
+      const insights = analysisResult.analysis?.strategicInsights || analysisResult.insights || []
+      
+      if (insights.length > 0) {
+        setInsights(insights)
         toast.success('Insights generated! Please review and provide feedback.')
+      } else {
+        console.error('No insights found in Ultimate Brain response:', analysisResult)
+        throw new Error('No insights generated from analysis')
       }
     } catch (error) {
       console.error('Insights analysis error:', error)
@@ -216,26 +221,75 @@ export default function InsightsPage() {
     setCurrentThinkingMessage('AI is creating your presentation and analyzing data with Python...')
 
     try {
-      // Create presentation record first
-      const createResponse = await fetch('/api/presentations', {
+      // Get uploaded data for deck generation
+      const storedData = localStorage.getItem('uploadedData')
+      const csvRows = storedData ? JSON.parse(storedData) : []
+      
+      if (!csvRows || csvRows.length === 0) {
+        throw new Error('No data found. Please upload data first.')
+      }
+
+      // Create a dataset record first (required for deck generation)
+      const datasetResponse = await fetch('/api/datasets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user.id,
-          title: 'AI Generated Presentation',
-          structure: editedStructure
+          fileName: 'insights-dataset.json',
+          fileType: 'application/json',
+          fileSize: JSON.stringify(csvRows).length,
+          folder: 'AI Generated',
+          projectName: 'Insights Analysis',
+          data: csvRows
         })
       })
 
-      if (!createResponse.ok) {
-        throw new Error('Failed to create presentation')
+      if (!datasetResponse.ok) {
+        throw new Error('Failed to create dataset')
       }
 
-      const { presentationId: newPresentationId } = await createResponse.json()
-      setPresentationId(newPresentationId)
+      const { dataset } = await datasetResponse.json()
 
-      // Sequential pipeline execution with user ID continuity
-      await executeSequentialPipeline(newPresentationId)
+      // Use the main deck generation API with proper context
+      setCurrentThinkingMessage('Generating your complete presentation with AI...')
+      updateStageStatus('Content Generation', 'in_progress', 50)
+
+      const deckResponse = await fetch('/api/deck/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          datasetId: dataset.id,
+          context: {
+            title: 'AI Generated Presentation',
+            structure: editedStructure,
+            insights: insights,
+            presentationGoal: 'strategic insights presentation',
+            targetAudience: 'executives',
+            industry: 'business analysis'
+          }
+        })
+      })
+
+      if (!deckResponse.ok) {
+        throw new Error('Failed to generate deck')
+      }
+
+      const deckResult = await deckResponse.json()
+      setPresentationId(deckResult.deckId)
+
+      updateStageStatus('Content Generation', 'completed', 100)
+      updateStageStatus('Quality Assurance', 'completed', 100) 
+      updateStageStatus('Deck Assembly', 'completed', 100)
+
+      toast.success('Presentation generated successfully!')
+
+      // Navigate to deck builder
+      setTimeout(() => {
+        setIsLoading(false)
+        setCurrentThinkingStage('')
+        setCurrentThinkingMessage('')
+        setThinkingStartTime(null)
+        router.push(`/editor/${deckResult.deckId}?generated=true`)
+      }, 2000)
 
     } catch (error) {
       console.error('Deck generation error:', error)
