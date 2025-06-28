@@ -1,0 +1,127 @@
+{
+  "summary": {
+    "passed": 2,
+    "failed": 8,
+    "successRate": "20%",
+    "duration": "5s",
+    "timestamp": "2025-06-28T04:26:00.489Z"
+  },
+  "config": {
+    "baseUrl": "http://localhost:3000",
+    "testTimeout": 30000,
+    "retryAttempts": 3,
+    "testPresentationId": "test-presentation-1751084755583",
+    "testPresentationTitle": "Stage Persistence Test Presentation"
+  },
+  "mockData": {
+    "insights": {
+      "keyFindings": [
+        "Revenue increased by 25% in Q4",
+        "Customer satisfaction improved significantly",
+        "Market expansion successful in 3 regions"
+      ],
+      "metrics": {
+        "revenue": 2500000,
+        "customerSat": 4.8,
+        "marketShare": 0.15
+      },
+      "timestamp": "2025-06-28T04:25:55.583Z"
+    },
+    "outline": {
+      "slides": [
+        {
+          "title": "Executive Summary",
+          "type": "summary"
+        },
+        {
+          "title": "Key Findings",
+          "type": "insights"
+        },
+        {
+          "title": "Revenue Analysis",
+          "type": "chart"
+        },
+        {
+          "title": "Next Steps",
+          "type": "action"
+        }
+      ],
+      "totalSlides": 4,
+      "estimatedDuration": "15 minutes",
+      "timestamp": "2025-06-28T04:25:55.584Z"
+    },
+    "styledSlides": {
+      "theme": "professional",
+      "template": "mckinsey-style",
+      "slides": [
+        {
+          "id": "slide-1",
+          "title": "Executive Summary",
+          "elements": [
+            {
+              "type": "title",
+              "content": "Q4 Performance Review"
+            },
+            {
+              "type": "bullet",
+              "content": "25% revenue growth achieved"
+            }
+          ]
+        }
+      ],
+      "timestamp": "2025-06-28T04:25:55.584Z"
+    },
+    "chartData": {
+      "charts": [
+        {
+          "type": "bar",
+          "title": "Revenue by Quarter",
+          "data": [
+            {
+              "quarter": "Q1",
+              "revenue": 1800000
+            },
+            {
+              "quarter": "Q2",
+              "revenue": 1900000
+            },
+            {
+              "quarter": "Q3",
+              "revenue": 2100000
+            },
+            {
+              "quarter": "Q4",
+              "revenue": 2500000
+            }
+          ]
+        }
+      ],
+      "timestamp": "2025-06-28T04:25:55.584Z"
+    },
+    "finalDeck": {
+      "format": "presentation",
+      "totalSlides": 4,
+      "exportFormats": [
+        "pptx",
+        "pdf",
+        "html"
+      ],
+      "metadata": {
+        "creator": "test-user",
+        "created": "2025-06-28T04:25:55.584Z",
+        "version": "1.0"
+      },
+      "timestamp": "2025-06-28T04:25:55.584Z"
+    }
+  },
+  "errors": [
+    "Stage Insights - Save/Retrieve: Save failed: User not authenticated",
+    "Stage Outline - Save/Retrieve: Save failed: User not authenticated",
+    "Stage Styled Slides - Save/Retrieve: Save failed: User not authenticated",
+    "Stage Chart Data - Save/Retrieve: Save failed: User not authenticated",
+    "Stage Final Deck - Save/Retrieve: Save failed: User not authenticated",
+    "Multiple Stages - Batch Save/Retrieve: Batch save failed: User not authenticated",
+    "Stage Progress - Tracking: Progress tracking failed: User not authenticated",
+    "Clear Stages - Individual & All: Clear individual stage failed: User not authenticated"
+  ]
+}

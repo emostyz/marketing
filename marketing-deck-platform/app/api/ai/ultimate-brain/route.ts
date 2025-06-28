@@ -263,7 +263,10 @@ Generate exactly 3-4 strategic insights that directly reference the provided dat
       const response = await Promise.race([
         openai.chat.completions.create({
           model: "gpt-4o",
-          messages: [{ role: "user", content: prompt }],
+          messages: [
+            { role: "system", content: "You are an AI assistant that always responds in valid JSON format only." },
+            { role: "user", content: prompt }
+          ],
           response_format: { type: "json_object" },
           temperature: 0.4,
           max_tokens: 1200

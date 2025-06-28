@@ -320,7 +320,8 @@ export default function WorldClassPresentationEditor({
         height: type === 'text' ? 60 : type === 'chart' ? 300 : 150 
       },
       rotation: 0,
-      content: type === 'text' ? 'Double-click to edit' : '',
+      content: type === 'text' ? 'Double-click to edit' : 
+               type === 'shape' ? 'rectangle' : '',
       style: {
         fontSize: 16,
         fontFamily: 'Inter',
@@ -332,8 +333,20 @@ export default function WorldClassPresentationEditor({
         textAlign: 'left',
         opacity: 1
       },
-      chartData: type === 'chart' ? [] : undefined,
+      chartData: type === 'chart' ? [
+        { name: 'Q1', value: 400 },
+        { name: 'Q2', value: 300 },
+        { name: 'Q3', value: 500 },
+        { name: 'Q4', value: 450 }
+      ] : undefined,
       chartType: type === 'chart' ? 'bar' : undefined,
+      metadata: type === 'chart' ? {
+        title: 'Sample Chart',
+        xAxis: 'name',
+        yAxis: 'value',
+        showGrid: true,
+        showLegend: true
+      } : undefined,
       isLocked: false,
       isVisible: true
     }
@@ -371,9 +384,7 @@ export default function WorldClassPresentationEditor({
       }
       saveToHistory(slides) // Save current state before change
       setSlides(newSlides)
-      if (onSave) {
-        onSave(newSlides)
-      }
+      // Auto-save will handle saving automatically
     }
   }, [slides, currentSlideIndex, onSave, saveToHistory])
 
@@ -383,9 +394,11 @@ export default function WorldClassPresentationEditor({
       ...newSlides[currentSlideIndex],
       elements: newSlides[currentSlideIndex].elements.filter(el => el.id !== elementId)
     }
+    saveToHistory(slides) // Save current state before change
     setSlides(newSlides)
     setSelectedElement(null)
-  }, [slides, currentSlideIndex])
+    // Auto-save will handle saving automatically
+  }, [slides, currentSlideIndex, saveToHistory])
 
   const duplicateElement = useCallback((elementId: string) => {
     const element = slides[currentSlideIndex].elements.find(el => el.id === elementId)
@@ -404,10 +417,12 @@ export default function WorldClassPresentationEditor({
         ...newSlides[currentSlideIndex],
         elements: [...newSlides[currentSlideIndex].elements, duplicatedElement]
       }
+      saveToHistory(slides) // Save current state before change
       setSlides(newSlides)
       setSelectedElement(duplicatedElement.id)
+      // Auto-save will handle saving automatically
     }
-  }, [slides, currentSlideIndex])
+  }, [slides, currentSlideIndex, saveToHistory])
 
   const addTextElement = useCallback(() => {
     addElement('text')
@@ -699,6 +714,48 @@ export default function WorldClassPresentationEditor({
       setTimeout(() => setSaveStatus('idle'), 3000)
     }
   }, [slides, onSave, presentationId])
+
+  // Auto-save functionality
+  const autoSaveFunction = useCallback(async (slidesToSave: Slide[]) => {
+    if (onSave) {
+      return await onSave(slidesToSave)
+    } else {
+      // Fallback to localStorage
+      const presentationData = {
+        id: presentationId || 'draft',
+        slides: slidesToSave,
+        lastModified: new Date().toISOString(),
+        version: '1.0'
+      }
+      localStorage.setItem(`presentation_${presentationId || 'draft'}`, JSON.stringify(presentationData))
+      return { success: true, method: 'localStorage' }
+    }
+  }, [onSave, presentationId])
+
+  const autoSaveResult = useAutoSave(slides, autoSaveFunction, {
+    enabled: true,
+    debounceDelay: 1000, // Wait 1 second after last change
+    interval: 15000, // Backup save every 15 seconds
+    onSaveStart: () => setSaveStatus('saving'),
+    onSaveSuccess: () => {
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    },
+    onSaveError: (error) => {
+      console.error('Auto-save error:', error)
+      setSaveStatus('error')
+      setTimeout(() => setSaveStatus('idle'), 3000)
+    }
+  })
+
+  // Expose auto-save status and functions
+  const { 
+    hasUnsavedChanges, 
+    lastSaved, 
+    saveError, 
+    saveNow: triggerManualSave,
+    getStatusText 
+  } = autoSaveResult
 
   const handleExport = useCallback(async (format: string) => {
     try {
@@ -1043,6 +1100,33 @@ export default function WorldClassPresentationEditor({
 
               <Separator orientation="vertical" className="h-6 bg-gray-600" />
               
+              {/* Save Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={triggerManualSave || handleSave}
+                    disabled={saveStatus === 'saving'}
+                    className={cn(
+                      "text-blue-400 hover:bg-blue-900/20 border border-blue-500/30",
+                      saveStatus === 'saved' && "text-green-400 border-green-500/30",
+                      saveStatus === 'error' && "text-red-400 border-red-500/30"
+                    )}
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    <span className="text-sm">
+                      {saveStatus === 'saving' ? 'Saving...' : 
+                       saveStatus === 'saved' ? 'Saved' : 
+                       saveStatus === 'error' ? 'Error' : 'Save'}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Save presentation (Ctrl+S)</TooltipContent>
+              </Tooltip>
+              
+              <Separator orientation="vertical" className="h-6 bg-gray-600" />
+              
               {/* Presentation Mode */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1238,6 +1322,19 @@ export default function WorldClassPresentationEditor({
                     }}
                     onElementDelete={deleteElement}
                     onElementDuplicate={duplicateElement}
+                    onElementDoubleClick={(elementId, elementType) => {
+                      // Handle double-click to open appropriate editor
+                      if (elementType === 'chart') {
+                        setEditingElement(elementId)
+                        setShowChartEditor(true)
+                      } else if (elementType === 'image') {
+                        setEditingElement(elementId)
+                        setShowImageUploader(true)
+                      } else if (elementType === 'shape') {
+                        setEditingElement(elementId)
+                        setShowShapeCreator(true)
+                      }
+                    }}
                     zoom={zoom}
                     isEditable={true}
                     showGrid={showGrid}
@@ -1503,22 +1600,34 @@ export default function WorldClassPresentationEditor({
             </div>
             
             <div className="flex items-center space-x-6">
-              {saveStatus !== 'idle' && (
+              <div className={cn(
+                "flex items-center space-x-2 text-xs",
+                saveStatus === 'saving' && "text-yellow-400",
+                saveStatus === 'saved' && "text-green-400",
+                saveStatus === 'error' && "text-red-400",
+                saveStatus === 'idle' && hasUnsavedChanges && "text-orange-400",
+                saveStatus === 'idle' && !hasUnsavedChanges && "text-gray-400"
+              )}>
                 <div className={cn(
-                  "flex items-center space-x-2 text-xs",
-                  saveStatus === 'saving' && "text-yellow-400",
-                  saveStatus === 'saved' && "text-green-400",
-                  saveStatus === 'error' && "text-red-400"
-                )}>
-                  <div className={cn(
-                    "w-2 h-2 rounded-full",
-                    saveStatus === 'saving' && "bg-yellow-400 animate-pulse",
-                    saveStatus === 'saved' && "bg-green-400",
-                    saveStatus === 'error' && "bg-red-400"
-                  )}></div>
-                  <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Save Error'}</span>
-                </div>
-              )}
+                  "w-2 h-2 rounded-full",
+                  saveStatus === 'saving' && "bg-yellow-400 animate-pulse",
+                  saveStatus === 'saved' && "bg-green-400",
+                  saveStatus === 'error' && "bg-red-400",
+                  saveStatus === 'idle' && hasUnsavedChanges && "bg-orange-400 animate-pulse",
+                  saveStatus === 'idle' && !hasUnsavedChanges && "bg-gray-400"
+                )}></div>
+                <span>
+                  {saveStatus === 'saving' ? 'Auto-saving...' : 
+                   saveStatus === 'saved' ? 'Auto-saved' : 
+                   saveStatus === 'error' ? 'Save Error' :
+                   hasUnsavedChanges ? 'Unsaved changes' : 'All changes saved'}
+                </span>
+                {lastSaved && saveStatus !== 'saving' && (
+                  <span className="text-gray-500">
+                    • {getStatusText ? getStatusText() : 'Recently saved'}
+                  </span>
+                )}
+              </div>
               
               <div className="text-gray-400">
                 Canvas: {SLIDE_WIDTH} × {SLIDE_HEIGHT}
@@ -1563,7 +1672,20 @@ export default function WorldClassPresentationEditor({
                   updateElement(editingElement, {
                     chartData: chartConfig.data || [],
                     chartType: chartConfig.type || 'bar',
-                    content: chartConfig.title || 'Chart'
+                    content: chartConfig.title || 'Chart',
+                    metadata: {
+                      ...currentSlide.elements.find(el => el.id === editingElement)?.metadata,
+                      title: chartConfig.title,
+                      xAxis: chartConfig.xAxis,
+                      yAxis: chartConfig.yAxis?.[0] || chartConfig.yAxis,
+                      showGrid: chartConfig.showGrid,
+                      showLegend: chartConfig.showLegend,
+                      colors: chartConfig.colors
+                    },
+                    style: {
+                      ...currentSlide.elements.find(el => el.id === editingElement)?.style,
+                      colors: chartConfig.colors
+                    }
                   })
                 }
                 setShowChartEditor(false)
@@ -1578,13 +1700,22 @@ export default function WorldClassPresentationEditor({
           
           {showImageUploader && (
             <ImageUploader
-              onSelect={(image) => {
+              isOpen={showImageUploader}
+              onImageSelect={(image) => {
                 if (editingElement) {
                   updateElement(editingElement, {
                     content: image.url,
                     size: {
                       width: Math.min(image.width, 400),
                       height: Math.min(image.height, 300)
+                    },
+                    metadata: {
+                      ...currentSlide.elements.find(el => el.id === editingElement)?.metadata,
+                      originalWidth: image.width,
+                      originalHeight: image.height,
+                      filename: image.name,
+                      fileSize: image.size,
+                      fileType: image.type
                     }
                   })
                 }
@@ -1600,12 +1731,25 @@ export default function WorldClassPresentationEditor({
           
           {showShapeCreator && (
             <ShapeCreator
-              onCreate={(shapeConfig) => {
+              isOpen={showShapeCreator}
+              onShapeCreate={(shapeConfig) => {
                 if (editingElement) {
                   updateElement(editingElement, {
                     content: shapeConfig.type,
-                    style: shapeConfig.style,
-                    size: shapeConfig.size
+                    size: shapeConfig.size,
+                    style: {
+                      ...currentSlide.elements.find(el => el.id === editingElement)?.style,
+                      backgroundColor: shapeConfig.style.fill,
+                      borderColor: shapeConfig.style.stroke,
+                      borderWidth: shapeConfig.style.strokeWidth,
+                      borderRadius: shapeConfig.style.borderRadius || 0,
+                      opacity: shapeConfig.style.opacity
+                    },
+                    metadata: {
+                      ...currentSlide.elements.find(el => el.id === editingElement)?.metadata,
+                      shapeType: shapeConfig.type,
+                      shapeStyle: shapeConfig.style
+                    }
                   })
                 }
                 setShowShapeCreator(false)

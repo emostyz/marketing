@@ -47,6 +47,7 @@ interface SlideCanvasProps {
   onSlideUpdate?: (slideId: string, updates: Partial<Slide>) => void
   onElementDelete?: (elementId: string) => void
   onElementDuplicate?: (elementId: string) => void
+  onElementDoubleClick?: (elementId: string, elementType: string) => void
   zoom?: number
   isEditable?: boolean
   showGrid?: boolean
@@ -63,6 +64,7 @@ export default function SlideCanvas({
   onSlideUpdate,
   onElementDelete,
   onElementDuplicate,
+  onElementDoubleClick,
   zoom = 100,
   isEditable = true,
   showGrid = false,
@@ -161,9 +163,12 @@ export default function SlideCanvas({
             onSelect={(elementId, event) => onElementSelect?.(elementId, event)}
             onUpdate={handleElementUpdate}
             onDoubleClick={(elementId) => {
-              // Handle double-click to start text editing
+              // Handle double-click for different element types
               if (element.type === 'text') {
                 onElementSelect?.(elementId)
+              } else {
+                // For non-text elements (chart, image, shape), pass to parent
+                onElementDoubleClick?.(elementId, element.type)
               }
             }}
             onDelete={onElementDelete}

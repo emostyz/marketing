@@ -553,21 +553,29 @@ async function generateInitialInsights(dataset: any, context: GenerationContext)
     
     const prompt = getEnhancedPrompt(context.audience, dataset.processed_data, context)
     
-    const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
-      messages: [
-        { role: "system", content: prompt },
-        { 
-          role: "user", 
-          content: `Analyze this data and generate strategic insights for ${context.audience}:
+    const messages = [
+      { role: "system", content: prompt },
+      { 
+        role: "user", 
+        content: `Analyze this data and generate strategic insights for ${context.audience}:
           
 Dataset: ${dataset.filename}
 Data sample: ${JSON.stringify(dataset.processed_data.slice(0, 20))}
 Total rows: ${dataset.processed_data.length}
 
-Generate 8-10 high-impact insights that would be valuable for ${context.goal}.` 
-        }
-      ],
+Generate 8-10 high-impact insights that would be valuable for ${context.goal}. Please output as JSON.` 
+      }
+    ]
+
+    // Preflight validation to ensure "json" keyword is present
+    if (!messages.some(m => /json/i.test(m.content))) {
+      console.error("❌ Missing 'json' in messages:", messages);
+      throw new Error("Must include 'json' in messages when using response_format:'json_object'");
+    }
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4-turbo-preview",
+      messages,
       temperature: 0.7,
       response_format: { type: "json_object" }
     })

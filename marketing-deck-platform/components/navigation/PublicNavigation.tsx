@@ -24,6 +24,7 @@ export default function PublicNavigation({
   // Navigation items for signed-in users (not demo)
   const userNavigationItems = [
     { name: 'Dashboard', href: '/dashboard' },
+    { name: 'AI Insights', href: '/insights' },
     { name: 'My Files', href: '/files' },
     { name: 'Create Deck', href: '/deck-builder/new' },
     { name: 'Upload Data', href: '/upload' },
@@ -36,6 +37,7 @@ export default function PublicNavigation({
   // Navigation items for demo users
   const demoNavigationItems = [
     { name: 'Dashboard', href: '/dashboard' },
+    { name: 'AI Insights', href: '/insights' },
     { name: 'Templates', href: '/templates' },
     { name: 'Pricing', href: '/pricing' },
     { name: 'Contact', href: '/contact' }

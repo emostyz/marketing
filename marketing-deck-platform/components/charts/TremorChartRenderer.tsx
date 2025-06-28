@@ -8,15 +8,45 @@ let AreaChart: any, BarChart: any, LineChart: any, DonutChart: any, ScatterChart
 let tremorAvailable = false
 
 try {
-  const tremorModule = require('@tremor/react')
-  AreaChart = tremorModule.AreaChart
-  BarChart = tremorModule.BarChart
-  LineChart = tremorModule.LineChart
-  DonutChart = tremorModule.DonutChart
-  ScatterChart = tremorModule.ScatterChart
-  tremorAvailable = true
+  // For beta version, try multiple import methods
+  let tremorModule
+  
+  try {
+    // Method 1: Direct import
+    tremorModule = require('@tremor/react')
+  } catch (e1) {
+    try {
+      // Method 2: ES6 import converted
+      const importResult = import('@tremor/react')
+      tremorModule = importResult
+    } catch (e2) {
+      throw new Error('All import methods failed')
+    }
+  }
+  
+  // Extract components with multiple fallback names (beta might have different exports)
+  AreaChart = tremorModule.AreaChart || tremorModule.Area
+  BarChart = tremorModule.BarChart || tremorModule.Bar  
+  LineChart = tremorModule.LineChart || tremorModule.Line
+  DonutChart = tremorModule.DonutChart || tremorModule.Donut || tremorModule.PieChart
+  ScatterChart = tremorModule.ScatterChart || tremorModule.Scatter
+  
+  // Test if at least basic charts are available
+  if (AreaChart && BarChart && LineChart) {
+    tremorAvailable = true
+    console.log('✅ Tremor charts loaded successfully')
+    console.log('Available charts:', {
+      area: !!AreaChart,
+      bar: !!BarChart, 
+      line: !!LineChart,
+      donut: !!DonutChart,
+      scatter: !!ScatterChart
+    })
+  } else {
+    throw new Error('Essential Tremor components not available')
+  }
 } catch (error) {
-  console.warn('Tremor charts not available, using fallback renderer')
+  console.warn('⚠️ Tremor charts not available, using fallback renderer:', error.message)
   tremorAvailable = false
 }
 

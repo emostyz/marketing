@@ -2,9 +2,9 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { cn } from '@/lib/utils'
 import { RotateCcw, Move, Trash2, Copy, Lock, Unlock } from 'lucide-react'
+import { TremorChartRenderer } from '@/components/charts/TremorChartRenderer'
 
 interface SlideElement {
   id: string
@@ -72,12 +72,15 @@ export default function SlideElementRenderer({
     e.stopPropagation()
     onSelect?.(element.id, e)
     
-    // Double click for text editing
+    // Double click for editing
     if (e.detail === 2) {
       onDoubleClick?.(element.id)
       if (element.type === 'text') {
         setEditingText(true)
         setTimeout(() => textareaRef.current?.focus(), 0)
+      } else if (element.type === 'chart') {
+        // Chart editing will be handled by the parent component via onDoubleClick
+        console.log('Chart double-clicked for editing:', element.id)
       }
       return
     }
@@ -286,70 +289,189 @@ export default function SlideElementRenderer({
       
       case 'image':
         return (
-          <div style={style} className="overflow-hidden">
+          <div 
+            style={style} 
+            className={cn(
+              "overflow-hidden relative",
+              element.content && "cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 transition-all duration-200"
+            )}
+            title={element.content ? "Double-click to change image" : "No image selected - double-click to add image"}
+          >
             {element.content ? (
-              <img 
-                src={element.content} 
-                alt="Slide element" 
-                className="w-full h-full object-cover"
-                draggable={false}
-              />
+              <>
+                <img 
+                  src={element.content} 
+                  alt={element.metadata?.filename || "Slide element"} 
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                  onError={(e) => {
+                    // Handle broken images gracefully
+                    e.currentTarget.style.display = 'none'
+                    e.currentTarget.nextElementSibling.style.display = 'flex'
+                  }}
+                />
+                <div className="hidden w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
+                      🖼️
+                    </div>
+                    <p className="text-xs">Failed to load image</p>
+                    <p className="text-xs text-gray-400 mt-1">Double-click to replace</p>
+                  </div>
+                </div>
+                {/* Edit indicator overlay */}
+                <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  ✏️ Edit
+                </div>
+              </>
             ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
-                Image placeholder
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-300 transition-colors">
+                <div className="text-center">
+                  <div className="w-8 h-8 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
+                    🖼️
+                  </div>
+                  <p className="text-xs">No image selected</p>
+                  <p className="text-xs text-gray-400 mt-1">Double-click to add image</p>
+                </div>
               </div>
             )}
           </div>
         )
       
       case 'chart':
+        // Ensure we have valid chart data and type
+        const chartData = element.chartData || []
+        const chartType = element.chartType || 'bar'
+        
+        // Convert chart type to match TremorChartRenderer expectations
+        const tremortType = chartType === 'pie' ? 'donut' : 
+                           chartType === 'scatter' ? 'scatter' : 
+                           chartType === 'line' ? 'line' : 
+                           chartType === 'area' ? 'area' : 'bar'
+        
         return (
-          <div style={style} className="p-2">
-            <ResponsiveContainer width="100%" height="100%">
-              {element.chartType === 'bar' ? (
-                <BarChart data={element.chartData || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#3B82F6" />
-                </BarChart>
-              ) : element.chartType === 'line' ? (
-                <LineChart data={element.chartData || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#3B82F6" strokeWidth={2} />
-                </LineChart>
-              ) : (
-                <PieChart>
-                  <Pie
-                    data={element.chartData || []}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={60}
-                    fill="#3B82F6"
-                  />
-                  <Tooltip />
-                </PieChart>
-              )}
-            </ResponsiveContainer>
+          <div 
+            style={{ ...style, padding: '4px' }} 
+            className={cn(
+              "overflow-hidden relative",
+              chartData.length > 0 && "cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 transition-all duration-200"
+            )}
+            title={chartData.length > 0 ? "Double-click to edit chart" : "No chart data - double-click to add data"}
+          >
+            {chartData.length > 0 ? (
+              <>
+                <TremorChartRenderer
+                  data={chartData}
+                  type={tremortType as any}
+                  title={element.content || element.metadata?.title || 'Chart'}
+                  subtitle={element.metadata?.subtitle}
+                  xAxisKey={element.metadata?.xAxis || Object.keys(chartData[0] || {})[0] || 'name'}
+                  yAxisKey={element.metadata?.yAxis || Object.keys(chartData[0] || {}).find(key => 
+                    typeof chartData[0]?.[key] === 'number'
+                  ) || 'value'}
+                  colors={element.style?.colors || ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6']}
+                  showAnimation={true}
+                  showGrid={element.metadata?.showGrid !== false}
+                  showLegend={element.metadata?.showLegend !== false}
+                  consultingStyle="mckinsey"
+                  className="w-full h-full"
+                  insight={element.metadata?.insight}
+                  dataCallout={element.metadata?.dataCallout}
+                />
+                {/* Edit indicator overlay for charts with data */}
+                <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  ✏️ Edit
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200 rounded cursor-pointer hover:bg-gray-200 transition-colors">
+                <div className="text-center">
+                  <div className="w-8 h-8 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
+                    📊
+                  </div>
+                  <p className="text-xs">No chart data</p>
+                  <p className="text-xs text-gray-400 mt-1">Double-click to edit</p>
+                </div>
+              </div>
+            )}
           </div>
         )
       
       case 'shape':
+        const shapeType = element.content || 'rectangle'
+        const shapeStyle = element.metadata?.shapeStyle || {}
+        
+        // For SVG shapes, use SVG rendering
+        const svgShapes = ['triangle', 'diamond', 'hexagon', 'star', 'heart', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down']
+        const isExistingBasicShape = ['circle', 'rectangle'].includes(shapeType)
+        
+        if (svgShapes.includes(shapeType)) {
+          // Define SVG paths for different shapes
+          const shapePaths: Record<string, string> = {
+            triangle: 'M50,15 L85,85 L15,85 Z',
+            diamond: 'M50,15 L85,50 L50,85 L15,50 Z',
+            hexagon: 'M30,15 L70,15 L85,50 L70,85 L30,85 L15,50 Z',
+            star: 'M50,5 L61,35 L95,35 L68,57 L79,91 L50,70 L21,91 L32,57 L5,35 L39,35 Z',
+            heart: 'M50,85 C20,60 5,40 5,25 C5,15 15,5 25,5 C35,5 45,15 50,25 C55,15 65,5 75,5 C85,5 95,15 95,25 C95,40 80,60 50,85 Z',
+            'arrow-right': 'M15,35 L65,35 L65,25 L85,50 L65,75 L65,65 L15,65 Z',
+            'arrow-left': 'M85,35 L35,35 L35,25 L15,50 L35,75 L35,65 L85,65 Z',
+            'arrow-up': 'M35,85 L35,35 L25,35 L50,15 L75,35 L65,35 L65,85 Z',
+            'arrow-down': 'M35,15 L35,65 L25,65 L50,85 L75,65 L65,65 L65,15 Z'
+          }
+          
+          return (
+            <div 
+              style={{ ...style, padding: '0' }} 
+              className={cn(
+                "w-full h-full cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 transition-all duration-200"
+              )}
+              title="Double-click to edit shape"
+            >
+              <svg 
+                width="100%" 
+                height="100%" 
+                viewBox="0 0 100 100" 
+                className="w-full h-full"
+              >
+                <path
+                  d={shapePaths[shapeType]}
+                  fill={element.style?.backgroundColor || shapeStyle.fill || '#3B82F6'}
+                  stroke={element.style?.borderColor || shapeStyle.stroke || '#1E40AF'}
+                  strokeWidth={(element.style?.borderWidth || shapeStyle.strokeWidth || 2) * 2} // Scale for SVG
+                  opacity={element.style?.opacity || shapeStyle.opacity || 1}
+                />
+              </svg>
+              {/* Edit indicator overlay */}
+              <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                ✏️ Edit
+              </div>
+            </div>
+          )
+        }
+        
+        // For basic shapes, use div with CSS
         return (
           <div 
-            style={style}
+            style={{
+              ...style,
+              backgroundColor: element.style?.backgroundColor || shapeStyle.fill || '#3B82F6',
+              borderColor: element.style?.borderColor || shapeStyle.stroke || '#1E40AF',
+              borderWidth: `${element.style?.borderWidth || shapeStyle.strokeWidth || 2}px`,
+              borderStyle: 'solid',
+              borderRadius: shapeType === 'circle' ? '50%' : `${element.style?.borderRadius || shapeStyle.borderRadius || 0}px`,
+              opacity: element.style?.opacity || shapeStyle.opacity || 1,
+              cursor: 'pointer'
+            }}
             className={cn(
-              "w-full h-full",
-              element.content === 'circle' && "rounded-full",
-              element.content === 'rectangle' && "rounded-lg"
+              "w-full h-full relative hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 transition-all duration-200"
             )}
-          />
+            title="Double-click to edit shape"
+          >
+            {/* Edit indicator overlay */}
+            <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              ✏️ Edit
+            </div>
+          </div>
         )
       
       default:

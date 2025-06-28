@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["finalSlides"],
+  "properties": {
+    "finalSlides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "content", "layout", "styling", "elements"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique slide identifier"
+          },
+          "title": {
+            "type": "string",
+            "description": "Slide title"
+          },
+          "content": {
+            "type": "string",
+            "description": "Main slide content"
+          },
+          "layout": {
+            "type": "object",
+            "required": ["template", "dimensions"],
+            "properties": {
+              "template": {
+                "type": "string",
+                "enum": ["title", "content", "two-column", "chart", "image", "conclusion"],
+                "description": "Layout template"
+              },
+              "dimensions": {
+                "type": "object",
+                "required": ["width", "height"],
+                "properties": {
+                  "width": {"type": "number"},
+                  "height": {"type": "number"}
+                }
+              }
+            }
+          },
+          "styling": {
+            "type": "object",
+            "required": ["theme", "colors", "typography"],
+            "properties": {
+              "theme": {
+                "type": "string",
+                "enum": ["professional", "modern", "creative", "minimal"],
+                "description": "Visual theme"
+              },
+              "colors": {
+                "type": "object",
+                "required": ["primary", "secondary", "background", "text"],
+                "properties": {
+                  "primary": {"type": "string"},
+                  "secondary": {"type": "string"}, 
+                  "background": {"type": "string"},
+                  "text": {"type": "string"}
+                }
+              },
+              "typography": {
+                "type": "object",
+                "required": ["heading", "body"],
+                "properties": {
+                  "heading": {
+                    "type": "object",
+                    "required": ["family", "size", "weight"],
+                    "properties": {
+                      "family": {"type": "string"},
+                      "size": {"type": "string"},
+                      "weight": {"type": "string"}
+                    }
+                  },
+                  "body": {
+                    "type": "object",
+                    "required": ["family", "size", "weight"],
+                    "properties": {
+                      "family": {"type": "string"},
+                      "size": {"type": "string"},
+                      "weight": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "type", "position", "content"],
+              "properties": {
+                "id": {"type": "string"},
+                "type": {
+                  "type": "string",
+                  "enum": ["text", "image", "chart", "bullet-list", "shape", "table"],
+                  "description": "Element type"
+                },
+                "position": {
+                  "type": "object",
+                  "required": ["x", "y", "width", "height"],
+                  "properties": {
+                    "x": {"type": "number"},
+                    "y": {"type": "number"},
+                    "width": {"type": "number"},
+                    "height": {"type": "number"}
+                  }
+                },
+                "content": {
+                  "type": ["string", "object"],
+                  "description": "Element content (text or structured data)"
+                },
+                "styling": {
+                  "type": "object",
+                  "properties": {
+                    "color": {"type": "string"},
+                    "fontSize": {"type": "string"},
+                    "fontWeight": {"type": "string"},
+                    "textAlign": {"type": "string"}
+                  }
+                }
+              }
+            },
+            "description": "Array of slide elements"
+          },
+          "animations": {
+            "type": "object",
+            "properties": {
+              "entrance": {"type": "string"},
+              "emphasis": {"type": "string"},
+              "exit": {"type": "string"}
+            }
+          },
+          "speakerNotes": {
+            "type": "string",
+            "description": "Speaker notes for the slide"
+          }
+        }
+      },
+      "description": "Array of final presentation slides"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "totalSlides": {"type": "number"},
+        "presentationTitle": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "theme": {"type": "string"}
+      }
+    }
+  }
+}

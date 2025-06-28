@@ -1,8 +1,12 @@
+'use client'
+
 import PublicNavigation from '@/components/navigation/PublicNavigation'
 import PublicFooter from '@/components/navigation/PublicFooter'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Plus, FileText, Calendar, Eye } from 'lucide-react'
+import { Plus, FileText, Calendar, Eye, Sparkles, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'react-hot-toast'
 
 const mockPresentations = [
   {
@@ -20,7 +24,74 @@ const mockPresentations = [
 ]
 
 export default function PresentationsPage() {
+  const [generatingSlides, setGeneratingSlides] = useState<string | null>(null)
+  const [queueStatuses, setQueueStatuses] = useState<Record<string, any>>({})
   const presentations = mockPresentations // Replace with real data fetch
+
+  const generateSlides = async (presentationId: string) => {
+    setGeneratingSlides(presentationId)
+    toast.loading('Starting AI pipeline...', { id: 'generate' })
+
+    try {
+      // Call the AI pipeline
+      const response = await fetch('/api/ai/run-pipeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ presentationId })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to start pipeline')
+      }
+
+      const result = await response.json()
+      toast.success('Pipeline started! Generating slides...', { id: 'generate' })
+
+      // Poll for completion
+      pollQueueStatus(presentationId)
+    } catch (error) {
+      console.error('Pipeline error:', error)
+      toast.error('Failed to start pipeline', { id: 'generate' })
+      setGeneratingSlides(null)
+    }
+  }
+
+  const pollQueueStatus = async (presentationId: string) => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/ai/queue-status', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+        if (response.ok) {
+          const status = await response.json()
+          setQueueStatuses(prev => ({ ...prev, [presentationId]: status }))
+
+          if (status.status === 'completed') {
+            clearInterval(pollInterval)
+            setGeneratingSlides(null)
+            
+            // Fetch final JSON
+            const presentationResponse = await fetch(`/api/presentations/${presentationId}`)
+            if (presentationResponse.ok) {
+              const presentationData = await presentationResponse.json()
+              toast.success('Slides generated successfully!', { id: 'generate' })
+              
+              // Navigate to deck builder with the generated data
+              window.location.href = `/deck-builder/${presentationId}?generated=true`
+            }
+          } else if (status.status === 'failed') {
+            clearInterval(pollInterval)
+            setGeneratingSlides(null)
+            toast.error('Pipeline failed', { id: 'generate' })
+          }
+        }
+      } catch (error) {
+        console.error('Polling error:', error)
+      }
+    }, 2000) // Poll every 2 seconds
+  }
   return (
     <>
       <PublicNavigation />
@@ -51,7 +122,7 @@ export default function PresentationsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {presentations.map(p => (
-                <div key={p.id} className="bg-gray-900/80 border border-gray-800 rounded-2xl p-6 flex flex-col shadow-lg">
+                <div key={p.id} data-cy="presentation-card" className="bg-gray-900/80 border border-gray-800 rounded-2xl p-6 flex flex-col shadow-lg">
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-white mb-2 truncate">{p.title}</h3>
                     <div className="flex items-center text-gray-400 text-sm mb-4">
@@ -61,6 +132,21 @@ export default function PresentationsPage() {
                     <div className="text-gray-300 text-sm mb-4">{p.slides} slides</div>
                   </div>
                   <div className="flex gap-2 mt-auto">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border-purple-500/50 hover:from-purple-600/30 hover:to-blue-600/30"
+                      onClick={() => generateSlides(p.id)}
+                      disabled={generatingSlides === p.id}
+                      data-cy="generate-slides-button"
+                    >
+                      {generatingSlides === p.id ? (
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 mr-1" />
+                      )}
+                      Generate Slides
+                    </Button>
                     <Link href={`/presentation/${p.id}/preview`}>
                       <Button size="sm" variant="outline" className="flex-1">
                         <Eye className="w-4 h-4 mr-1" /> Preview

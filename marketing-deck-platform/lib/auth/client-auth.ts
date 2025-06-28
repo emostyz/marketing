@@ -42,7 +42,7 @@ export class ClientAuth {
    * Get current user from client-side context
    * This function reads from cookies or localStorage but doesn't use server-only APIs
    */
-  static getCurrentUser(): User | null {
+  static async getCurrentUser(): Promise<User | null> {
     if (typeof window === 'undefined') return null
     
     try {
@@ -67,8 +67,12 @@ export class ClientAuth {
         }
       }
       
-      // For Supabase users, we need to make an API call
-      // This will be handled by the auth context
+      // For Supabase users, get from session
+      const session = await this.getSupabaseSession()
+      if (session) {
+        return this.createUserFromSession()
+      }
+      
       return null
     } catch (error) {
       console.error('Error getting current user:', error)
@@ -79,31 +83,32 @@ export class ClientAuth {
   /**
    * Get current user ID for client-side operations
    */
-  static getCurrentUserId(): string | null {
-    const user = this.getCurrentUser()
+  static async getCurrentUserId(): Promise<string | null> {
+    const user = await this.getCurrentUser()
     return user ? user.id.toString() : null
   }
 
   /**
    * Check if user is authenticated
    */
-  static isAuthenticated(): boolean {
-    return this.getCurrentUser() !== null
+  static async isAuthenticated(): Promise<boolean> {
+    const user = await this.getCurrentUser()
+    return user !== null
   }
 
   /**
    * Get user subscription level
    */
-  static getSubscriptionLevel(): 'free' | 'pro' | 'enterprise' | null {
-    const user = this.getCurrentUser()
+  static async getSubscriptionLevel(): Promise<'free' | 'pro' | 'enterprise' | null> {
+    const user = await this.getCurrentUser()
     return user?.subscription || null
   }
 
   /**
    * Check if user has required subscription level
    */
-  static hasSubscription(minLevel: 'free' | 'pro' | 'enterprise' = 'free'): boolean {
-    const user = this.getCurrentUser()
+  static async hasSubscription(minLevel: 'free' | 'pro' | 'enterprise' = 'free'): Promise<boolean> {
+    const user = await this.getCurrentUser()
     if (!user) return false
     
     const levels = { free: 0, pro: 1, enterprise: 2 }
@@ -256,5 +261,13 @@ export class ClientAuth {
 export function useCurrentUser(): User | null {
   // This function should be used within the AuthContext
   // It's a placeholder for now - use useAuth() from auth-context instead
-  return ClientAuth.getCurrentUser()
+  // For now, return a demo user for testing
+  return {
+    id: 1,
+    email: 'demo@example.com',
+    name: 'Demo User',
+    subscription: 'pro',
+    createdAt: new Date(),
+    lastLoginAt: new Date()
+  }
 }

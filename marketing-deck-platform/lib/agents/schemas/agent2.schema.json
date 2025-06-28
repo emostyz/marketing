@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["storyArc", "slides"],
+  "properties": {
+    "storyArc": {
+      "type": "object",
+      "required": ["narrative", "theme", "objectives"],
+      "properties": {
+        "narrative": {
+          "type": "string",
+          "description": "Main story narrative"
+        },
+        "theme": {
+          "type": "string",
+          "description": "Presentation theme"
+        },
+        "objectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Key objectives for the presentation"
+        }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "content", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique slide identifier"
+          },
+          "title": {
+            "type": "string",
+            "description": "Slide title"
+          },
+          "content": {
+            "type": "string",
+            "description": "Slide content/body text"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["title", "content", "chart", "conclusion"],
+            "description": "Type of slide"
+          },
+          "bulletPoints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of bullet points for the slide"
+          }
+        }
+      },
+      "description": "Array of structured slides"
+    }
+  }
+}

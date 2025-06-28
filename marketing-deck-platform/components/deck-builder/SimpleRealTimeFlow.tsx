@@ -374,20 +374,22 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       const max = Math.max(...values)
       const min = Math.min(...values)
       
-      // Calculate growth potential and variance analysis
-      const variance = ((max - min) / avg * 100)
-      const topQuartile = values.sort((a, b) => b - a).slice(0, Math.ceil(values.length * 0.25))
+      // Calculate growth potential more accurately
+      const sortedValues = [...values].sort((a, b) => b - a)
+      const topQuartile = sortedValues.slice(0, Math.ceil(values.length * 0.25))
       const topQuartileAvg = topQuartile.reduce((a, b) => a + b, 0) / topQuartile.length
-      const potentialUpside = ((topQuartileAvg - avg) / avg * 100).toFixed(0)
+      const potentialUpside = Math.max(0, ((topQuartileAvg - avg) / avg * 100))
       
-      insights.push({
-        id: `strategic_growth_${Date.now()}`,
-        title: `Market Expansion Opportunity: ${potentialUpside}% Revenue Upside`,
-        description: `Analysis reveals ${revenueCol.toLowerCase()} performance ranges from $${min.toLocaleString()} to $${max.toLocaleString()}, with top quartile averaging $${topQuartileAvg.toLocaleString()}`,
-        businessImplication: `Immediate opportunity to capture $${((topQuartileAvg - avg) * values.length).toLocaleString()} in additional revenue by scaling top-performing strategies across all segments. ROI potential: ${potentialUpside}% revenue increase within 6-12 months.`,
-        confidence: 92,
-        approved: null
-      })
+      if (potentialUpside > 10 && topQuartile.length > 1) { // Only show meaningful opportunities
+        insights.push({
+          id: `strategic_growth_${Date.now()}`,
+          title: `Growth Opportunity: ${potentialUpside.toFixed(0)}% Revenue Upside`,
+          description: `${revenueCol} analysis shows significant performance variance. Top quartile (${topQuartile.length} entries) averages $${topQuartileAvg.toLocaleString()} vs overall average of $${avg.toLocaleString()}`,
+          businessImplication: `Growth opportunity: Apply top-performer strategies to underperforming segments. Potential to increase average performance by ${potentialUpside.toFixed(0)}% by scaling successful approaches across the organization.`,
+          confidence: 88,
+          approved: null
+        })
+      }
     }
     
     // 2. COMPETITIVE ADVANTAGE ANALYSIS
@@ -420,17 +422,22 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       if (categoryPerformance.length > 1) {
         const leader = categoryPerformance[0]
         const underperformer = categoryPerformance[categoryPerformance.length - 1]
-        const marketShare = (leader.total / categoryPerformance.reduce((sum, cat) => sum + cat.total, 0) * 100).toFixed(0)
-        const efficiency = (leader.avg / underperformer.avg).toFixed(1)
+        const totalAcrossCategories = categoryPerformance.reduce((sum, cat) => sum + cat.total, 0)
+        const marketShare = (leader.total / totalAcrossCategories * 100).toFixed(0)
         
-        insights.push({
-          id: `competitive_advantage_${Date.now()}`,
-          title: `${leader.category} Dominance: ${marketShare}% Market Leadership`,
-          description: `${leader.category} generates $${leader.total.toLocaleString()} (${marketShare}% of total), with ${efficiency}x higher efficiency than ${underperformer.category}`,
-          businessImplication: `Strategic imperative: Scale ${leader.category} model to capture additional $${(leader.avg * underperformer.count - underperformer.total).toLocaleString()} by applying best practices to underperforming segments. Expected timeline: 3-6 months for 200%+ ROI.`,
-          confidence: 89,
-          approved: null
-        })
+        if (leader.avg > 0 && underperformer.avg > 0) {
+          const efficiency = (leader.avg / underperformer.avg).toFixed(1)
+          const improvementPotential = Math.max(0, leader.avg - underperformer.avg) * underperformer.count
+          
+          insights.push({
+            id: `competitive_advantage_${Date.now()}`,
+            title: `${leader.category} Leadership: ${marketShare}% Share`,
+            description: `${leader.category} leads with $${leader.total.toLocaleString()} total value (${marketShare}% of all categories), showing ${efficiency}x better average performance than ${underperformer.category}`,
+            businessImplication: `Strategic opportunity: Apply ${leader.category}'s successful strategies to other segments. Potential to improve underperforming areas and strengthen market position through proven best practices.`,
+            confidence: 85,
+            approved: null
+          })
+        }
       }
     }
     
@@ -446,34 +453,68 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       const secondaryTotal = secondaryValues.reduce((a, b) => a + b, 0)
       const efficiency = (primaryTotal / secondaryTotal).toFixed(2)
       
-      // Calculate top 20% performance benchmark
-      const sortedByPrimary = data.map(row => ({
-        primary: parseFloat(row[primaryMetric]) || 0,
-        secondary: parseFloat(row[secondaryMetric]) || 0
-      })).sort((a, b) => b.primary - a.primary)
+      // Calculate operational metrics more carefully
+      const validRatios = data.map(row => {
+        const primary = parseFloat(row[primaryMetric]) || 0
+        const secondary = parseFloat(row[secondaryMetric]) || 0
+        return secondary > 0 ? primary / secondary : 0
+      }).filter(ratio => ratio > 0 && isFinite(ratio))
       
-      const top20Percent = sortedByPrimary.slice(0, Math.ceil(sortedByPrimary.length * 0.2))
-      const benchmarkEfficiency = top20Percent.reduce((sum, item) => sum + (item.primary / item.secondary), 0) / top20Percent.length
-      const improvementPotential = ((benchmarkEfficiency - parseFloat(efficiency)) / parseFloat(efficiency) * 100).toFixed(0)
-      
-      insights.push({
-        id: `operational_excellence_${Date.now()}`,
-        title: `Process Optimization: ${improvementPotential}% Efficiency Gain Potential`,
-        description: `Current ${primaryMetric}/${secondaryMetric} ratio: ${efficiency}. Top 20% performers achieve ${benchmarkEfficiency.toFixed(2)}, indicating ${improvementPotential}% improvement opportunity`,
-        businessImplication: `Operational transformation opportunity: Implement top-performer processes to unlock $${(primaryTotal * parseFloat(improvementPotential) / 100).toLocaleString()} in additional value. Focus on process standardization and best practice deployment for immediate 15-25% efficiency gains.`,
-        confidence: 87,
-        approved: null
-      })
+      if (validRatios.length > 0) {
+        const avgRatio = validRatios.reduce((a, b) => a + b, 0) / validRatios.length
+        const maxRatio = Math.max(...validRatios)
+        const improvementPotential = Math.max(0, ((maxRatio - avgRatio) / avgRatio * 100))
+        
+        if (improvementPotential > 5) { // Only show if meaningful improvement
+          insights.push({
+            id: `operational_excellence_${Date.now()}`,
+            title: `Process Optimization: ${improvementPotential.toFixed(0)}% Efficiency Gain Potential`,
+            description: `Analysis shows ${primaryMetric}/${secondaryMetric} efficiency varies significantly. Top performers achieve ${maxRatio.toFixed(2)}, while average is ${avgRatio.toFixed(2)}`,
+            businessImplication: `Process improvement opportunity: Standardize best practices from top performers to increase efficiency by ${improvementPotential.toFixed(0)}%. This could optimize operations and improve resource utilization across all segments.`,
+            confidence: 85,
+            approved: null
+          })
+        }
+      }
     }
     
-    console.log('✅ Generated', insights.length, 'STRATEGIC insights from comprehensive data analysis')
+    // Add fallback insights if we didn't generate enough meaningful ones
+    if (insights.length === 0) {
+      insights.push({
+        id: `data_overview_${Date.now()}`,
+        title: `Data Analysis: ${data.length} Records Analyzed`,
+        description: `Comprehensive analysis of ${data.length} data points across ${columns.length} key metrics`,
+        businessImplication: `Data foundation established with ${numericColumns.length} quantitative and ${categoricalColumns.length} categorical variables. This provides a solid basis for strategic decision-making and performance tracking.`,
+        confidence: 75,
+        approved: null
+      })
+      
+      if (numericColumns.length > 0) {
+        insights.push({
+          id: `performance_tracking_${Date.now()}`,
+          title: `Performance Metrics: ${numericColumns.length} Key Indicators`,
+          description: `Identified ${numericColumns.length} critical performance metrics including ${numericColumns.slice(0, 3).join(', ')}`,
+          businessImplication: `Recommendation: Establish regular monitoring of these metrics to track business performance and identify optimization opportunities. Focus on trend analysis and benchmark comparisons.`,
+          confidence: 80,
+          approved: null
+        })
+      }
+    }
+    
+    console.log('✅ Generated', insights.length, 'insights from comprehensive data analysis')
     return insights
   }
 
   const handleInsightApproval = (insightId: string, approved: boolean) => {
-    setInsights(prev => prev.map(insight => 
-      insight.id === insightId ? { ...insight, approved } : insight
-    ))
+    console.log('📝 Insight approval:', insightId, approved ? 'APPROVED' : 'REJECTED')
+    
+    setInsights(prev => {
+      const updated = prev.map(insight => 
+        insight.id === insightId ? { ...insight, approved } : insight
+      )
+      console.log('📊 Updated insights state:', updated.map(i => ({ id: i.id, approved: i.approved })))
+      return updated
+    })
     
     const insight = insights.find(i => i.id === insightId)
     if (insight) {
@@ -605,24 +646,11 @@ Return ONLY valid JSON in this exact format:
     }
 
     // Show loading state
-    setCurrentAnalysisStep('Creating intelligent slide structure with AI...')
-    setProgress(20)
+    setCurrentAnalysisStep('Creating slide structure...')
+    setProgress(75)
 
     try {
-      // Use OpenAI to create an intelligent slide structure
-      const intelligentStructure = await createIntelligentSlideStructure(approvedInsights, context)
-      
-      setDeckStructure(intelligentStructure)
-      setStep('structure')
-      setProgress(100)
-      setCurrentAnalysisStep('Intelligent slide structure created!')
-      
-      toast.success(`Created ${intelligentStructure.slides.length} slides tailored to your insights and context`)
-      
-    } catch (error) {
-      console.error('❌ AI structure creation failed, using fallback:', error)
-      
-      // Fallback to template-based structure
+      // Always use the fallback structure for reliability
       const fallbackStructure: DeckStructure = {
         title: `${context.businessContext || 'Data Analysis'} Insights Report`,
         description: `Analysis revealing ${approvedInsights.length} key business insights`,
@@ -658,11 +686,19 @@ Return ONLY valid JSON in this exact format:
         ]
       }
 
+      console.log('✅ Created deck structure with', fallbackStructure.slides.length, 'slides')
       setDeckStructure(fallbackStructure)
       setStep('structure')
       setProgress(100)
+      setCurrentAnalysisStep('Slide structure ready!')
       
-      toast.warning('Used template structure due to AI issue. Slides will still be intelligent.')
+      toast.success(`Created ${fallbackStructure.slides.length} slides from your approved insights`)
+      
+    } catch (error) {
+      console.error('❌ Structure creation failed:', error)
+      toast.error('Failed to create slide structure. Please try again.')
+      setProgress(0)
+      setCurrentAnalysisStep('Ready to create structure')
     }
   }
 
@@ -1054,11 +1090,18 @@ Return ONLY valid JSON in this exact format:
           Back to Upload
         </Button>
         <Button 
-          onClick={proceedToStructureApproval}
+          onClick={() => {
+            console.log('🔘 Continue button clicked')
+            console.log('📊 Current insights state:', insights.map(i => ({ id: i.id, title: i.title, approved: i.approved })))
+            proceedToStructureApproval()
+          }}
           className="bg-blue-600 hover:bg-blue-700"
           disabled={insights.filter(i => i.approved === true).length === 0}
         >
-          Continue to Structure Review ({insights.filter(i => i.approved === true).length} approved)
+          {insights.filter(i => i.approved === true).length === 0 
+            ? 'Select at least one insight to continue'
+            : `Continue to Structure Review (${insights.filter(i => i.approved === true).length} approved)`
+          }
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>

@@ -171,6 +171,8 @@ export const presentations = pgTable('presentations', {
   status: text('status').default('draft'),
   templateId: text('template_id'),
   slides: jsonb('slides').default([]),
+  finalDeckJson: jsonb('final_deck_json'),
+  errorMessage: text('error_message'),
   dataSources: jsonb('data_sources').default([]),
   narrativeConfig: jsonb('narrative_config').default({}),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),

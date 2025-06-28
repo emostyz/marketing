@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client'
 import { ClientAuth } from '@/lib/auth/client-auth'
+import { authRefreshManager } from '@/lib/auth/auth-refresh-manager'
 
 export interface AutoSaveConfig {
   debounceMs: number
@@ -172,11 +173,18 @@ export class EnhancedAutoSave {
       this.changesSinceLastSave = []
       
       console.log('✅ Auto-save successful at', new Date().toLocaleTimeString())
+      
+      // Save to local storage as backup
+      this.saveToLocalStorage(presentationData)
+      
       return true
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       console.error('❌ Auto-save failed:', errorMessage)
+      
+      // Save to local storage as fallback
+      this.saveToLocalStorage(presentationData)
       
       this.updateState({ 
         status: 'error', 
@@ -184,10 +192,13 @@ export class EnhancedAutoSave {
         retryCount: this.state.retryCount + 1
       })
 
-      // Retry logic
-      if (this.state.retryCount < this.config.maxRetries) {
-        console.log(`🔄 Retrying auto-save (${this.state.retryCount}/${this.config.maxRetries})`)
-        setTimeout(() => this.save(presentationData), 2000 * this.state.retryCount)
+      // Smart retry logic based on error type
+      if (this.shouldRetry(error, this.state.retryCount)) {
+        const delay = this.calculateRetryDelay(this.state.retryCount)
+        console.log(`🔄 Retrying auto-save (${this.state.retryCount}/${this.config.maxRetries}) in ${delay}ms`)
+        setTimeout(() => this.save(presentationData), delay)
+      } else {
+        console.error('❌ Max retries reached or non-retryable error, giving up')
       }
       
       return false
@@ -197,6 +208,12 @@ export class EnhancedAutoSave {
   }
 
   private async performSave(presentationData: any): Promise<void> {
+    // Ensure auth token is valid for the save operation
+    const tokenValid = await authRefreshManager.ensureValidTokenForOperation(30000) // 30 seconds
+    if (!tokenValid) {
+      throw new Error('Failed to ensure valid authentication token')
+    }
+
     const user = await ClientAuth.getCurrentUser()
     if (!user) {
       throw new Error('User not authenticated')
@@ -204,6 +221,11 @@ export class EnhancedAutoSave {
 
     if (!presentationData) {
       throw new Error('No presentation data to save')
+    }
+
+    // Additional validation for presentation data
+    if (!presentationData.slides || !Array.isArray(presentationData.slides)) {
+      throw new Error('Invalid presentation data: slides must be an array')
     }
 
     // Save to main presentations table
@@ -362,6 +384,143 @@ export class EnhancedAutoSave {
 
   public getState(): AutoSaveState {
     return { ...this.state }
+  }
+
+  /**
+   * Save to local storage as backup/fallback
+   */
+  private saveToLocalStorage(presentationData: any) {
+    if (typeof window === 'undefined') return
+
+    try {
+      const backupData = {
+        presentationId: this.presentationId,
+        data: presentationData,
+        timestamp: new Date().toISOString(),
+        changes: [...this.changesSinceLastSave]
+      }
+      
+      localStorage.setItem(`presentation_backup_${this.presentationId}`, JSON.stringify(backupData))
+      console.log('💾 Saved backup to local storage')
+    } catch (error) {
+      console.warn('Failed to save to local storage:', error)
+    }
+  }
+
+  /**
+   * Load from local storage backup
+   */
+  public loadFromLocalStorage(): any | null {
+    if (typeof window === 'undefined' || !this.presentationId) return null
+
+    try {
+      const backupData = localStorage.getItem(`presentation_backup_${this.presentationId}`)
+      if (backupData) {
+        const parsed = JSON.parse(backupData)
+        console.log('💾 Found local storage backup from:', parsed.timestamp)
+        return parsed
+      }
+    } catch (error) {
+      console.warn('Failed to load from local storage:', error)
+    }
+    return null
+  }
+
+  /**
+   * Clear local storage backup
+   */
+  public clearLocalStorageBackup() {
+    if (typeof window === 'undefined' || !this.presentationId) return
+
+    try {
+      localStorage.removeItem(`presentation_backup_${this.presentationId}`)
+      console.log('💾 Cleared local storage backup')
+    } catch (error) {
+      console.warn('Failed to clear local storage backup:', error)
+    }
+  }
+
+  /**
+   * Determine if we should retry based on error type and attempt count
+   */
+  private shouldRetry(error: any, retryCount: number): boolean {
+    if (retryCount >= this.config.maxRetries) {
+      return false
+    }
+
+    const errorMessage = error instanceof Error ? error.message : String(error)
+
+    // Don't retry on authentication errors
+    if (errorMessage.includes('not authenticated') || 
+        errorMessage.includes('401') ||
+        errorMessage.includes('Unauthorized')) {
+      return false
+    }
+
+    // Don't retry on validation errors
+    if (errorMessage.includes('Invalid presentation data') ||
+        errorMessage.includes('validation')) {
+      return false
+    }
+
+    // Don't retry on quota/billing errors
+    if (errorMessage.includes('quota') || 
+        errorMessage.includes('billing') ||
+        errorMessage.includes('subscription')) {
+      return false
+    }
+
+    // Retry on network errors, timeouts, and temporary failures
+    return true
+  }
+
+  /**
+   * Calculate retry delay with exponential backoff and jitter
+   */
+  private calculateRetryDelay(retryCount: number): number {
+    const baseDelay = 2000 // 2 seconds
+    const maxDelay = 30000 // 30 seconds
+    
+    // Exponential backoff
+    let delay = Math.min(baseDelay * Math.pow(2, retryCount), maxDelay)
+    
+    // Add jitter (±25%)
+    const jitter = delay * 0.25 * (Math.random() - 0.5)
+    delay += jitter
+    
+    return Math.max(1000, Math.round(delay)) // Minimum 1 second
+  }
+
+  /**
+   * Recovery method to attempt saving after failures
+   */
+  public async recoverAndSave(presentationData?: any): Promise<boolean> {
+    console.log('🔄 Attempting recovery save...')
+    
+    // Reset retry count for recovery attempt
+    this.updateState({ retryCount: 0, lastError: null })
+    
+    // Ensure auth is refreshed
+    try {
+      await authRefreshManager.refreshToken()
+    } catch (error) {
+      console.error('Failed to refresh token during recovery:', error)
+    }
+    
+    return this.saveImmediate(presentationData)
+  }
+
+  /**
+   * Get backup status and information
+   */
+  public getBackupInfo(): { hasBackup: boolean; backupTimestamp?: string; backupChanges?: string[] } {
+    const backup = this.loadFromLocalStorage()
+    
+    return {
+      hasBackup: !!backup,
+      backupTimestamp: backup?.timestamp,
+      backupChanges: backup?.changes
+    }
   }
 
   public destroy() {

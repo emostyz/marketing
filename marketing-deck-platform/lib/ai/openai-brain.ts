@@ -1,5 +1,6 @@
 import { OpenAI } from 'openai';
 import { z } from 'zod';
+import { EnhancedOpenAIWrapper, openAIWrapper } from './enhanced-openai-wrapper';
 
 // Feedback Loop Types
 interface FeedbackLoop {
@@ -349,7 +350,7 @@ export class OpenAIBrain {
     const messages = [
       {
         role: 'system' as const,
-        content: `You are an expert data analyst specializing in McKinsey-style business insights. Analyze the provided data and generate high-quality insights with statistical rigor.
+        content: `You are an expert data analyst specializing in McKinsey-style business insights. Analyze the provided data and generate high-quality insights with statistical rigor. Always respond in valid JSON format only.
 
 Context: ${userContext}
 Goals: ${userGoals}
@@ -375,16 +376,21 @@ Provide structured analysis with clear insights, trends, correlations, and actio
       }
     ];
 
-    const response = await this.openai.chat.completions.create({
+    const response = await openAIWrapper.call({
       model: "gpt-4-turbo-preview",
       messages,
-      response_format: { type: "json_object" },
+      requireJSON: true,
       temperature: 0.3,
-      max_tokens: 4000
+      max_tokens: 4000,
+      schema: DataAnalysisSchema
     });
 
-    const content = response.choices[0].message.content;
-    return content ? JSON.parse(content) : this.generateFallbackAnalysis(data, userContext);
+    if (!response.success) {
+      console.error('OpenAI analysis failed:', response.error);
+      return this.generateFallbackAnalysis(data, userContext);
+    }
+
+    return response.data;
   }
 
   private async generateChartRecommendations(
@@ -395,7 +401,7 @@ Provide structured analysis with clear insights, trends, correlations, and actio
     const messages = [
       {
         role: 'system' as const,
-        content: `You are a data visualization expert. Recommend the most effective charts for the given data and insights. Consider:
+        content: `You are a data visualization expert. Recommend the most effective charts for the given data and insights. Always respond in valid JSON format only. Consider:
 
 1. Data types and relationships
 2. Audience needs (executive-level)
@@ -416,16 +422,21 @@ Provide specific chart recommendations with clear rationale.`
       }
     ];
 
-    const response = await this.openai.chat.completions.create({
+    const response = await openAIWrapper.call({
       model: "gpt-4-turbo-preview",
       messages,
-      response_format: { type: "json_object" },
+      requireJSON: true,
       temperature: 0.4,
-      max_tokens: 3000
+      max_tokens: 3000,
+      schema: ChartRecommendationSchema
     });
 
-    const content = response.choices[0].message.content;
-    return content ? JSON.parse(content) : this.generateFallbackChartRecommendations(data);
+    if (!response.success) {
+      console.error('OpenAI chart recommendations failed:', response.error);
+      return this.generateFallbackChartRecommendations(data);
+    }
+
+    return response.data;
   }
 
   private async generateStructuredSlides(
@@ -437,7 +448,7 @@ Provide specific chart recommendations with clear rationale.`
     const messages = [
       {
         role: 'system' as const,
-        content: `You are a presentation expert specializing in McKinsey-style decks. Create compelling, executive-ready slides that tell a clear data story.
+        content: `You are a presentation expert specializing in McKinsey-style decks. Create compelling, executive-ready slides that tell a clear data story. Always respond in valid JSON format only.
 
 Requirements:
 1. Start with executive summary
@@ -463,16 +474,21 @@ Generate structured slides with clear narrative flow and executive appeal.`
       }
     ];
 
-    const response = await this.openai.chat.completions.create({
+    const response = await openAIWrapper.call({
       model: "gpt-4-turbo-preview",
       messages,
-      response_format: { type: "json_object" },
+      requireJSON: true,
       temperature: 0.5,
-      max_tokens: 6000
+      max_tokens: 6000,
+      schema: SlideGenerationSchema
     });
 
-    const content = response.choices[0].message.content;
-    return content ? JSON.parse(content) : this.generateFallbackSlides(data, insights, charts);
+    if (!response.success) {
+      console.error('OpenAI slide generation failed:', response.error);
+      return this.generateFallbackSlides(data, insights, charts);
+    }
+
+    return response.data;
   }
 
   // QA Test Methods
@@ -732,7 +748,7 @@ Please refine the slides to address these issues while maintaining professional 
       const messages = [
         {
           role: 'system' as const,
-          content: 'You are refining presentation slides based on QA feedback. Maintain the overall structure while addressing specific issues.'
+          content: 'You are refining presentation slides based on QA feedback. Maintain the overall structure while addressing specific issues. Always respond in valid JSON format only.'
         },
         {
           role: 'user' as const,
@@ -743,6 +759,12 @@ Current slides: ${JSON.stringify(slides, null, 2)}
 Please provide refined slides that address all issues.`
         }
       ];
+
+      // Preflight validation to ensure "json" keyword is present
+      if (!messages.some(m => /json/i.test(m.content))) {
+        console.error("❌ Missing 'json' in messages:", messages);
+        throw new Error("Must include 'json' in messages when using response_format:'json_object'");
+      }
 
       const response = await this.openai.chat.completions.create({
         model: "gpt-4-turbo-preview",

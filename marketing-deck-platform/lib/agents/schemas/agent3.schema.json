@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["styledSlides"],
+  "properties": {
+    "styledSlides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "content", "layout", "styling"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique slide identifier"
+          },
+          "title": {
+            "type": "string",
+            "description": "Slide title"
+          },
+          "content": {
+            "type": "string",
+            "description": "Slide content"
+          },
+          "layout": {
+            "type": "object",
+            "required": ["template", "elements"],
+            "properties": {
+              "template": {
+                "type": "string",
+                "enum": ["title", "content", "two-column", "chart", "image"],
+                "description": "Layout template type"
+              },
+              "elements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["type", "position"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["text", "image", "chart", "bullet-list"],
+                      "description": "Element type"
+                    },
+                    "position": {
+                      "type": "object",
+                      "required": ["x", "y", "width", "height"],
+                      "properties": {
+                        "x": {"type": "number"},
+                        "y": {"type": "number"},
+                        "width": {"type": "number"},
+                        "height": {"type": "number"}
+                      }
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "Element content"
+                    }
+                  }
+                },
+                "description": "Array of slide elements"
+              }
+            }
+          },
+          "styling": {
+            "type": "object",
+            "required": ["theme", "colors"],
+            "properties": {
+              "theme": {
+                "type": "string",
+                "enum": ["professional", "modern", "creative", "minimal"],
+                "description": "Visual theme"
+              },
+              "colors": {
+                "type": "object",
+                "required": ["primary", "secondary", "background"],
+                "properties": {
+                  "primary": {"type": "string"},
+                  "secondary": {"type": "string"},
+                  "background": {"type": "string"}
+                }
+              },
+              "fonts": {
+                "type": "object",
+                "properties": {
+                  "heading": {"type": "string"},
+                  "body": {"type": "string"}
+                }
+              }
+            }
+          }
+        }
+      },
+      "description": "Array of slides with styling and layout"
+    }
+  }
+}

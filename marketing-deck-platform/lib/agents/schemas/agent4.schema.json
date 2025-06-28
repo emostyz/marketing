@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["chartData"],
+  "properties": {
+    "chartData": {
+      "type": "object",
+      "required": ["charts"],
+      "properties": {
+        "charts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "title", "data"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique chart identifier"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["bar", "line", "pie", "scatter", "area", "treemap"],
+                "description": "Chart type"
+              },
+              "title": {
+                "type": "string",
+                "description": "Chart title"
+              },
+              "data": {
+                "type": "object",
+                "required": ["labels", "datasets"],
+                "properties": {
+                  "labels": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Chart labels"
+                  },
+                  "datasets": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["label", "data"],
+                      "properties": {
+                        "label": {"type": "string"},
+                        "data": {
+                          "type": "array",
+                          "items": {"type": "number"}
+                        },
+                        "backgroundColor": {"type": "string"},
+                        "borderColor": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              },
+              "config": {
+                "type": "object",
+                "properties": {
+                  "responsive": {"type": "boolean"},
+                  "maintainAspectRatio": {"type": "boolean"},
+                  "animation": {"type": "boolean"}
+                }
+              },
+              "slideId": {
+                "type": "string",
+                "description": "Associated slide ID"
+              }
+            }
+          },
+          "description": "Array of chart configurations"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "totalCharts": {"type": "number"},
+            "primaryInsight": {"type": "string"},
+            "dataSource": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}

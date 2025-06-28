@@ -33,26 +33,24 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow access to dashboard and settings for authenticated users
-  if (
-    request.nextUrl.pathname.startsWith('/dashboard') ||
-    request.nextUrl.pathname.startsWith('/settings') ||
-    request.nextUrl.pathname.startsWith('/deck-builder')
-  ) {
-    // These routes require authentication - continue to auth check below
-    // Don't return early, let the auth verification happen
+  // Protected routes that require authentication
+  const protectedRoutes = ['/dashboard', '/settings', '/deck-builder', '/presentations']
+  const isProtectedRoute = protectedRoutes.some(route => 
+    request.nextUrl.pathname.startsWith(route) && 
+    !request.nextUrl.pathname.includes('/deck-builder/demo-deck-')
+  )
+  
+  if (!isProtectedRoute) {
+    return NextResponse.next()
   }
 
-  // Allow access to demo deck URLs
-  if (request.nextUrl.pathname.includes('/deck-builder/demo-deck-')) {
-    return NextResponse.next();
-  }
 
   // Check for demo session first
   const demoSession = request.cookies.get('demo-session')?.value;
   const demoAuthToken = request.cookies.get('sb-demo-auth-token')?.value;
   
   if (demoSession === 'active' || demoAuthToken === 'demo-token') {
+    console.log('✅ Demo session found, allowing access')
     return NextResponse.next();
   }
 
@@ -86,10 +84,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  console.log('❌ No valid auth cookie found');
+  console.log('❌ No valid auth cookie found, redirecting to login');
 
-  // No valid session, redirect to login
-  return NextResponse.redirect(new URL('/auth/login', request.url));
+  // No valid session, redirect to login with return URL
+  const loginUrl = new URL('/auth/login', request.url)
+  loginUrl.searchParams.set('redirect', request.nextUrl.pathname)
+  return NextResponse.redirect(loginUrl);
 }
 
 export const config = {
