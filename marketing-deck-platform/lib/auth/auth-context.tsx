@@ -118,8 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const cached = localStorage.getItem(USER_CACHE_KEY)
       if (cached) {
         const data = JSON.parse(cached)
-        // Cache is valid for 10 minutes
-        if (data.user && data.timestamp && (Date.now() - data.timestamp) < 600000) {
+        // Cache is valid for 2 minutes to prevent stale auth state
+        if (data.user && data.timestamp && (Date.now() - data.timestamp) < 120000) {
           console.log('💾 Restored cached user state for:', data.user.email)
           return data.user
         } else {
@@ -147,12 +147,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // First, try to restore from cache for immediate UI response
+        // Try to restore from cache but validate it first
         const cachedUser = restoreUserState()
         if (cachedUser) {
-          console.log('🚀 Using cached user state for immediate response')
-          setUser(cachedUser)
-          setLoading(false)
+          console.log('💾 Found cached user state, will validate server-side session')
+          // Don't set loading to false yet - wait for session validation
         }
 
         // Check for demo session
@@ -335,7 +334,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('🔍 Fetching profile for user:', authUser.id)
       
-      // Set basic user state immediately
+      // Set basic user state but don't cache immediately - wait for profile validation
       const basicUser: User = {
         id: authUser.id,
         email: authUser.email || '',
@@ -345,11 +344,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       setUser(basicUser)
-      cacheUserState(basicUser)
       setLoading(false)
       setInitialized(true)
       
-      console.log('✅ Basic user state set immediately:', basicUser.name)
+      console.log('✅ Basic user state set, validating profile:', basicUser.name)
       
       // Fetch full profile in background
       try {

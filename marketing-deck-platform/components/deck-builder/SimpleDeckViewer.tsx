@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { ChevronLeft, ChevronRight, Play, Pause, Download, Edit3, Copy, Trash2, Save, X, RotateCcw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, Pause, Download, Edit3, Copy, Trash2, Save, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { SaveStatusIndicator } from '@/components/ui/SaveStatusIndicator'
 
 interface SimpleDeckViewerProps {
   presentationId: string
@@ -23,10 +23,78 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState<string>('')
   const [showEditPanel, setShowEditPanel] = useState(false)
+  
+  // Save functionality
+  const [saveState, setSaveState] = useState<{ status: 'idle' | 'saving' | 'saved' | 'error' | 'offline', lastSaved: Date | null, lastError: string | null }>({ 
+    status: 'idle', 
+    lastSaved: null, 
+    lastError: null 
+  })
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     loadPresentation()
+    
+    // Cleanup on unmount
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
   }, [presentationId])
+  
+  // Debounced save function
+  const debouncedSave = (updatedPresentation: any, changeDescription: string) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    
+    saveTimeoutRef.current = setTimeout(() => {
+      savePresentation(updatedPresentation, changeDescription)
+    }, 2000) // Save after 2 seconds of inactivity
+  }
+  
+  const savePresentation = async (presentationData: any, changeDescription: string) => {
+    if (!presentationData || presentationId.startsWith('demo-deck-')) {
+      console.log('⏭️ Skipping save for demo deck')
+      return
+    }
+    
+    try {
+      setSaveState(prev => ({ ...prev, status: 'saving', lastError: null }))
+      console.log('💾 Saving presentation changes:', changeDescription)
+      
+      const response = await fetch(`/api/presentations/${presentationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(presentationData)
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        setSaveState({
+          status: 'saved',
+          lastSaved: new Date(),
+          lastError: null
+        })
+        console.log('✅ Presentation saved successfully')
+      } else {
+        throw new Error(result.error || 'Failed to save presentation')
+      }
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      console.error('❌ Failed to save presentation:', errorMessage)
+      setSaveState(prev => ({
+        ...prev,
+        status: 'error',
+        lastError: errorMessage
+      }))
+    }
+  }
 
   const loadPresentation = async () => {
     try {
@@ -93,6 +161,10 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
     }
 
     setPresentation(updatedPresentation)
+    
+    // Save the changes
+    debouncedSave(updatedPresentation, `Text edited on slide ${currentSlide + 1}`)
+    
     setSelectedElementId(null)
     setEditingText('')
     setShowEditPanel(false)
@@ -129,6 +201,9 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
 
     setPresentation(updatedPresentation)
     setCurrentSlide(currentSlide + 1)
+    
+    // Save the changes
+    debouncedSave(updatedPresentation, `Duplicated slide ${currentSlide + 1}`)
   }
 
   const deleteSlide = () => {
@@ -144,6 +219,9 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
     if (currentSlide >= updatedPresentation.slides.length) {
       setCurrentSlide(updatedPresentation.slides.length - 1)
     }
+    
+    // Save the changes
+    debouncedSave(updatedPresentation, `Deleted slide ${currentSlide + 1}`)
   }
 
   const renderSlideContent = (slide: any) => {
@@ -410,6 +488,18 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
           </div>
           
           <div className="flex items-center space-x-4">
+            {/* Save Status Indicator */}
+            <SaveStatusIndicator 
+              status={saveState.status}
+              lastSaved={saveState.lastSaved}
+              lastError={saveState.lastError}
+              onForceSave={() => {
+                if (presentation) {
+                  savePresentation(presentation, 'Manual save')
+                }
+              }}
+            />
+            
             <Button
               onClick={() => setEditMode(!editMode)}
               size="sm"
@@ -451,6 +541,20 @@ export default function SimpleDeckViewer({ presentationId }: SimpleDeckViewerPro
               variant="outline"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            </Button>
+            
+            <Button 
+              onClick={() => {
+                if (presentation) {
+                  savePresentation(presentation, 'Manual save')
+                }
+              }}
+              size="sm" 
+              variant="outline"
+              className="border-green-500 text-green-600 hover:bg-green-50"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Now
             </Button>
             
             <Button size="sm" variant="outline">

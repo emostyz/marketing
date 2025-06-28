@@ -11,6 +11,8 @@ import { ChevronDown, ChevronUp, FileText, BarChart3, Lightbulb, ArrowRight, Che
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { ThinkingAnimation } from '@/components/ui/thinking-animation'
+import EnhancedProgressTracker from '@/components/ui/enhanced-progress-tracker'
+import LoadingButton from '@/components/ui/loading-button'
 
 interface DataInsight {
   id: string
@@ -65,6 +67,7 @@ export default function InsightsPage() {
   const [currentThinkingStage, setCurrentThinkingStage] = useState<string>('')
   const [currentThinkingMessage, setCurrentThinkingMessage] = useState<string>('')
   const [thinkingStartTime, setThinkingStartTime] = useState<Date | null>(null)
+  const [progressSessionId, setProgressSessionId] = useState<string | null>(null)
 
   // Auto-start insights analysis when page loads
   useEffect(() => {
@@ -86,12 +89,29 @@ export default function InsightsPage() {
     updateStageStatus('Data Analysis', 'in_progress', 25)
 
     try {
-      // Step 1: Start data analysis with user ID for chat continuity
+      // Step 1: Create progress session
+      const sessionResponse = await fetch('/api/ai/insights/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisType: 'insights_generation'
+        })
+      })
+
+      if (!sessionResponse.ok) {
+        throw new Error('Failed to start insights session')
+      }
+
+      const { sessionId } = await sessionResponse.json()
+      setProgressSessionId(sessionId)
+
+      // Step 2: Start data analysis with user ID for chat continuity
       const response = await fetch('/api/ai/analyze-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           userId: user.id,
+          sessionId,
           chatContinuity: true,
           analysisType: 'insights_generation'
         })
@@ -497,8 +517,35 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
 
-          {/* Thinking Animation */}
-          {isLoading && currentThinkingStage && (
+          {/* Enhanced Progress Tracking */}
+          {isLoading && progressSessionId && (
+            <div className="mb-8">
+              <EnhancedProgressTracker 
+                sessionId={progressSessionId}
+                onComplete={(data) => {
+                  setIsLoading(false)
+                  setCurrentThinkingStage('')
+                  setCurrentThinkingMessage('')
+                  setThinkingStartTime(null)
+                  if (data?.insights) {
+                    setInsights(data.insights)
+                    toast.success('Process completed successfully!')
+                  }
+                }}
+                onError={(error) => {
+                  setIsLoading(false)
+                  setCurrentThinkingStage('')
+                  setCurrentThinkingMessage('')
+                  setThinkingStartTime(null)
+                  toast.error(error)
+                }}
+                autoStart={true}
+              />
+            </div>
+          )}
+
+          {/* Fallback Thinking Animation for legacy flows */}
+          {isLoading && currentThinkingStage && !progressSessionId && (
             <div className="mb-8">
               <ThinkingAnimation 
                 stage={currentThinkingStage}
@@ -601,23 +648,16 @@ export default function InsightsPage() {
                     
                     {insights.length > 0 && (
                       <div className="flex justify-center pt-4">
-                        <Button 
+                        <LoadingButton 
                           onClick={submitFeedback}
-                          disabled={Object.keys(feedback).length === 0 || isLoading}
+                          disabled={Object.keys(feedback).length === 0}
+                          loading={isLoading}
+                          loadingText="Generating Structure..."
                           className="bg-blue-600 hover:bg-blue-700"
+                          showArrow={true}
                         >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Generating Structure...
-                            </>
-                          ) : (
-                            <>
-                              Generate Presentation Structure
-                              <ArrowRight className="w-4 h-4 ml-2" />
-                            </>
-                          )}
-                        </Button>
+                          Generate Presentation Structure
+                        </LoadingButton>
                       </div>
                     )}
                   </div>
@@ -699,23 +739,16 @@ export default function InsightsPage() {
                   ))}
                   
                   <div className="flex justify-center pt-4">
-                    <Button 
+                    <LoadingButton 
                       onClick={generateDeck}
-                      disabled={editedStructure.length === 0 || isLoading}
+                      disabled={editedStructure.length === 0}
+                      loading={isLoading}
+                      loadingText="Generating Deck..."
                       className="bg-green-600 hover:bg-green-700"
+                      showArrow={true}
                     >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating Deck...
-                        </>
-                      ) : (
-                        <>
-                          Generate Final Deck
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
+                      Generate Final Deck
+                    </LoadingButton>
                   </div>
                 </div>
               </CardContent>

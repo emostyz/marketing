@@ -9,6 +9,8 @@ import { Button } from '../ui/button'
 import { Card } from '../ui/card'
 import Skeleton from '../ui/Skeleton'
 import Toast from '../ui/Toast'
+import EnhancedProgressTracker from '../ui/enhanced-progress-tracker'
+import LoadingButton from '../ui/loading-button'
 import { parseCSV } from '../../lib/data/parser'
 import { validateData } from '../../lib/data/validator'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -58,6 +60,7 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
   const [fontFamily, setFontFamily] = useState('Inter')
   const [fontSize, setFontSize] = useState(18)
   const [colorScheme, setColorScheme] = useState('#2563eb')
+  const [uploadSessionId, setUploadSessionId] = useState<string | null>(null)
 
   // Prefill questionnaire based on uploaded data
   useEffect(() => {
@@ -77,37 +80,103 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
   const onDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
     if (!file) return
+    
     setProcessing(true)
+    setLoading(true)
+    
     try {
+      // Create progress session
+      const progressResponse = await fetch('/api/ai/data-intake/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type
+        })
+      })
+      
+      if (!progressResponse.ok) {
+        throw new Error('Failed to start upload process')
+      }
+      
+      const { sessionId } = await progressResponse.json()
+      
+      // Process file with progress updates
       if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
         const buffer = await file.arrayBuffer()
         const workbook = XLSX.read(buffer)
         const worksheet = workbook.Sheets[workbook.SheetNames[0]]
         const jsonData = XLSX.utils.sheet_to_json(worksheet)
+        
+        // Update progress
+        await fetch(`/api/ai/progress/${sessionId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'processing',
+            stage: 'data_intake',
+            progress: 75,
+            data: { rowsProcessed: jsonData.length }
+          })
+        })
+        
         setData(jsonData as Record<string, unknown>[])
         setUploadedData({
           fileName: file.name,
           type: 'excel',
           data: jsonData,
           headers: Object.keys(jsonData[0] || {}),
-          rowCount: jsonData.length
+          rowCount: jsonData.length,
+          sessionId
         })
+        setUploadSessionId(sessionId)
       } else if (file.name.endsWith('.csv')) {
         const parsed = await parseCSV(file)
+        
+        // Update progress
+        await fetch(`/api/ai/progress/${sessionId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'processing',
+            stage: 'data_intake',
+            progress: 75,
+            data: { rowsProcessed: parsed.length }
+          })
+        })
+        
         setData(parsed)
         setUploadedData({
           fileName: file.name,
           type: 'csv',
           data: parsed,
           headers: Object.keys(parsed[0] || {}),
-          rowCount: parsed.length
+          rowCount: parsed.length,
+          sessionId
         })
+        setUploadSessionId(sessionId)
       }
+      
+      // Mark as completed
+      await fetch(`/api/ai/progress/${sessionId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'completed',
+          stage: 'data_intake',
+          progress: 100
+        })
+      })
+      
       setStep(2)
+      setToast('File processed successfully!')
+      
     } catch (error) {
       setError('Error processing file. Please upload a valid CSV or Excel file.')
     } finally {
       setProcessing(false)
+      setLoading(false)
     }
   }
 
@@ -213,6 +282,25 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
                   <p className="text-blue-200 font-semibold">Drag & drop your CSV or Excel file here, or click to select</p>
                   <p className="text-xs text-blue-300 mt-1">Accepted: .csv, .xlsx</p>
                 </div>
+                
+                {/* Progress Tracker */}
+                {uploadSessionId && processing && (
+                  <div className="mt-6">
+                    <EnhancedProgressTracker
+                      sessionId={uploadSessionId}
+                      onComplete={() => {
+                        setProcessing(false)
+                        setLoading(false)
+                      }}
+                      onError={(error) => {
+                        setError(error)
+                        setProcessing(false)
+                        setLoading(false)
+                      }}
+                      autoStart={true}
+                    />
+                  </div>
+                )}
                 <div className="mt-4">
                   <Button 
                     variant="outline" 
@@ -325,9 +413,14 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
                 <input type="number" min={12} max={48} value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-full rounded-lg bg-[#23242b] border border-[#23242b] p-2 text-white mb-2" />
                 <label className="block text-blue-200 mb-1">Color Scheme</label>
                 <input type="color" value={colorScheme} onChange={e => setColorScheme(e.target.value)} className="w-16 h-10 rounded-lg border-2 border-blue-500 mb-4 mx-auto block" />
-                <Button className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white border-none shadow-none" onClick={handleBrandContinue}>
+                <LoadingButton 
+                  className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white border-none shadow-none" 
+                  onClick={handleBrandContinue}
+                  loading={loading}
+                  loadingText="Processing..."
+                >
                   Next: Describe Project
-                </Button>
+                </LoadingButton>
                 {selectedTemplate && (
                   <div className="mb-4">
                     <div className="text-blue-200 font-semibold mb-2">Template Preview</div>
@@ -421,13 +514,15 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
                 {inScope === false && (
                   <div className="text-red-400 text-sm mt-2">Sorry, your data is not yet supported: {reason}</div>
                 )}
-                <Button
+                <LoadingButton
                   disabled={!inScope}
                   onClick={handleContinue}
+                  loading={loading || processing}
+                  loadingText="Creating Presentation..."
                   className="w-full py-4 text-lg mt-6 bg-blue-600 hover:bg-blue-700 text-white border-none shadow-none"
                 >
                   Create Presentation
-                </Button>
+                </LoadingButton>
                 {toast === 'Presentation created!' && (
                   <div className="fixed inset-0 z-50 pointer-events-none">
                     <svg className="w-full h-full" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#2563eb" opacity="0.2"><animate attributeName="r" from="40" to="60" dur="0.8s" repeatCount="indefinite" /></circle></svg>

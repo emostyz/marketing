@@ -1,11 +1,11 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Loader2, Brain, Sparkles } from 'lucide-react'
 import ErrorBoundary from '@/components/ui/ErrorBoundary'
 import { NotificationProvider } from '@/components/ui/NotificationSystem'
-import SimpleDeckViewer from './SimpleDeckViewer'
+import WorldClassPresentationEditor from '@/components/editor/WorldClassPresentationEditor'
 
 interface DeckBuilderWrapperProps {
   presentationId?: string
@@ -178,6 +178,57 @@ export default function DeckBuilderWrapper({
   onSave,
   onExport
 }: DeckBuilderWrapperProps) {
+  
+  // Enhanced save function that saves to the database
+  const handleSave = useCallback(async (slides: any[]) => {
+    if (!presentationId || presentationId === 'unknown' || presentationId.startsWith('demo-deck-')) {
+      console.log('⏭️ Skipping save for demo or invalid presentation ID')
+      return { success: true, method: 'skipped' }
+    }
+
+    try {
+      console.log('💾 Saving presentation to database:', presentationId)
+      
+      const response = await fetch(`/api/presentations/${presentationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          slides: slides,
+          lastModified: new Date().toISOString()
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        console.log('✅ Presentation saved successfully')
+        // Call the original onSave if provided
+        if (onSave) {
+          await onSave(slides)
+        }
+        return { success: true, method: 'database' }
+      } else {
+        throw new Error(result.error || 'Failed to save presentation')
+      }
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      console.error('❌ Failed to save presentation:', errorMessage)
+      throw error
+    }
+  }, [presentationId, onSave])
+  
+  // Enhanced export function
+  const handleExport = useCallback(async (format: string) => {
+    console.log('📄 Exporting presentation as:', format)
+    if (onExport) {
+      await onExport(format)
+    } else {
+      console.log('Export functionality not implemented yet')
+    }
+  }, [onExport])
   return (
     <ErrorBoundary 
       fallback={<DeckBuilderErrorFallback />}
@@ -209,8 +260,10 @@ export default function DeckBuilderWrapper({
             transition={{ duration: 0.5 }}
             className="min-h-screen bg-gray-50"
           >
-            <SimpleDeckViewer
+            <WorldClassPresentationEditor
               presentationId={presentationId || 'unknown'}
+              onSave={handleSave}
+              onExport={handleExport}
             />
           </motion.div>
         </Suspense>

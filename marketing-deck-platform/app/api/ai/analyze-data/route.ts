@@ -1,9 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { analyzeDataAgent } from '@/lib/agents/analyze-data-agent'
+import { createClient } from '@/lib/supabase/server'
+
+async function updateProgress(sessionId: string, stage: string, status: string, progress: number, data?: any) {
+  if (!sessionId) return
+  
+  try {
+    const supabase = createClient()
+    await supabase
+      .from('ai_processing_queue')
+      .update({
+        pipeline_stage: stage,
+        status: status,
+        output_data: data,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', sessionId)
+  } catch (error) {
+    console.error('Progress update error:', error)
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    const { sessionId } = body
+    
+    // Update progress to processing
+    if (sessionId) {
+      await updateProgress(sessionId, 'first_pass_analysis', 'processing', 25)
+    }
     
     // Support multiple analysis types
     if (body.analysisType === 'insights_generation') {
@@ -55,6 +81,11 @@ export async function POST(request: NextRequest) {
         }
       ]
 
+      // Update progress to completed
+      if (sessionId) {
+        await updateProgress(sessionId, 'first_pass_analysis', 'completed', 100, { insights: mockInsights })
+      }
+
       return NextResponse.json({ 
         success: true, 
         insights: mockInsights,
@@ -76,10 +107,21 @@ export async function POST(request: NextRequest) {
       userId: body.userId,
       chatContinuity: body.chatContinuity
     })
+
+    // Update progress to completed for regular analysis
+    if (sessionId) {
+      await updateProgress(sessionId, 'first_pass_analysis', 'completed', 100, result)
+    }
     
     return NextResponse.json(result)
   } catch (error) {
     console.error('Data analysis error:', error)
+    
+    // Update progress to failed if we have sessionId
+    if (body.sessionId) {
+      await updateProgress(body.sessionId, 'first_pass_analysis', 'failed', 0, { error: error.message })
+    }
+    
     return NextResponse.json(
       { error: 'Data analysis failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

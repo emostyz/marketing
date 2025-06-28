@@ -17,7 +17,7 @@ export default function PublicNavigation({
   onComingSoonBarClose 
 }: PublicNavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { user, signInDemo } = useAuth()
+  const { user, loading, signInDemo } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
 
@@ -56,11 +56,13 @@ export default function PublicNavigation({
     { name: 'Contact', href: '/contact' },
   ]
 
-  // Determine which navigation items to use
+  // Determine which navigation items to use - only if auth is loaded and valid
   let navigationItems = publicNavigationItems
   let showProfile = false
   let showDemoButton = false
-  if (user) {
+  
+  // Only show user-specific navigation if not loading and user exists
+  if (!loading && user) {
     if (user.demo) {
       navigationItems = demoNavigationItems
       showProfile = false
@@ -70,7 +72,8 @@ export default function PublicNavigation({
       showProfile = true
       showDemoButton = false
     }
-  } else {
+  } else if (!loading) {
+    // Only show public nav and demo button if loading is complete and no user
     navigationItems = publicNavigationItems
     showProfile = false
     showDemoButton = true
@@ -156,24 +159,10 @@ export default function PublicNavigation({
               </Link>
             )}
             
-            {/* Render nav items */}
-            {user ? (
-              navigationItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`transition-colors hover:text-white ${
-                    isActivePage(item.href)
-                      ? 'text-blue-400 font-medium'
-                      : 'text-gray-300'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))
-            ) : (
+            {/* Render nav items - only if auth state is determined */}
+            {!loading && (
               <>
-                {publicNavigationItems.map((item) => (
+                {navigationItems.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
@@ -186,17 +175,22 @@ export default function PublicNavigation({
                     {item.name}
                   </Link>
                 ))}
-                <Link
-                  href="/auth/login"
-                  className="transition-colors hover:text-white text-gray-300"
-                >
-                  Login
-                </Link>
-                <Link href="/auth/signup">
-                  <Button className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white px-6 py-2 transition-colors">
-                    🚀 Get Started
-                  </Button>
-                </Link>
+                
+                {!user && (
+                  <>
+                    <Link
+                      href="/auth/login"
+                      className="transition-colors hover:text-white text-gray-300"
+                    >
+                      Login
+                    </Link>
+                    <Link href="/auth/signup">
+                      <Button className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white px-6 py-2 transition-colors">
+                        🚀 Get Started
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </>
             )}
             
