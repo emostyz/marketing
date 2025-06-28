@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -17,9 +17,35 @@ export default function PublicNavigation({
   onComingSoonBarClose 
 }: PublicNavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sessionValidated, setSessionValidated] = useState(false)
   const { user, loading, signInDemo } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
+
+  // Validate session when user is present
+  useEffect(() => {
+    if (!user || loading) {
+      setSessionValidated(false)
+      return
+    }
+
+    const validateSession = async () => {
+      try {
+        const response = await fetch('/api/auth/check')
+        const data = await response.json()
+        setSessionValidated(response.ok && data.user)
+        
+        if (!response.ok || !data.user) {
+          console.log('⚠️ Session validation failed - user may see inconsistent state')
+        }
+      } catch (error) {
+        console.log('⚠️ Session validation error:', error)
+        setSessionValidated(false)
+      }
+    }
+
+    validateSession()
+  }, [user, loading])
 
   // Navigation items for signed-in users (not demo)
   const userNavigationItems = [
@@ -61,8 +87,8 @@ export default function PublicNavigation({
   let showProfile = false
   let showDemoButton = false
   
-  // Only show user-specific navigation if not loading and user exists
-  if (!loading && user) {
+  // Only show user-specific navigation if not loading, user exists, AND session is validated
+  if (!loading && user && (user.demo || sessionValidated)) {
     if (user.demo) {
       navigationItems = demoNavigationItems
       showProfile = false
@@ -72,8 +98,8 @@ export default function PublicNavigation({
       showProfile = true
       showDemoButton = false
     }
-  } else if (!loading) {
-    // Only show public nav and demo button if loading is complete and no user
+  } else if (!loading && (!user || !sessionValidated)) {
+    // Show public nav if loading is complete and no valid user/session
     navigationItems = publicNavigationItems
     showProfile = false
     showDemoButton = true

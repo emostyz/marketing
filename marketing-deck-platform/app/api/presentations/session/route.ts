@@ -7,39 +7,11 @@ export async function POST(request: NextRequest) {
     
     console.log(`📝 Saving ${step} data for presentation:`, presentationId || 'new')
     
-    // Get authenticated user with demo fallback
+    // Get authenticated user with demo fallback to prevent death loops
     const { user, isDemo } = await getAuthenticatedUserWithDemo()
     const userId = user.id
     
-    console.log('💾 Session save request from:', isDemo ? 'Demo user' : 'Authenticated user')
-
-    // For demo mode, create a mock presentation structure
-    if (isDemo) {
-      const mockPresentation = {
-        id: presentationId || `demo-presentation-${Date.now()}`,
-        userId,
-        title: projectName || `Demo Presentation - ${new Date().toLocaleDateString()}`,
-        description: `Demo draft created on ${new Date().toLocaleDateString()}`,
-        status: 'draft',
-        slides: [],
-        dataSources: [],
-        narrativeConfig: {},
-        demo: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-
-      console.log('✅ Demo session data processed successfully')
-      
-      return NextResponse.json({ 
-        success: true,
-        step,
-        presentationId: mockPresentation.id,
-        data: mockPresentation,
-        message: `${step} data saved to demo session`,
-        demo: true
-      })
-    }
+    console.log(`👤 User: ${userId.slice(0, 8)}...${userId.slice(-4)} (Demo: ${isDemo})`)
 
     // For authenticated users, use database (if available)
     console.log('⚠️ Database operations disabled for now - using session storage')
@@ -63,15 +35,14 @@ export async function POST(request: NextRequest) {
     }
 
     // For now, just return success with session data structure
-    console.log('✅ Session data processed for authenticated user')
+    console.log(`✅ Session data processed for ${isDemo ? 'demo' : 'authenticated'} user`)
     
     return NextResponse.json({ 
       success: true,
       step,
       presentationId: sessionPresentation.id,
       data: sessionPresentation,
-      message: `${step} data saved to session storage`,
-      demo: false
+      message: `${step} data saved to session storage`
     })
 
   } catch (error) {
@@ -91,32 +62,16 @@ export async function GET(request: NextRequest) {
     // Get authenticated user with demo fallback
     const { user, isDemo } = await getAuthenticatedUserWithDemo()
     
-    console.log('📖 Session get request from:', isDemo ? 'Demo user' : 'Authenticated user')
-
-    if (isDemo) {
-      // Return demo data structure
-      return NextResponse.json({ 
-        session: {
-          id: presentationId || 'demo-session',
-          userId: user.id,
-          demo: true,
-          useLocalStorage: true
-        },
-        useLocalStorage: true,
-        demo: true
-      })
-    }
+    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (Demo: ${isDemo})`)
 
     // For authenticated users, indicate to use local storage for now
     return NextResponse.json({ 
       session: {
         id: presentationId || 'session-' + Date.now(),
         userId: user.id,
-        demo: false,
         useLocalStorage: true
       },
-      useLocalStorage: true,
-      demo: false
+      useLocalStorage: true
     })
 
   } catch (error) {

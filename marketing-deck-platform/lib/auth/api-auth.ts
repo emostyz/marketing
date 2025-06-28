@@ -61,20 +61,11 @@ export async function getAuthenticatedUser(): Promise<AuthResult> {
       }
     }
 
-    // Fallback to demo mode - check if demo session exists in localStorage (client-side)
-    // For server-side, we'll allow demo mode as fallback
-    const demoUser: AuthenticatedUser = {
-      id: '00000000-0000-0000-0000-000000000001',
-      email: 'demo@easydecks.ai',
-      name: 'Demo User',
-      subscription: 'pro',
-      demo: true,
-      profile: null
-    }
-
+    // No authentication found - return null (no automatic demo fallback)
     return {
-      user: demoUser,
-      isDemo: true
+      user: null,
+      isDemo: false,
+      error: 'No valid session found'
     }
 
   } catch (error) {

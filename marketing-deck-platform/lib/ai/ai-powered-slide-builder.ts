@@ -1,5 +1,6 @@
 // Advanced editor features integration for AI slide building
 import { EnhancedAIMethods } from './enhanced-ai-methods'
+import { safeOpenAIJSONCall } from './openai-helpers'
 interface EditorFeatures {
   positioning: {
     dragDrop: boolean
@@ -186,8 +187,8 @@ export class AIPoweredSlideBuilder {
       // Call OpenAI to generate the slide design with retry logic and timeout
       console.log('🔄 Starting OpenAI call with 30-second timeout...')
       
-      const response = await Promise.race([
-        EnhancedAIMethods.callOpenAIWithRetry(openai, {
+      const aiResponse = await Promise.race([
+        safeOpenAIJSONCall(openai, {
           model: "gpt-4o",
           messages: [
             {
@@ -195,34 +196,33 @@ export class AIPoweredSlideBuilder {
               content: `You are an expert presentation designer and business analyst specializing in Fortune 500 executive presentations. 
 
 CRITICAL REQUIREMENTS:
-1. Generate REAL, ACTIONABLE business content - not placeholders
+1. Generate REAL, ACTIONABLE business content - not placeholders  
 2. Use actual data provided to create meaningful insights
 3. Create professional slide layouts with substantial content
 4. Focus on executive-level strategic analysis
 5. Include specific recommendations and action items
 6. Use data to support all claims and insights
 
-Your slides should be indistinguishable from those created by top consulting firms (but with better coffee and more personality).`
+You MUST respond with valid JSON format only. Your slides should be indistinguishable from those created by top consulting firms (but with better coffee and more personality).`
             },
             {
-              role: "user",
+              role: "user", 
               content: prompt
             }
           ],
-          response_format: { type: "json_object" },
           temperature: 0.1, // Lower temperature for more consistent, professional output
-          max_tokens: 4000 // Increased for more detailed content
+          max_tokens: 4000, // Increased for more detailed content
+          timeout: 30000
         }),
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('OpenAI call timed out after 30 seconds')), 30000)
         )
       ])
-      
-      const aiResponse = response.choices[0]?.message?.content
       console.log('📄 AI response received, parsing...', aiResponse?.substring(0, 100))
       
       if (aiResponse) {
         try {
+          // aiResponse is already a JSON string from safeOpenAIJSONCall
           aiDesign = JSON.parse(aiResponse)
           
           // Validate AI response structure

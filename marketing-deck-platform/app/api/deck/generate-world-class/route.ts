@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 import { createServerSupabaseClient } from '@/lib/supabase/server-client'
 import { InsightEnhancer } from '@/lib/ai/insight-enhancer'
 import { getEnhancedPrompt } from '@/lib/ai/world-class-prompts'
@@ -200,22 +200,19 @@ async function generateWorldClassDeck(request: NextRequest) {
     })
     
     // Get authenticated user with demo support
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
-    if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    }
+    const user = await requireAuth()
     
-    console.log('👤 User:', user.id, '(Demo:', isDemo, ')')
+    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (Demo: false)`)
     
     // Initialize Supabase client
     const supabase = await createServerSupabaseClient()
     
     const userId = user.id
     
-    // 1. Fetch real data (with demo support)
+    // 1. Fetch real data
     let dataset: any
     
-    if (isDemo || datasetId.startsWith('demo-')) {
+    if (datasetId.startsWith('demo-')) {
       // Demo dataset - use sample data
       dataset = {
         id: datasetId,

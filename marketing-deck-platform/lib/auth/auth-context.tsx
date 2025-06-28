@@ -222,6 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (resp.ok) {
             const { user: apiUser } = await resp.json()
             if (apiUser) {
+              console.log('✅ Valid server session found via API check')
               setUser(apiUser)
               cacheUserState(apiUser)
               setLoading(false)
@@ -229,9 +230,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               return
             }
           }
+          console.log('❌ No valid server session found')
         } catch (fetchError) {
           console.log('⚠️ Could not check auth API:', fetchError)
         }
+        
+        // No valid session found anywhere - clear any stale state
+        console.log('🧹 Clearing all auth state - no valid session')
+        setUser(null)
+        localStorage.removeItem(USER_CACHE_KEY)
         setLoading(false)
         setInitialized(true)
       } catch (error) {

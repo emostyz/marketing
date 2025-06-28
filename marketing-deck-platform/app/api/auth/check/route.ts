@@ -11,12 +11,27 @@ export async function GET(request: NextRequest) {
     // Log all cookies for debugging
     console.log('🔍 Cookies received:', request.cookies.getAll())
 
-    // Get the auth token from cookies
-    const authToken = request.cookies.get(cookieName)?.value
-    console.log('🔍 Auth token from cookie:', authToken)
+    // Get the auth token from cookies - try multiple cookie name patterns
+    const cookieNames = [
+      `sb-${projectRef}-auth-token`,
+      `sb-${projectRef}-auth-token.0`,
+      `sb-${projectRef}-auth-token.1`,
+      'supabase-auth-token',
+      'supabase.auth.token'
+    ]
+    
+    let authToken = null
+    for (const name of cookieNames) {
+      const cookie = request.cookies.get(name)?.value
+      if (cookie && cookie.length > 20 && cookie.includes('.')) {
+        authToken = cookie
+        console.log(`🔍 Found valid auth token in cookie: ${name}`)
+        break
+      }
+    }
 
     if (!authToken) {
-      console.log('❌ No auth token found in cookies')
+      console.log('❌ No valid auth token found in any cookies')
       return NextResponse.json({ user: null, session: null })
     }
 

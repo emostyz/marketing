@@ -45936,3 +45936,13 @@ User interaction event (disabled): {
  GET /_next/static/chunks/main-app.js?v=1751116137035 404 in 144ms
  GET /_next/static/chunks/app/not-found.js 404 in 24ms
  GET /_next/static/chunks/app/page.js 404 in 24ms
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.0
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.207:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ clientSegmentCache
+
+ ✓ Starting...
+ ✓ Ready in 2.6s

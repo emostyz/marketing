@@ -105,15 +105,26 @@ export default function InsightsPage() {
       const { sessionId } = await sessionResponse.json()
       setProgressSessionId(sessionId)
 
-      // Step 2: Start data analysis with user ID for chat continuity
-      const response = await fetch('/api/ai/analyze-data', {
+      // Step 2: Get data from localStorage and call Ultimate Brain API
+      const storedData = localStorage.getItem('uploadedData')
+      const csvRows = storedData ? JSON.parse(storedData) : []
+      
+      if (!csvRows || csvRows.length === 0) {
+        throw new Error('No data found. Please upload data first.')
+      }
+
+      const response = await fetch('/api/ai/ultimate-brain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           userId: user.id,
-          sessionId,
-          chatContinuity: true,
-          analysisType: 'insights_generation'
+          data: csvRows,
+          context: {
+            analysisType: 'insights_generation',
+            sessionId
+          },
+          userFeedback: {},
+          learningObjectives: ['Generate strategic business insights', 'Identify key trends and patterns', 'Provide actionable recommendations']
         })
       })
 
@@ -389,8 +400,26 @@ export default function InsightsPage() {
     })
   }
 
-  const handleFeedback = (insightId: string, type: 'thumbsup' | 'thumbsdown') => {
+  const handleFeedback = async (insightId: string, type: 'thumbsup' | 'thumbsdown') => {
+    // Update local state immediately
     setFeedback(prev => ({ ...prev, [insightId]: type }))
+    
+    // Send feedback to API immediately
+    try {
+      await fetch('/api/ai/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: user?.id,
+          insightId,
+          vote: type
+        })
+      })
+      console.log(`📝 Feedback sent: ${insightId} → ${type}`)
+    } catch (error) {
+      console.error('Failed to send feedback:', error)
+      toast.error('Failed to save feedback')
+    }
   }
 
   const updateSlideTitle = (slideId: string, title: string) => {

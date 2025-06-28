@@ -3,6 +3,7 @@
 
 import OpenAI from 'openai'
 import { z } from 'zod'
+import { safeOpenAIJSONCall } from './openai-helpers'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -216,15 +217,19 @@ Return a detailed JSON analysis with:
 
 Make this analysis worthy of a board presentation.`
 
-    const response = await openai.chat.completions.create({
+    const messages = [
+      { role: "system" as const, content: "You are a world-class business analyst. Respond with valid JSON only." },
+      { role: "user" as const, content: prompt }
+    ]
+
+    const jsonResponse = await safeOpenAIJSONCall(openai, {
       model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
+      messages,
       temperature: 0.2,
       max_tokens: 4000
     })
 
-    return JSON.parse(response.choices[0].message.content || '{}')
+    return JSON.parse(jsonResponse)
   }
 
   private performActualDataAnalysis(): string {
@@ -367,15 +372,19 @@ Return JSON array of slides:
 
 Create exactly ${this.getOptimalSlideCount()} slides that tell a complete business story.`
 
-    const response = await openai.chat.completions.create({
+    const messages = [
+      { role: "system" as const, content: "You are an expert presentation designer. Output slide structure as valid JSON only." },
+      { role: "user" as const, content: prompt }
+    ]
+
+    const jsonResponse = await safeOpenAIJSONCall(openai, {
       model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
+      messages,
       temperature: 0.3,
       max_tokens: 4000
     })
 
-    const result = JSON.parse(response.choices[0].message.content || '{"slides": []}')
+    const result = JSON.parse(jsonResponse)
     return this.enhanceSlidesWithRealData(result.slides || [])
   }
 

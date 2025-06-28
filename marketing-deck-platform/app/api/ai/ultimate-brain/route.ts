@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 import OpenAI from 'openai'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -621,23 +621,10 @@ export async function POST(request: NextRequest) {
     
     const { data, context, userFeedback, learningObjectives } = await request.json()
     
-    // Get authenticated user - with fallback for testing
-    let user, isDemo
-    try {
-      const auth = await getAuthenticatedUserWithDemo()
-      user = auth.user
-      isDemo = auth.isDemo
-    } catch (error: any) {
-      console.log('Auth failed, using demo mode:', error.message)
-      user = { id: '00000000-0000-0000-0000-000000000001' }
-      isDemo = true
-    }
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
+    // Require authentication - no demo fallback
+    const user = await requireAuth()
 
-    console.log('👤 User:', user.id, '(Demo:', isDemo, ')')
+    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (Demo: false)`)
     console.log('📊 Data rows:', data?.length || 0)
     console.log('🎯 Context keys:', Object.keys(context || {}).length)
     console.log('🎨 Editor features integration enabled')
