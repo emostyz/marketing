@@ -63,7 +63,9 @@ export default function DatasetsPage() {
   const fetchDatasets = async () => {
     try {
       setLoadingData(true)
-      const response = await fetch('/api/datasets')
+      const response = await fetch('/api/datasets', {
+        credentials: 'include'
+      })
       if (response.ok) {
         const data: DatasetsResponse = await response.json()
         setDatasets(data.datasets)
@@ -103,6 +105,7 @@ export default function DatasetsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           fileName: '.folder',
           fileType: 'folder',
@@ -128,6 +131,7 @@ export default function DatasetsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           datasetId,
           folder
@@ -148,6 +152,7 @@ export default function DatasetsPage() {
     try {
       const response = await fetch(`/api/datasets?datasetId=${datasetId}`, {
         method: 'DELETE',
+        credentials: 'include',
       })
 
       if (response.ok) {

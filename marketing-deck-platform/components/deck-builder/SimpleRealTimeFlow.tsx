@@ -122,15 +122,48 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       setProgress(30)
       setCurrentAnalysisStep('Activating Ultimate AI Brain with Python data science ecosystem...')
       
-      // Use Ultimate AI Brain to generate REAL insights from the actual data
+      // Use Ultimate AI Brain to generate REAL insights from the actual data - NO FAKE FALLBACK BULLSHIT
       let realInsights: Insight[] = []
       try {
         realInsights = await analyzeDataWithAI(actualData, context)
         console.log('🧠 Generated Ultimate AI Brain insights from actual data:', realInsights)
-      } catch (aiError) {
-        console.warn('⚠️ Ultimate AI Brain analysis failed, falling back to local analysis:', aiError)
-        realInsights = analyzeDataLocally(actualData, context)
-        console.log('📊 Generated local insights from actual data:', realInsights)
+        
+        if (!realInsights || realInsights.length === 0) {
+          throw new Error('Ultimate AI Brain returned no insights')
+        }
+        
+        // Verify insights are real OpenAI insights, not fake local ones
+        const hasFakeInsights = realInsights.some(insight => 
+          insight.title?.includes('Growth Opportunity') || 
+          insight.title?.includes('Leadership:') ||
+          insight.title?.includes('Process Optimization') ||
+          insight.title?.includes('Revenue analysis shows significant performance variance')
+        )
+        
+        if (hasFakeInsights) {
+          console.error('❌ FAKE LOCAL INSIGHTS DETECTED - Ultimate Brain failed')
+          throw new Error('Ultimate Brain returned generic local insights instead of real AI analysis')
+        }
+        
+      } catch (aiError: any) {
+        console.error('❌ Ultimate AI Brain FAILED - NO FALLBACK ALLOWED:', aiError)
+        
+        // Show specific error message
+        const errorMessage = aiError.message || 'Unknown error occurred'
+        
+        if (errorMessage.includes('Authentication required')) {
+          toast.error('Please log in to access AI analysis features.')
+          setCurrentAnalysisStep('Authentication required. Please log in and try again.')
+        } else if (errorMessage.includes('OpenAI')) {
+          toast.error('AI analysis failed. Please try again.')
+          setCurrentAnalysisStep('AI analysis failed. Please refresh and try again.')
+        } else {
+          toast.error('Analysis failed. Please try again.')
+          setCurrentAnalysisStep(`Analysis failed: ${errorMessage}`)
+        }
+        
+        stopSessionKeeper()
+        return // Stop here - no fake insights allowed
       }
 
       if (realInsights.length === 0) {
@@ -214,6 +247,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       response = await fetch('/api/ai/ultimate-brain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           data: data.slice(0, 50), // Reduce data size for faster processing
           context: enhancedContext,
@@ -239,15 +273,37 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
     }
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('❌ Ultimate AI Brain API error:', response.status, errorText)
-      throw new Error(`Ultimate AI Brain analysis failed: ${response.status} - ${errorText}`)
+      let errorData: any = {}
+      try {
+        const errorText = await response.text()
+        errorData = JSON.parse(errorText)
+      } catch {
+        errorData = { error: 'Unknown error' }
+      }
+      
+      console.error('❌ Ultimate AI Brain API error:', response.status, errorData)
+      
+      // Handle authentication errors specifically
+      if (response.status === 401 || errorData.authError) {
+        throw new Error('Authentication required. Please log in and try again.')
+      }
+      
+      // Handle other specific errors
+      const errorMessage = errorData.error || errorData.technicalError || `API error: ${response.status}`
+      throw new Error(errorMessage)
     }
 
     const result = await response.json()
     console.log('🧠 Ultimate AI Brain analysis result:', result)
 
     if (!result.success) {
+      // Check for specific error types
+      if (result.authError) {
+        throw new Error('Authentication required. Please log in and try again.')
+      }
+      if (result.openaiError) {
+        throw new Error(result.error || 'OpenAI analysis failed. Please try again.')
+      }
       throw new Error(result.error || 'Ultimate AI Brain analysis returned invalid results')
     }
 
@@ -323,11 +379,10 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
       })
     }
 
-    // Only add fallback insights if OpenAI completely failed
+    // NO FALLBACK BULLSHIT - If OpenAI fails, we fail completely
     if (aiInsights.length === 0) {
-      console.log('🔄 No OpenAI insights generated, using fallback analysis...')
-      const fallbackInsights = analyzeDataLocally(data, context)
-      aiInsights.push(...fallbackInsights.slice(0, 3))
+      console.error('❌ NO OpenAI insights generated - Ultimate Brain API failed completely')
+      throw new Error('Ultimate Brain API failed to generate any real insights. Check your OpenAI API key and try again.')
     }
 
     // Ensure we have meaningful insights
@@ -578,6 +633,7 @@ Return ONLY valid JSON in this exact format:
       const response = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           data: approvedInsights,
           context: {
@@ -877,6 +933,7 @@ Return ONLY valid JSON in this exact format:
           'X-Quality-Level': 'world-class',
           'X-Generation-Method': 'circular-feedback'
         },
+        credentials: 'include',
         body: JSON.stringify({
           datasetId,
           context: worldClassContext
@@ -901,6 +958,7 @@ Return ONLY valid JSON in this exact format:
         const fallbackResponse = await fetch('/api/deck/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             datasetId,
             context: worldClassContext
@@ -937,14 +995,19 @@ Return ONLY valid JSON in this exact format:
         
         const deckId = result.deckId || result.presentationId
         console.log('🚀 Navigating to generated deck:', deckId)
+        console.log('🔍 Full result object:', result)
         
         // Stop session keeper before navigation
         stopSessionKeeper()
         
-        // Navigate to the saved presentation with slight delay for user feedback
-        setTimeout(() => {
-          onComplete(deckId)
-        }, 2000)
+        if (!deckId) {
+          console.error('❌ No deck ID returned from generation:', result)
+          throw new Error('No deck ID returned from generation')
+        }
+        
+        // Navigate immediately to prevent user confusion
+        console.log('🎯 Calling onComplete with deckId:', deckId)
+        onComplete(deckId)
       } else {
         console.error('❌ Invalid generation result:', result)
         throw new Error(result.error || 'Generation completed but no deck ID returned')

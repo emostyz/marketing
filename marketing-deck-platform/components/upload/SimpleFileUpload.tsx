@@ -75,6 +75,7 @@ export const SimpleFileUpload: React.FC<SimpleFileUploadProps> = ({
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
         signal: controller.signal
       })
 

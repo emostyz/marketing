@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 import { processDataFile } from '@/lib/data/enhanced-file-processor'
 import { storeDataset } from '@/lib/data/dataset-storage'
 
@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get authenticated user with demo fallback
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
+    const user = await requireAuth()
+    const isDemo = user.demo === true
     const userId = user.id
     
     console.log('🔍 Upload request from:', isDemo ? 'Demo user' : 'Authenticated user', userId)

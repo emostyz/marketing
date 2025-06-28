@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { analyzeDataAgent } from '@/lib/agents/analyze-data-agent'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server-client'
 
 async function updateProgress(sessionId: string, stage: string, status: string, progress: number, data?: any) {
   if (!sessionId) return
   
   try {
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
     await supabase
       .from('ai_processing_queue')
       .update({

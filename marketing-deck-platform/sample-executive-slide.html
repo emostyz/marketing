@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Executive Slide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .content-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            margin: 40px;
+            padding: 48px;
+            height: calc(100% - 80px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .metric-card {
+            background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="content-area">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                    Revenue Optimization through Strategic Focus on Asia Pacific Services
+                </h1>
+                <p class="text-lg text-gray-600">
+                    Executive Summary • Q1 2024 Performance Review
+                </p>
+            </div>
+
+            <!-- Key Metrics Row -->
+            <div class="grid grid-cols-3 gap-6 mb-8">
+                <div class="metric-card rounded-xl p-6">
+                    <div class="text-2xl font-bold text-blue-600">$1.35M</div>
+                    <div class="text-sm text-gray-600">Total Revenue</div>
+                    <div class="text-green-500 text-sm font-semibold">↗ +23.4%</div>
+                </div>
+                <div class="metric-card rounded-xl p-6">
+                    <div class="text-2xl font-bold text-purple-600">2,954</div>
+                    <div class="text-sm text-gray-600">Units Sold</div>
+                    <div class="text-green-500 text-sm font-semibold">↗ +18.7%</div>
+                </div>
+                <div class="metric-card rounded-xl p-6">
+                    <div class="text-2xl font-bold text-emerald-600">44.2%</div>
+                    <div class="text-sm text-gray-600">Avg Profit Margin</div>
+                    <div class="text-green-500 text-sm font-semibold">↗ +5.8%</div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="grid grid-cols-2 gap-8">
+                <!-- Chart -->
+                <div class="chart-container">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenue by Region</h3>
+                    <canvas id="revenueChart" width="400" height="250"></canvas>
+                </div>
+
+                <!-- Insights -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Key Strategic Insights</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+                            <div class="font-semibold text-blue-800">Asia Pacific Leadership</div>
+                            <div class="text-blue-700 text-sm">
+                                Analysis of the provided data reveals that the Asia Pacific region, particularly in the Services category, generated $18...
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-green-50 border-l-4 border-green-400 rounded-r-lg">
+                            <div class="font-semibold text-green-800">Growth Opportunity</div>
+                            <div class="text-green-700 text-sm">
+                                Services category showing 58% profit margins, 15% above company average
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-purple-50 border-l-4 border-purple-400 rounded-r-lg">
+                            <div class="font-semibold text-purple-800">Strategic Recommendation</div>
+                            <div class="text-purple-700 text-sm">
+                                Focusing on expanding services in the Asia Pacific region could increase overall revenue by capitalizing on the high dem...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive Chart
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East'],
+                datasets: [{
+                    label: 'Revenue ($K)',
+                    data: [571, 299, 543, 68, 78],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(139, 92, 246)',
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(239, 68, 68)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value + 'K';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    </script>
+</body>
+</html>

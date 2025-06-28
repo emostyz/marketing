@@ -3,7 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Handle empty requests gracefully
+    const contentType = request.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return NextResponse.json({ success: true, message: 'Analytics disabled' });
+    }
+
+    const text = await request.text();
+    if (!text) {
+      return NextResponse.json({ success: true, message: 'Empty request, analytics disabled' });
+    }
+
+    const body = JSON.parse(text);
     const { event_type, event_data, element_id, path, user_id, timestamp } = body;
 
     // Analytics disabled - EventLogger removed

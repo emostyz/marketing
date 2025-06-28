@@ -93,6 +93,7 @@ export default function InsightsPage() {
       const sessionResponse = await fetch('/api/ai/insights/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           analysisType: 'insights_generation'
         })
@@ -116,6 +117,7 @@ export default function InsightsPage() {
       const response = await fetch('/api/ai/ultimate-brain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ 
           userId: user.id,
           data: csvRows,
@@ -174,6 +176,7 @@ export default function InsightsPage() {
       const response = await fetch('/api/ai/generate-outline', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user.id,
           chatContinuity: true,
@@ -233,6 +236,7 @@ export default function InsightsPage() {
       const datasetResponse = await fetch('/api/datasets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           fileName: 'insights-dataset.json',
           fileType: 'application/json',
@@ -256,6 +260,7 @@ export default function InsightsPage() {
       const deckResponse = await fetch('/api/deck/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           datasetId: dataset.id,
           context: {
@@ -310,6 +315,7 @@ export default function InsightsPage() {
       const analysisResponse = await fetch('/api/ai/run-python-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user.id,
           chatContinuity: true,
@@ -329,6 +335,7 @@ export default function InsightsPage() {
       const interpretationResponse = await fetch('/api/ai/interpret-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user.id,
           chatContinuity: true,
@@ -348,6 +355,7 @@ export default function InsightsPage() {
       const chartsResponse = await fetch('/api/ai/generate-charts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user.id,
           chatContinuity: true,
@@ -370,6 +378,7 @@ export default function InsightsPage() {
       const qaResponse = await fetch('/api/ai/qa-deck', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user.id,
           chatContinuity: true,
@@ -393,6 +402,7 @@ export default function InsightsPage() {
       const uploadResponse = await fetch(`/api/presentations/${presentationId}/finalize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user.id,
           finalData: qaResult,
@@ -463,6 +473,7 @@ export default function InsightsPage() {
       await fetch('/api/ai/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ 
           userId: user?.id,
           insightId,

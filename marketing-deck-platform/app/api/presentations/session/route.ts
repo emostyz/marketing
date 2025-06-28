@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,11 +7,11 @@ export async function POST(request: NextRequest) {
     
     console.log(`📝 Saving ${step} data for presentation:`, presentationId || 'new')
     
-    // Get authenticated user with demo fallback to prevent death loops
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
+    // Require real authentication - no demo fallback
+    const user = await requireAuth()
     const userId = user.id
     
-    console.log(`👤 User: ${userId.slice(0, 8)}...${userId.slice(-4)} (Demo: ${isDemo})`)
+    console.log(`👤 Real User: ${userId.slice(0, 8)}...${userId.slice(-4)} (${user.email})`)
 
     // For authenticated users, use database (if available)
     console.log('⚠️ Database operations disabled for now - using session storage')
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // For now, just return success with session data structure
-    console.log(`✅ Session data processed for ${isDemo ? 'demo' : 'authenticated'} user`)
+    console.log(`✅ Session data processed for authenticated user: ${user.email}`)
     
     return NextResponse.json({ 
       success: true,
@@ -59,10 +59,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const presentationId = searchParams.get('presentationId')
     
-    // Get authenticated user with demo fallback
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
+    // Require real authentication - no demo fallback
+    const user = await requireAuth()
     
-    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (Demo: ${isDemo})`)
+    console.log(`👤 Real User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (${user.email})`)
 
     // For authenticated users, indicate to use local storage for now
     return NextResponse.json({ 

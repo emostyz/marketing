@@ -66,6 +66,7 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
         const sessionResponse = await fetch('/api/presentations/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             step: 'data_intake',
             data: dataContext,

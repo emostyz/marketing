@@ -1,68 +1,48 @@
-const { createClient } = require('@supabase/supabase-js');
+const { spawn } = require('child_process');
 
-// Test authentication with the configured environment
-const supabaseUrl = 'https://waddrfstpqkvdfwbxvfw.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZGRyZnN0cHFrdmRmd2J4dmZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNDU3NzUsImV4cCI6MjA2NTkyMTc3NX0.xzosM3NHbf_kpmw5hRFKKqDuvbNLp9MrqsWITk9tD5w';
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-async function testAuth() {
-  console.log('🔍 Testing Supabase connection...');
+async function testServer() {
+  console.log('🤖 Testing server startup and auth...');
   
-  try {
-    // Test basic connection
-    const { data, error } = await supabase.auth.getSession();
+  const server = spawn('npm', ['run', 'dev'], { 
+    stdio: 'pipe',
+    env: { ...process.env, NODE_ENV: 'development' }
+  });
+  
+  let logs = '';
+  
+  server.stdout.on('data', (data) => {
+    const output = data.toString();
+    logs += output;
+    console.log('📝', output.trim());
+  });
+  
+  server.stderr.on('data', (data) => {
+    const output = data.toString();
+    logs += output;
+    console.log('❌', output.trim());
+  });
+  
+  // Test for 15 seconds
+  setTimeout(() => {
+    console.log('🔍 Analyzing logs...');
     
-    if (error) {
-      console.error('❌ Connection error:', error);
-      return;
+    if (logs.includes('Ready in')) {
+      console.log('✅ Server started successfully');
+    } else {
+      console.log('❌ Server failed to start');
     }
     
-    console.log('✅ Supabase connection successful');
-    console.log('📊 Current session:', data.session ? 'Active' : 'None');
-    
-    // Test sign up with a test user
-    const testEmail = `test${Date.now()}@gmail.com`;
-    const testPassword = 'testpassword123';
-    
-    console.log(`\n🔐 Testing sign up with email: ${testEmail}`);
-    
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: testEmail,
-      password: testPassword
-    });
-    
-    if (signUpError) {
-      console.error('❌ Sign up error:', signUpError);
-      return;
+    if (logs.includes('Auth session missing')) {
+      console.log('❌ Auth still broken');
     }
     
-    console.log('✅ Sign up successful');
-    console.log('👤 User ID:', signUpData.user?.id);
-    
-    // Test sign in
-    console.log('\n🔑 Testing sign in...');
-    
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: testEmail,
-      password: testPassword
-    });
-    
-    if (signInError) {
-      console.error('❌ Sign in error:', signInError);
-      return;
+    if (logs.includes('MODULE_NOT_FOUND')) {
+      console.log('❌ Build issues detected');
     }
     
-    console.log('✅ Sign in successful');
-    console.log('🎉 Authentication test completed successfully!');
-    
-    // Clean up - sign out
-    await supabase.auth.signOut();
-    console.log('🧹 Cleaned up test session');
-    
-  } catch (error) {
-    console.error('❌ Unexpected error:', error);
-  }
+    server.kill();
+    console.log('⏹️ Test complete');
+  }, 15000);
 }
 
-testAuth(); 
+testServer();

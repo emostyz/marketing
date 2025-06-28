@@ -113,6 +113,13 @@ export function useAutoSave<T>(
         // Handle different types of errors
         if (errorMessage.includes('409') || errorMessage.includes('conflict')) {
           await handleConflict(error, dataToSave)
+        } else if (errorMessage.includes('auth') || errorMessage.includes('Authentication') || errorMessage.includes('401') || errorMessage.includes('403')) {
+          // Don't retry auth errors to prevent death loops
+          console.warn('Auto-save skipped due to auth error:', errorMessage)
+          setSaveStatus(prev => ({
+            ...prev,
+            hasUnsavedChanges: false // Clear to prevent retry loops
+          }))
         } else {
           onSaveError?.(error instanceof Error ? error : new Error(errorMessage))
           

@@ -70,6 +70,13 @@ export async function middleware(request: NextRequest) {
   const allCookies = request.cookies.getAll()
   console.log('🔍 All cookies in middleware:', allCookies.map(c => ({ name: c.name, hasValue: !!c.value, length: c.value?.length })))
   
+  // Check for old Supabase cookies that need to be cleared
+  const oldSupabaseCookies = allCookies.filter(cookie => 
+    cookie.name.startsWith('sb-') && 
+    !cookie.name.includes(projectRef) &&
+    cookie.name.includes('auth-token')
+  )
+  
   const hasAuthCookie = cookieNames.some(name => {
     const cookie = request.cookies.get(name)?.value
     const isValid = cookie && cookie.length > 20 && cookie.includes('.')
@@ -82,6 +89,11 @@ export async function middleware(request: NextRequest) {
   if (hasAuthCookie) {
     console.log('✅ Valid auth cookie found, allowing access')
     return NextResponse.next();
+  }
+  
+  // Don't auto-clear cookies, just log them for debugging
+  if (oldSupabaseCookies.length > 0) {
+    console.log('🔍 Found old Supabase cookies (not clearing automatically):', oldSupabaseCookies.map(c => c.name))
   }
   
   console.log('❌ No valid auth cookie found, redirecting to login');

@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
-    if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    }
+    const user = await requireAuth()
 
     const { draftData, type = 'intake' } = await request.json()
-
-    if (isDemo) {
-      // For demo users, store in localStorage-compatible format
-      return NextResponse.json({ 
-        success: true, 
-        draftId: `demo-draft-${Date.now()}`,
-        message: 'Draft saved to local storage' 
-      })
-    }
 
     // For real users, store in database
     // For now, we'll use a simple storage approach
@@ -43,22 +31,10 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
-    if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    }
+    const user = await requireAuth()
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'intake'
-
-    if (isDemo) {
-      // For demo users, return empty drafts (they use localStorage)
-      return NextResponse.json({ 
-        success: true, 
-        drafts: [],
-        message: 'Demo mode - drafts stored locally' 
-      })
-    }
 
     // For real users, retrieve from database
     console.log('📖 Retrieving drafts for user:', user.id, 'type:', type)

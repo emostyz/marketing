@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const [greeting, setGreeting] = useState('')
 
   console.log('🏠 Dashboard render - user:', user?.email, 'loading:', loading)
+  console.log('🔍 Router object:', router)
 
   useEffect(() => {
     // Set greeting based on time of day
@@ -59,7 +60,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <UnifiedLayout requireAuth={false}>
+    <UnifiedLayout requireAuth={true}>
       {/* Dashboard Sub-Header: Only Pro Plan, Usage, Notifications */}
       <div className="w-full bg-gradient-to-r from-blue-950 via-gray-900 to-purple-950 border-b border-gray-800 shadow-md py-5 px-8 flex flex-row items-center justify-between gap-6">
         {/* Center: Pro Plan and Usage - big and prominent */}
@@ -114,12 +115,12 @@ export default function DashboardPage() {
               </div>
               <h3 className="text-white font-semibold mb-2">New Presentation</h3>
               <p className="text-gray-400 text-sm mb-4">Start with AI-powered insights</p>
-              <Button 
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                onClick={() => router.push('/deck-builder/new')}
+              <button 
+                onClick={() => window.location.href = '/deck-builder/new'}
+                className="inline-flex items-center justify-center rounded-md font-medium transition-colors w-full bg-blue-600 hover:bg-blue-700 text-white h-10 px-4 py-2"
               >
                 Create Now
-              </Button>
+              </button>
             </Card>
 
             <Card className="p-6 bg-gradient-to-br from-purple-900/20 to-purple-800/20 border-purple-700/50 hover:border-purple-600/50 transition-all cursor-pointer group">

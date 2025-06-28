@@ -62,6 +62,7 @@ class SessionKeeper {
           await fetch('/api/auth/set-cookie', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ access_token: session.access_token })
           })
           
@@ -198,6 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const cookieResponse = await fetch('/api/auth/set-cookie', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
               body: JSON.stringify({ access_token: session.access_token })
             })
             
@@ -218,7 +220,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Fallback: check /api/auth/check for SSR cookie session
         try {
-          const resp = await fetch('/api/auth/check')
+          const resp = await fetch('/api/auth/check', {
+            credentials: 'include'
+          })
           if (resp.ok) {
             const { user: apiUser } = await resp.json()
             if (apiUser) {
@@ -235,10 +239,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('⚠️ Could not check auth API:', fetchError)
         }
         
-        // No valid session found anywhere - clear any stale state
-        console.log('🧹 Clearing all auth state - no valid session')
-        setUser(null)
-        localStorage.removeItem(USER_CACHE_KEY)
+        // No valid session found - but don't clear existing user state aggressively
+        console.log('⚠️ No server session found - keeping current state')
         setLoading(false)
         setInitialized(true)
       } catch (error) {
@@ -266,6 +268,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const cookieResponse = await fetch('/api/auth/set-cookie', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
               body: JSON.stringify({ access_token: session.access_token })
             })
             
@@ -278,6 +281,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Then set user profile
           await fetchAndSetUserProfile(session.user)
+          
+          // Clear loading state
+          setLoading(false)
           
           // Navigate to intended destination or dashboard
           console.log('🚀 Redirecting after successful login...')
@@ -323,6 +329,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await fetch('/api/auth/set-cookie', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ access_token: session.access_token })
           })
           console.log('🍪 Periodic cookie refresh completed')
@@ -447,7 +454,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user && data.session) {
         console.log('✅ Sign in successful for user:', data.user.email)
-        // The auth state change listener will handle the rest
+        // Auth successful - loading will be set to false by the auth state change listener
         return {}
       }
 
@@ -471,8 +478,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ demo: true }),
-        credentials: 'include' // Ensure cookies are sent/received
       })
 
       if (!response.ok) {
@@ -612,8 +619,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             headers: {
               'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({ clear: true }),
-            credentials: 'include'
           })
         } catch (error) {
           console.warn('Failed to clear demo cookies:', error)
@@ -662,6 +669,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(profileData)
       })
 

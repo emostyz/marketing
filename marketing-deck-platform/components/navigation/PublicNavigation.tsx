@@ -22,29 +22,22 @@ export default function PublicNavigation({
   const pathname = usePathname()
   const router = useRouter()
 
-  // Validate session when user is present
+  // Trust the auth context - don't validate on every render
   useEffect(() => {
     if (!user || loading) {
       setSessionValidated(false)
       return
     }
-
-    const validateSession = async () => {
-      try {
-        const response = await fetch('/api/auth/check')
-        const data = await response.json()
-        setSessionValidated(response.ok && data.user)
-        
-        if (!response.ok || !data.user) {
-          console.log('⚠️ Session validation failed - user may see inconsistent state')
-        }
-      } catch (error) {
-        console.log('⚠️ Session validation error:', error)
-        setSessionValidated(false)
-      }
+    
+    // For demo users, always consider session valid
+    if (user.demo) {
+      setSessionValidated(true)
+      return
     }
-
-    validateSession()
+    
+    // For real users, assume session is valid if user exists
+    // Auth context already validates this
+    setSessionValidated(true)
   }, [user, loading])
 
   // Navigation items for signed-in users (not demo)
@@ -205,10 +198,10 @@ export default function PublicNavigation({
                 {!user && (
                   <>
                     <Link
-                      href="/auth/login"
+                      href="/auth/signup"
                       className="transition-colors hover:text-white text-gray-300"
                     >
-                      Login
+                      Sign Up
                     </Link>
                     <Link href="/auth/signup">
                       <Button className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white px-6 py-2 transition-colors">
@@ -290,9 +283,9 @@ export default function PublicNavigation({
                   </>
                 ) : !user && (
                   <>
-                    <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="outline" className="w-full border-gray-600 text-gray-300 hover:bg-gray-800">
-                        Login
+                        Sign Up
                       </Button>
                     </Link>
                     <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)}>

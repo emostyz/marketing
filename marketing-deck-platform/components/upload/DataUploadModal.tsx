@@ -89,6 +89,7 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
       const progressResponse = await fetch('/api/ai/data-intake/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           fileName: file.name,
           fileSize: file.size,
@@ -113,6 +114,7 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
         await fetch(`/api/ai/progress/${sessionId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             status: 'processing',
             stage: 'data_intake',
@@ -138,6 +140,7 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
         await fetch(`/api/ai/progress/${sessionId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             status: 'processing',
             stage: 'data_intake',
@@ -162,6 +165,7 @@ export default function DataUploadModal({ open, onClose, onContinue }: DataUploa
       await fetch(`/api/ai/progress/${sessionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           status: 'completed',
           stage: 'data_intake',

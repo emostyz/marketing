@@ -4,8 +4,8 @@ import UserDataService from '@/lib/services/user-data-service'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get authenticated user with demo support
-    const { user } = await getAuthenticatedUserWithDemo()
+    // Require real authentication
+    const user = await requireAuth()
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '50')
     const status = searchParams.get('status')
@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user with demo support
-    const { user } = await getAuthenticatedUserWithDemo()
+    // Require real authentication
+    const user = await requireAuth()
     const presentationData = await request.json()
     // Validate required fields
     if (!presentationData.title) {
@@ -93,8 +93,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    // Get authenticated user with demo support
-    const { user } = await getAuthenticatedUserWithDemo()
+    // Require real authentication
+    const user = await requireAuth()
     const presentationData = await request.json()
     // Validate required fields
     if (!presentationData.id) {

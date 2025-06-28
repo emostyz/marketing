@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth, getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 import UserDataService from '@/lib/services/user-data-service'
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Get authenticated user with demo support
-    const { user } = await getAuthenticatedUserWithDemo()
+    const user = await requireAuth()
     const body = await request.json()
     const presentationId = params.id
     

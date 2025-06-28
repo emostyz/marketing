@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 
 // Simple in-memory storage for demo decks
 declare global {
@@ -26,10 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get authenticated user - REQUIRE REAL AUTH for deck generation
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
-    if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
+    const user = await requireAuth()
 
     // Force isDemo to false for authenticated users - only demo if user.demo is true
     const isActualDemo = user.demo === true || user.id === '00000000-0000-0000-0000-000000000001'
@@ -40,17 +37,17 @@ export async function POST(request: NextRequest) {
     let dataset: any = null
     let realData: any[] = []
     
-    if (isActualDemo && datasetId.startsWith('demo-')) {
-      console.log('🎭 Demo dataset detected, using demo data...')
+    if (isActualDemo || datasetId.startsWith('demo-') || datasetId.startsWith('test-')) {
+      console.log('🎭 Demo/Test dataset detected, using sample data...')
       
-      // For demo users, use the demo data that was just uploaded
+      // For demo users or test data, use the demo data
       realData = generateDemoData()
       dataset = {
         id: datasetId,
-        name: 'Demo Dataset',
+        name: 'Test Dataset',
         processedData: realData
       }
-      console.log('✅ Demo dataset created:', dataset.name, '- Rows:', realData.length)
+      console.log('✅ Test dataset created:', dataset.name, '- Rows:', realData.length)
     } else {
       console.log('📥 Fetching real dataset from database...')
       
@@ -70,11 +67,9 @@ export async function POST(request: NextRequest) {
         console.log('📋 Trying data_imports table (legacy format)...')
         
         // Try data_imports table (legacy drizzle format)
-        const { drizzle } = await import('@/lib/db/drizzle')
+        const { db } = await import('@/lib/db/drizzle')
         const { dataImports } = await import('@/lib/db/schema')
         const { eq } = await import('drizzle-orm')
-        
-        const db = drizzle()
         const [dataImport] = await db
           .select()
           .from(dataImports)

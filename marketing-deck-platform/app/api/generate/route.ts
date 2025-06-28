@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateEnhancedSlideContent, analyzeDataForTremorCharts } from '@/lib/ai/enhancedSlideGenerator'
 import { PresentationManager, DataFlowManager } from '@/lib/presentations/presentation-helpers'
 import { getDatasetForPresentation, getDatasetsForPresentation, extractDatasetIdsFromSession } from '@/lib/data/dataset-retrieval'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
     console.log(`📊 Generation request: ${title}, DataPoints: ${data.length}, DatasetIDs: ${datasetIds.length}, AI: ${generateWithAI}`)
 
     // Get authenticated user info
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
+    const user = await requireAuth()
+    const isDemo = user.demo === true
     const actualUserId = userId || user.id
 
     let actualData: any[] = []

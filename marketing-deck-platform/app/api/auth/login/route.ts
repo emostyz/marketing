@@ -123,19 +123,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Return successful response and set auth cookie
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://waddrfstpqkvdfwbxvfw.supabase.co'
-    const projectRef = supabaseUrl.split('//')[1]?.split('.')[0] || 'waddrfstpqkvdfwbxvfw'
-    const cookieName = `sb-${projectRef}-auth-token`
-    const cookieValue = data.session?.access_token || ''
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax' as const,
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7 // 7 days
-    }
-    const response = NextResponse.json(
+    // Return successful response - let client-side Supabase handle cookies
+    console.log('✅ Login successful for user:', data.user.email)
+    
+    return NextResponse.json(
       { 
         success: true, 
         user: data.user,
@@ -143,8 +134,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     )
-    response.cookies.set(cookieName, cookieValue, cookieOptions)
-    return response
 
   } catch (error) {
     console.error('Login route error:', error)

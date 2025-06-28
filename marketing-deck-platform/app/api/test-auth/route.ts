@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 
 export async function GET(request: NextRequest) {
   try {
     console.log('🧪 Testing authentication...')
     
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
+    const user = await requireAuth()
     
     return NextResponse.json({
       success: true,
@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
         name: user.name,
         demo: user.demo
       } : null,
-      isDemo,
       timestamp: new Date().toISOString()
     })
     

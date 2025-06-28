@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUserWithDemo } from '@/lib/auth/api-auth'
+import { requireAuth } from '@/lib/auth/api-auth'
 import { createServerSupabaseClient } from '@/lib/supabase/server-client'
 import { 
   importSlideFromCode, 
@@ -13,10 +13,7 @@ export async function POST(request: NextRequest) {
     const { code, format = 'json', type = 'presentation' } = await request.json()
     
     // Get authenticated user
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
-    if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    }
+    const user = await requireAuth()
 
     const supabase = await createServerSupabaseClient()
 
@@ -213,10 +210,7 @@ export async function PUT(request: NextRequest) {
   try {
     const { code, updateExisting = false, slideId } = await request.json()
     
-    const { user, isDemo } = await getAuthenticatedUserWithDemo()
-    if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    }
+    const user = await requireAuth()
 
     const supabase = await createServerSupabaseClient()
 

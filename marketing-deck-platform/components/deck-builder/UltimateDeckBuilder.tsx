@@ -254,6 +254,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             sessionId: data.sessionId,
             type: 'intake_form',
@@ -292,11 +293,11 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
     }
   }, [user])
 
-  // Auto-save configuration for intake form - disabled for new presentations to prevent death loop
+  // Auto-save configuration for intake form - careful with new presentations
   const intakeAutoSave = useAutoSave(intakeSessionData, saveIntakeProgress, {
-    enabled: false, // Disabled to prevent session API death loop on new presentations
-    interval: 30000, // Reduced frequency to 30 seconds
-    debounceDelay: 1000, // Increased debounce to 1 second
+    enabled: !!user && currentStep > 0, // Only enable if user exists and not on initial step
+    interval: 30000, // Save every 30 seconds (reduced from 2 seconds)
+    debounceDelay: 2000, // Wait 2 seconds after last change
     conflictResolution: 'auto' // Auto-resolve conflicts for form data
   })
 
@@ -306,7 +307,9 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
       try {
         if (user) {
           // Try to load from API for authenticated users
-          const response = await fetch(`/api/presentations/session?type=intake_form&userId=${user.id}`)
+          const response = await fetch(`/api/presentations/session?type=intake_form&userId=${user.id}`, {
+            credentials: 'include'
+          })
           if (response.ok) {
             const session = await response.json()
             if (session.data) {
@@ -433,6 +436,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
       await fetch('/api/user/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           industry: newContext.industry,
           targetAudience: newContext.targetAudience,
@@ -490,6 +494,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
         await fetch('/api/drafts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             draftData: data,
             type: 'intake',
@@ -621,14 +626,38 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
     
     console.log('📊 Using dataset ID:', datasetId, 'from file:', firstFile.name)
     
-    // Prepare context from intake data
+    // Prepare enhanced context from intake data - match Ultimate Brain API expectations
     const context = {
+      // Core identifiers
+      companyName: intakeData.context?.companyName || intakeData.context?.company || 'Client Company',
+      industry: intakeData.context?.industry || 'business',
+      jobTitle: intakeData.context?.jobTitle || intakeData.context?.role || 'Executive',
+      companySize: intakeData.context?.companySize || intakeData.context?.size || 'Mid-size',
+      
+      // Analysis parameters
+      analysisType: intakeData.context?.analysisType || 'insights_generation',
+      targetAudience: intakeData.context?.targetAudience || 'executives',
+      presentationGoal: intakeData.context?.presentationGoal || intakeData.context?.goal || 'Strategic Review',
+      businessContext: intakeData.context?.businessContext || 'Strategic analysis',
+      
+      // Time and comparison
+      timePeriod: intakeData.timeFrame?.selectedPeriod || 'current period',
+      timeframe: intakeData.timeFrame?.timeframe || 'quarterly',
+      comparisonPeriod: intakeData.timeFrame?.comparisons?.[0] || 'previous period',
+      
+      // Business context
+      specificQuestions: intakeData.context?.specificQuestions || intakeData.context?.keyMetrics || 'Key performance drivers',
+      factorsInfluencing: intakeData.context?.factorsInfluencing || intakeData.context?.factors || 'Market conditions',
+      decisionMakers: intakeData.context?.decisionMakers || 'Executive team',
+      budgetImplications: intakeData.context?.budgetImplications || 'Revenue optimization',
+      geographicScope: intakeData.context?.geographicScope || 'Multi-region',
+      customerSegments: intakeData.context?.customerSegments || intakeData.context?.segments || 'All segments',
+      
+      // Legacy compatibility
       audience: intakeData.context?.targetAudience || 'executives',
       goal: intakeData.context?.businessContext || 'analyze data',
       timeLimit: 15,
-      industry: intakeData.context?.industry || 'business',
       decision: intakeData.context?.keyMetrics || 'improve performance',
-      businessContext: intakeData.context?.businessContext || 'analyze data',
       description: intakeData.context?.description || 'Data analysis presentation'
     }
     
@@ -693,8 +722,26 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
               context={analysisContext}
               onComplete={(deckId: string) => {
                 console.log('🎉 Real-time analysis complete, navigating to deck:', deckId)
+                console.log('🔍 Deck ID type check:', typeof deckId, 'starts with demo:', deckId?.startsWith?.('demo-'))
+                
+                if (!deckId) {
+                  console.error('❌ onComplete called with no deckId - this is a bug!')
+                  toast.error('Navigation failed - no deck ID provided')
+                  return
+                }
+                
                 clearDraft() // Clear draft after successful completion
-                router.push(`/editor/${deckId}`) // Navigate to slide editor to view/edit deck
+                
+                // Route to appropriate editor based on deck type
+                if (deckId?.startsWith?.('demo-deck-')) {
+                  console.log('🎭 Navigating to demo deck builder:', deckId)
+                  toast.success('Navigating to your generated deck...')
+                  router.push(`/deck-builder/${deckId}`)
+                } else {
+                  console.log('💾 Navigating to presentation editor:', deckId) 
+                  toast.success('Navigating to your generated presentation...')
+                  router.push(`/editor/${deckId}`)
+                }
               }}
               onBack={() => {
                 setCurrentStep(4) // Go back to upload step

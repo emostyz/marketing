@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server-client'
 
 interface ProgressSession {
   id: string
@@ -29,7 +29,7 @@ export async function GET(
       )
     }
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -92,7 +92,7 @@ export async function POST(
     const sessionId = params.sessionId
     const body = await request.json()
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

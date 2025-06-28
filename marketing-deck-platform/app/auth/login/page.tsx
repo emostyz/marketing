@@ -11,8 +11,23 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState<string | null>(null)
+  const [cookieMessage, setCookieMessage] = useState('')
   const router = useRouter()
   const { signIn, signInDemo, signInWithOAuth, user, loading: authLoading } = useAuth()
+
+  // Check for cookie clearing message
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const reason = urlParams.get('reason')
+    
+    if (reason === 'old_cookies_cleared') {
+      setCookieMessage('Your session has been updated. Please log in again.')
+      // Clear the URL parameter
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('reason')
+      window.history.replaceState({}, '', newUrl.toString())
+    }
+  }, [])
 
   // Add redirect for authenticated users - but only after auth is fully loaded
   useEffect(() => {
@@ -209,11 +224,14 @@ export default function LoginPage() {
           🚀 Try Demo (No Account Required)
         </button>
 
-        <div className="flex justify-between text-sm">
-          <Link href="/auth/signup" className="text-blue-400 hover:text-blue-300 transition-colors">
-            Create an account
-          </Link>
-          <Link href="#" className="text-gray-400 hover:text-gray-300 transition-colors">
+        <div className="text-center text-sm">
+          <div className="mb-2">
+            <span className="text-gray-400">Don't have an account?</span>{' '}
+            <Link href="/auth/signup" className="text-blue-400 hover:text-blue-300 transition-colors">
+              Sign up
+            </Link>
+          </div>
+          <Link href="#" className="text-gray-400 hover:text-gray-300 transition-colors text-xs">
             Forgot password?
           </Link>
         </div>

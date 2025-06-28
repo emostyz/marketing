@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth/api-auth'
+import { requireAuth, getAuthenticatedUser } from '@/lib/auth/api-auth'
 import OpenAI from 'openai'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -190,8 +190,26 @@ async function executeUltimateAnalysis(data: any[], context: any, userFeedback: 
     })
   }
 
-  // Generate high-level strategic insights using OpenAI with ACTUAL DATA
-  const prompt = `You are a $3000/hour McKinsey senior partner analyzing REAL business data for ${context.industry} executives. You must analyze the PROVIDED DATA, not create generic insights.
+  // Generate high-level strategic insights using OpenAI with ACTUAL DATA AND FULL USER CONTEXT
+  const prompt = `You are a $3000/hour McKinsey senior partner analyzing REAL business data for a specific client. You must analyze the PROVIDED DATA with FULL CLIENT CONTEXT, not create generic insights.
+
+CLIENT PROFILE & CONTEXT:
+- Company: ${context.companyName || context.company || 'Client Company'}
+- Industry: ${context.industry || 'Business'}
+- Job Title: ${context.jobTitle || context.role || 'Executive'}
+- Company Size: ${context.companySize || context.size || 'Mid-size'}
+- Target Audience: ${context.targetAudience || 'Executive Team'}
+- Presentation Goal: ${context.presentationGoal || context.goal || 'Strategic Review'}
+- Business Context: ${context.businessContext || 'Strategic analysis'}
+- Time Period: ${context.timePeriod || context.timeframe || 'Current period'}
+- Analysis Type: ${context.analysisType || 'Performance review'}
+- Specific Questions: ${context.specificQuestions || 'Key performance drivers'}
+- Key Factors: ${context.factorsInfluencing || context.factors || 'Market conditions'}
+- Comparison Period: ${context.comparisonPeriod || 'Previous period'}
+- Decision Makers: ${context.decisionMakers || 'Executive team'}
+- Budget Impact: ${context.budgetImplications || 'Revenue optimization'}
+- Geographic Scope: ${context.geographicScope || 'Multi-region'}
+- Customer Segments: ${context.customerSegments || context.segments || 'All segments'}
 
 ACTUAL DATASET TO ANALYZE:
 ${JSON.stringify(data.slice(0, 10), null, 2)}
@@ -201,42 +219,55 @@ DATA SPECIFICATIONS:
 - Columns: ${Object.keys(data[0] || {}).join(', ')}
 - Numeric Metrics: ${numericColumns.join(', ')}
 - Categorical Dimensions: ${categoricalColumns.join(', ')}
-- Industry Context: ${context.industry || 'Business'}
-- Business Goals: ${context.goals?.join(', ') || 'Growth and efficiency'}
 
-CRITICAL ANALYSIS REQUIREMENTS:
-1. Analyze the ACTUAL data provided above - reference specific numbers
-2. Calculate real metrics from the data (revenue, growth rates, performance gaps)
-3. Identify patterns in the REAL data, not hypothetical scenarios
-4. Generate insights based on what you see in the actual numbers
-5. Include specific data points and calculations in your insights
+CRITICAL ANALYSIS REQUIREMENTS (PERSONALIZED FOR CLIENT):
+1. Analyze the ACTUAL data with CLIENT CONTEXT in mind - reference specific numbers relevant to their industry and goals
+2. Calculate real metrics from the data that align with their presentation goal and business context
+3. Address their specific questions and factors influencing their business
+4. Frame insights for their target audience (${context.targetAudience || 'executives'}) and decision makers
+5. Consider their time period analysis (${context.timePeriod || 'current period'}) and comparison needs
+6. Include actionable recommendations that fit their company size (${context.companySize || 'mid-size'}) and industry (${context.industry || 'business'})
 
-EXAMPLE OF REQUIRED ANALYSIS DEPTH:
+PERSONALIZED ANALYSIS FRAMEWORK:
+- For ${context.industry || 'business'} industry: Focus on sector-specific KPIs and benchmarks
+- For ${context.companySize || 'mid-size'} company: Scale recommendations appropriately
+- For ${context.presentationGoal || 'strategic review'}: Frame insights to support this specific goal
+- For ${context.targetAudience || 'executives'}: Use executive-level language and strategic focus
+- Address: ${context.specificQuestions || 'key performance drivers'}
+- Consider: ${context.factorsInfluencing || 'market conditions'}
+
+REQUIRED INSIGHT QUALITY (NO GENERIC STATEMENTS):
 Instead of: "Revenue shows growth potential"
-Required: "Analysis of the 10 data points shows North America region generated $45,000 revenue vs Europe's $38,000 (18.4% performance gap), while Asia Pacific leads at $52,000 (36.8% above Europe). This $14,000 performance differential suggests replicating Asia Pacific's strategy could increase total revenue by $140,000 annually."
+Required: "For ${context.companyName || 'your company'}'s ${context.industry || 'business'} operations, analysis of the ${data.length} data points shows [specific region/segment] generated $[exact amount] vs [comparison], representing a [calculated %] performance gap. Given your focus on ${context.presentationGoal || 'strategic review'}, this suggests [specific actionable recommendation] could increase revenue by $[calculated amount] over [relevant timeframe]."
 
-Generate exactly 3-4 strategic insights that directly reference the provided data:
+Generate exactly 3-4 strategic insights that directly reference the provided data AND client context:
 
 {
   "strategicInsights": [
     {
       "id": "data_insight_1",
-      "title": "Specific insight title referencing actual data numbers",
-      "description": "Detailed analysis of the provided data with specific calculations and metrics",
-      "businessImplication": "Quantified business impact based on actual data patterns with specific dollar amounts or percentages",
+      "title": "Personalized insight title for ${context.industry || 'business'} ${context.companySize || 'company'} addressing ${context.presentationGoal || 'strategic goals'}",
+      "description": "Detailed analysis of the provided data with specific calculations, metrics, and context for ${context.targetAudience || 'executives'} in ${context.industry || 'business'} industry",
+      "businessImplication": "Quantified business impact based on actual data patterns with specific dollar amounts, percentages, and actionable steps for ${context.companyName || 'your company'}'s ${context.presentationGoal || 'strategic review'}",
       "confidence": 85,
-      "evidence": ["Specific data point 1 from the actual dataset", "Calculated metric from the real numbers", "Performance gap identified in the data"],
+      "evidence": ["Specific data point 1 from the actual dataset", "Calculated metric from the real numbers relevant to ${context.industry}", "Performance gap identified in the data with industry context"],
       "learningSource": "actual_data_analysis",
+      "industryContext": "${context.industry || 'business'}",
+      "companySize": "${context.companySize || 'mid-size'}",
+      "targetAudience": "${context.targetAudience || 'executives'}",
       "approved": true
     },
     {
       "id": "data_insight_2", 
-      "title": "Second insight directly from the real data analysis",
-      "description": "Strategic finding based on patterns in the provided dataset",
-      "businessImplication": "Actionable recommendation with measurable outcomes based on the data",
+      "title": "Second personalized insight for ${context.presentationGoal || 'strategic review'} addressing ${context.specificQuestions || 'key performance drivers'}",
+      "description": "Strategic finding based on patterns in the provided dataset, tailored for ${context.companySize || 'mid-size'} ${context.industry || 'business'} company",
+      "businessImplication": "Actionable recommendation with measurable outcomes based on the data, considering ${context.factorsInfluencing || 'market conditions'} and ${context.timePeriod || 'current period'}",
       "confidence": 88,
-      "evidence": ["Real data evidence", "Calculated performance metrics"],
-      "learningSource": "actual_data_analysis", 
+      "evidence": ["Real data evidence with industry benchmarks", "Calculated performance metrics relevant to ${context.industry}"],
+      "learningSource": "actual_data_analysis",
+      "industryContext": "${context.industry || 'business'}",
+      "companySize": "${context.companySize || 'mid-size'}",
+      "targetAudience": "${context.targetAudience || 'executives'}", 
       "approved": true
     },
     {
@@ -286,10 +317,32 @@ Generate exactly 3-4 strategic insights that directly reference the provided dat
       
     } catch (openaiError: any) {
       console.error('❌ OpenAI analysis failed:', openaiError.message)
-      console.log('🔄 Using minimal statistical analysis as fallback')
+      console.error('🚫 NO FALLBACK ALLOWED - User demanded real OpenAI insights only')
       
-      // Only use 1-2 basic insights as minimal fallback
-      allInsights = insights.slice(0, 2) // Use only top 2 statistical insights
+      // Enhanced error messages for common issues
+      let errorMessage = `OpenAI analysis failed: ${openaiError.message}`
+      let userFriendlyMessage = 'OpenAI analysis failed. Please refresh and try again.'
+      
+      if (openaiError.message?.includes('timeout')) {
+        userFriendlyMessage = 'Analysis is taking longer than expected. Please try again with a smaller dataset.'
+      } else if (openaiError.message?.includes('rate_limit')) {
+        userFriendlyMessage = 'Too many requests. Please wait a moment and try again.'
+      } else if (openaiError.message?.includes('insufficient_quota')) {
+        userFriendlyMessage = 'OpenAI API quota exceeded. Please check your API key credits.'
+      } else if (openaiError.message?.includes('invalid_api_key')) {
+        userFriendlyMessage = 'OpenAI API key is invalid. Please check configuration.'
+      } else if (openaiError.message?.includes('model_not_found')) {
+        userFriendlyMessage = 'OpenAI model not available. Please try again later.'
+      }
+      
+      // Return error instead of fake insights
+      return NextResponse.json({
+        success: false,
+        error: userFriendlyMessage,
+        technicalError: errorMessage,
+        openaiError: true,
+        retryable: !openaiError.message?.includes('invalid_api_key')
+      }, { status: 500 })
     }
     
     const finalResult = {
@@ -621,10 +674,10 @@ export async function POST(request: NextRequest) {
     
     const { data, context, userFeedback, learningObjectives } = await request.json()
     
-    // Require authentication - no demo fallback
+    // Try to get authenticated user - check for auth failures
     const user = await requireAuth()
 
-    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (Demo: false)`)
+    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)}`)
     console.log('📊 Data rows:', data?.length || 0)
     console.log('🎯 Context keys:', Object.keys(context || {}).length)
     console.log('🎨 Editor features integration enabled')
@@ -780,8 +833,7 @@ export async function POST(request: NextRequest) {
         circularFeedback: true,
         humanLearning: !!userFeedback,
         confidenceLevel: results.confidence,
-        userId: user.id,
-        isDemo
+        userId: user.id
       }
     }
 

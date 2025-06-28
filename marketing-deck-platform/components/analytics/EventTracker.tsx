@@ -21,6 +21,7 @@ export function EventTracker({ children }: EventTrackerProps) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           pageUrl: typeof window !== 'undefined' ? window.location.href : pathname,
           pageTitle: typeof document !== 'undefined' ? document.title : undefined,
@@ -47,6 +48,7 @@ export function EventTracker({ children }: EventTrackerProps) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           event_type: eventType,
           event_data: eventData,

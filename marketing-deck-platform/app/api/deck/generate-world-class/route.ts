@@ -201,8 +201,9 @@ async function generateWorldClassDeck(request: NextRequest) {
     
     // Get authenticated user with demo support
     const user = await requireAuth()
+    const isDemo = user.demo === true
     
-    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (Demo: false)`)
+    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (Demo: ${isDemo})`)
     
     // Initialize Supabase client
     const supabase = await createServerSupabaseClient()
@@ -433,9 +434,9 @@ async function generateWorldClassDeck(request: NextRequest) {
     
     // 8. Save to database (with demo support)
     let savedDeck: any
-    const isDemo = datasetId.startsWith('demo-')
+    const isDemoDataset = datasetId.startsWith('demo-') || isDemo
     
-    if (isDemo) {
+    if (isDemoDataset) {
       // Demo mode - generate a mock deck ID and store in global memory for retrieval
       savedDeck = {
         id: `demo-deck-${Date.now()}`,

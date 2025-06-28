@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
+import { createServerSupabaseClient } from '@/lib/supabase/server-client'
 
 export interface AuthenticatedUser {
   id: string
@@ -28,20 +29,66 @@ export interface AuthResult {
  */
 export async function getAuthenticatedUser(): Promise<AuthResult> {
   try {
-    // First, try to get Supabase session
-    const supabase = createClient()
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    // Check for auth cookie directly first
+    const cookieStore = await cookies()
+    const allCookies = cookieStore.getAll()
+    const authCookie = allCookies.find(c => c.name === 'sb-waddrfstpqkvdfwbxvfw-auth-token')
     
-    console.log('🔍 Auth check - Session found:', !!session?.user, 'Error:', sessionError?.message)
+    console.log('🔍 Auth cookie check - Found:', !!authCookie, 'Length:', authCookie?.value?.length)
+    console.log('🍪 All available cookies:', allCookies.map(c => ({ name: c.name, length: c.value?.length })))
     
-    if (!sessionError && session?.user) {
-      console.log('✅ Valid session found for user:', session.user.id)
+    if (!authCookie || !authCookie.value) {
+      console.log('❌ No auth cookie found')
+      return {
+        user: null,
+        isDemo: false,
+        error: 'No auth cookie found'
+      }
+    }
+    
+    // Try to parse the JWT token to get user ID
+    try {
+      const tokenParts = authCookie.value.split('.')
+      if (tokenParts.length === 3) {
+        const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString())
+        const userId = payload.sub
+        const email = payload.email
+        
+        if (userId && email) {
+          console.log('✅ Valid JWT token found for user:', email)
+          
+          const authenticatedUser: AuthenticatedUser = {
+            id: userId,
+            email: email,
+            name: email.split('@')[0],
+            subscription: 'free' as 'free' | 'pro' | 'enterprise',
+            demo: false,
+            profile: null
+          }
+
+          return {
+            user: authenticatedUser,
+            isDemo: false
+          }
+        }
+      }
+    } catch (jwtError) {
+      console.log('⚠️ JWT parsing failed:', jwtError.message)
+    }
+    
+    // Fallback to Supabase client
+    const supabase = await createServerSupabaseClient()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    console.log('🔍 Supabase fallback - User found:', !!user, 'Error:', userError?.message)
+    
+    if (!userError && user) {
+      console.log('✅ Valid user found via Supabase:', user.id)
       
       // Get user profile from Supabase
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
         .single()
 
       if (profileError) {
@@ -49,9 +96,9 @@ export async function getAuthenticatedUser(): Promise<AuthResult> {
       }
 
       const authenticatedUser: AuthenticatedUser = {
-        id: session.user.id,
-        email: session.user.email || '',
-        name: profile?.full_name || profile?.name || session.user.user_metadata?.full_name || session.user.email || 'User',
+        id: user.id,
+        email: user.email || '',
+        name: profile?.full_name || profile?.name || user.user_metadata?.full_name || user.email || 'User',
         subscription: (profile?.subscription_tier || 'free') as 'free' | 'pro' | 'enterprise',
         demo: false,
         profile: profile ? {

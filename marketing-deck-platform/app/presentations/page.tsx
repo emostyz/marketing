@@ -37,6 +37,7 @@ export default function PresentationsPage() {
       const response = await fetch('/api/ai/run-pipeline', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ presentationId })
       })
 
@@ -61,7 +62,8 @@ export default function PresentationsPage() {
       try {
         const response = await fetch('/api/ai/queue-status', {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
         })
 
         if (response.ok) {

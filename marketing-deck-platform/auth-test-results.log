@@ -1,0 +1,14 @@
+
+> easydecks-ai@1.0.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, using available port 3001 instead.
+   ▲ Next.js 15.4.0
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.1.207:3001
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ clientSegmentCache
+
+ ✓ Starting...
+ ✓ Ready in 1660ms
