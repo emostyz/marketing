@@ -441,19 +441,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       console.log('🔐 Attempting sign in for:', email)
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      // Use server-side login endpoint that sets proper cookies
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
       })
 
-      if (error) {
+      const result = await response.json()
+
+      if (!response.ok || result.error) {
         setLoading(false)
-        console.error('❌ Sign in error:', error)
-        return { error: `Sign in failed: ${error.message}` }
+        console.error('❌ Sign in error:', result.error)
+        return { error: result.error || 'Sign in failed' }
       }
 
-      if (data.user && data.session) {
-        console.log('✅ Sign in successful for user:', data.user.email)
+      if (result.success && result.user && result.session) {
+        console.log('✅ Sign in successful for user:', result.user.email)
+        console.log('🍪 Server-side auth cookies should be set')
+        
+        // Set client-side session for immediate UI updates
+        const { error: setSessionError } = await supabase.auth.setSession({
+          access_token: result.session.access_token,
+          refresh_token: result.session.refresh_token
+        })
+        
+        if (setSessionError) {
+          console.warn('⚠️ Failed to set client session:', setSessionError)
+        }
+        
         // Auth successful - loading will be set to false by the auth state change listener
         return {}
       }

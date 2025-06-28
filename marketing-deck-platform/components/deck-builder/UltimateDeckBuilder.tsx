@@ -254,7 +254,7 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
+          credentials: 'same-origin',
           body: JSON.stringify({
             sessionId: data.sessionId,
             type: 'intake_form',
@@ -732,16 +732,11 @@ export function UltimateDeckBuilder({ className = '' }: { className?: string }) 
                 
                 clearDraft() // Clear draft after successful completion
                 
-                // Route to appropriate editor based on deck type
-                if (deckId?.startsWith?.('demo-deck-')) {
-                  console.log('🎭 Navigating to demo deck builder:', deckId)
-                  toast.success('Navigating to your generated deck...')
-                  router.push(`/deck-builder/${deckId}`)
-                } else {
-                  console.log('💾 Navigating to presentation editor:', deckId) 
-                  toast.success('Navigating to your generated presentation...')
-                  router.push(`/editor/${deckId}`)
-                }
+                // FIXED: Always navigate to deck-builder for both demo and real presentations
+                // The deck-builder route handles both demo and real decks appropriately
+                console.log('🎯 Navigating to deck builder:', deckId)
+                toast.success('Opening your generated presentation...')
+                router.push(`/deck-builder/${deckId}`)
               }}
               onBack={() => {
                 setCurrentStep(4) // Go back to upload step

@@ -371,7 +371,7 @@ export const SimpleRealTimeFlow: React.FC<SimpleRealTimeFlowProps> = ({
             id: `ultimate_recommendation_${Date.now()}_${index}`,
             title: `Action: ${recommendation.title}`,
             description: recommendation.description || 'Strategic recommendation from AI analysis',
-            businessImplication: `Expected ROI: ${recommendation.expectedROI || 'TBD'}%. ${recommendation.implementation?.join(', ') || 'Implementation plan available'}`,
+            businessImplication: `Expected ROI: ${recommendation.expectedROI || 'TBD'}%. ${Array.isArray(recommendation.implementation) ? recommendation.implementation.join(', ') : recommendation.implementation || 'Implementation plan available'}`,
             confidence: recommendation.confidence || 85,
             approved: null
           })

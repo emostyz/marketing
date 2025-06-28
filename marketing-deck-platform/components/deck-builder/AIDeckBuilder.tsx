@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Brain, FileText, ChevronLeft, ChevronRight, Download, Share, Settings } from 'lucide-react'
 import { TremorChartRenderer } from '@/components/charts/TremorChartRenderer'
-import { SlideElementRenderer } from '@/components/editor/SlideElementRenderer'
+import SlideElementRenderer from '@/components/editor/SlideElementRenderer'
 
 interface AISlideElement {
   id: string

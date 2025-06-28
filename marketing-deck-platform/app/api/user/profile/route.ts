@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth/api-auth'
 import { AuthSystem } from '@/lib/auth/auth-system'
 import { db } from '@/lib/db/drizzle'
 import { profiles } from '@/lib/db/schema'
@@ -6,14 +7,7 @@ import { eq } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await AuthSystem.getCurrentUser()
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
-    }
+    const user = await requireAuth()
 
     return NextResponse.json({
       success: true,
@@ -36,7 +30,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await AuthSystem.getCurrentUser()
+    const user = await requireAuth()
     if (!user || !user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -63,6 +57,7 @@ export async function POST(request: NextRequest) {
       dataPreferences
     }
 
+    // Update user profile via AuthSystem
     const updatedUser = await AuthSystem.updateUserProfile(profileData)
     
     if (updatedUser) {
@@ -78,14 +73,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const user = await AuthSystem.getCurrentUser()
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
-    }
+    const user = await requireAuth()
 
     const profileData = await request.json()
 

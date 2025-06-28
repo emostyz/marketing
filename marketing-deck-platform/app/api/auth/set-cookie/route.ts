@@ -13,13 +13,21 @@ export async function POST(request: NextRequest) {
     const cookieName = `sb-${projectRef}-auth-token`
 
     const response = NextResponse.json({ success: true })
-    response.cookies.set(cookieName, access_token, {
+    
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // Only secure in production
-      sameSite: 'lax', // Revert to lax for localhost compatibility
+      sameSite: 'lax' as const, // Revert to lax for localhost compatibility
       path: '/',
       maxAge: 60 * 60 * 24 * 7 // 7 days
-    })
+    }
+    
+    // Set primary cookie
+    response.cookies.set(cookieName, access_token, cookieOptions)
+    
+    // ALSO set old project cookie for compatibility
+    response.cookies.set('sb-qezexjgyvzwanfrgqaio-auth-token', access_token, cookieOptions)
+    
     return response
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

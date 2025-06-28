@@ -123,10 +123,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Return successful response - let client-side Supabase handle cookies
+    // Set auth cookie manually for API routes to work
     console.log('✅ Login successful for user:', data.user.email)
     
-    return NextResponse.json(
+    const response = NextResponse.json(
       { 
         success: true, 
         user: data.user,
@@ -134,6 +134,31 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     )
+
+    // Set the auth cookie that API routes expect
+    if (data.session?.access_token) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://waddrfstpqkvdfwbxvfw.supabase.co'
+      const projectRef = supabaseUrl.split('//')[1]?.split('.')[0] || 'waddrfstpqkvdfwbxvfw'
+      const cookieName = `sb-${projectRef}-auth-token`
+      
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax' as const,
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7 // 7 days
+      }
+      
+      // Set primary cookie
+      response.cookies.set(cookieName, data.session.access_token, cookieOptions)
+      
+      // ALSO set old project cookie for compatibility with existing flows
+      response.cookies.set('sb-qezexjgyvzwanfrgqaio-auth-token', data.session.access_token, cookieOptions)
+      
+      console.log('🍪 Auth cookies set:', cookieName, '+ compatibility cookie')
+    }
+
+    return response
 
   } catch (error) {
     console.error('Login route error:', error)

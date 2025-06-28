@@ -37,8 +37,7 @@ export async function safeOpenAIJSONCall(
     messages: options.messages,
     response_format: { type: "json_object" },
     temperature: options.temperature || 0.3,
-    max_tokens: options.max_tokens || 4000,
-    timeout: options.timeout || 30000
+    max_tokens: options.max_tokens || 4000
   })
 
   const content = response.choices[0]?.message?.content

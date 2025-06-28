@@ -13,36 +13,69 @@ export async function POST(request: NextRequest) {
     
     console.log(`👤 Real User: ${userId.slice(0, 8)}...${userId.slice(-4)} (${user.email})`)
 
-    // For authenticated users, use database (if available)
-    console.log('⚠️ Database operations disabled for now - using session storage')
+    // For authenticated users, use database
+    console.log('✅ Database operations enabled - saving to Supabase')
     
-    const sessionPresentation = {
-      id: presentationId || `session-presentation-${Date.now()}`,
-      userId,
-      title: projectName || `New Presentation - ${new Date().toLocaleDateString()}`,
-      description: `Draft created on ${new Date().toLocaleDateString()}`,
-      status: 'draft',
-      slides: [],
-      dataSources: [],
-      narrativeConfig: {},
-      createdAt: new Date(),
-      updatedAt: new Date()
+    // Create or update presentation in database
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    
+    let presentation: any
+    
+    if (presentationId) {
+      // Update existing presentation
+      const { data, error } = await supabase
+        .from('presentations')
+        .update({
+          title: projectName,
+          updated_at: new Date().toISOString(),
+          step_data: { [step]: data }
+        })
+        .eq('id', presentationId)
+        .eq('user_id', userId)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Error updating presentation:', error)
+        throw error
+      }
+      presentation = data
+    } else {
+      // Create new presentation
+      const { data, error } = await supabase
+        .from('presentations')
+        .insert({
+          user_id: userId,
+          title: projectName || `New Presentation - ${new Date().toLocaleDateString()}`,
+          description: `Draft created on ${new Date().toLocaleDateString()}`,
+          status: 'draft',
+          slides: [],
+          step_data: { [step]: data },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Error creating presentation:', error)
+        throw error
+      }
+      presentation = data
     }
 
-    // Update presentation based on step
-    let updateData: any = {
-      updatedAt: new Date()
-    }
-
-    // For now, just return success with session data structure
-    console.log(`✅ Session data processed for authenticated user: ${user.email}`)
+    console.log(`✅ Database data processed for authenticated user: ${user.email}`)
     
     return NextResponse.json({ 
       success: true,
       step,
-      presentationId: sessionPresentation.id,
-      data: sessionPresentation,
-      message: `${step} data saved to session storage`
+      presentationId: presentation.id,
+      data: presentation,
+      message: `${step} data saved to database`
     })
 
   } catch (error) {
@@ -64,14 +97,41 @@ export async function GET(request: NextRequest) {
     
     console.log(`👤 Real User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (${user.email})`)
 
-    // For authenticated users, indicate to use local storage for now
+    // For authenticated users, fetch from database
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    
+    let session: any = {
+      id: presentationId || 'session-' + Date.now(),
+      userId: user.id,
+      useLocalStorage: false
+    }
+    
+    if (presentationId) {
+      const { data: presentation, error } = await supabase
+        .from('presentations')
+        .select('*')
+        .eq('id', presentationId)
+        .eq('user_id', user.id)
+        .single()
+      
+      if (!error && presentation) {
+        session = {
+          id: presentation.id,
+          userId: presentation.user_id,
+          title: presentation.title,
+          data: presentation.step_data || {},
+          useLocalStorage: false
+        }
+      }
+    }
+    
     return NextResponse.json({ 
-      session: {
-        id: presentationId || 'session-' + Date.now(),
-        userId: user.id,
-        useLocalStorage: true
-      },
-      useLocalStorage: true
+      session,
+      useLocalStorage: false
     })
 
   } catch (error) {

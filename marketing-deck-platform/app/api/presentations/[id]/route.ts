@@ -233,25 +233,85 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Try to load from drafts first
     const draft = await DeckPersistence.loadDraft(id)
     
-    if (!draft) {
+    if (draft) {
+      // Track view activity
+      await DeckPersistence.trackUserActivity('draft_viewed', {
+        draftId: id,
+        title: draft.title
+      })
+
+      return NextResponse.json({
+        success: true,
+        presentation: draft
+      })
+    }
+    
+    // If not found in drafts, try to load from presentations table
+    try {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      
+      const { data: presentation, error } = await supabase
+        .from('presentations')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single()
+      
+      if (error || !presentation) {
+        console.log('Presentation not found in presentations table:', error)
+        return NextResponse.json(
+          { error: 'Presentation not found' },
+          { status: 404 }
+        )
+      }
+      
+      console.log('✅ Found presentation in presentations table:', presentation.title)
+      
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: presentation.id,
+          title: presentation.title,
+          slides: presentation.slides || [],
+          theme: {
+            colors: {
+              primary: '#2563eb',
+              secondary: '#64748b',
+              accent: '#f59e0b',
+              background: '#ffffff',
+              text: '#1e293b'
+            },
+            fonts: {
+              heading: 'Inter',
+              body: 'Inter',
+              monospace: 'JetBrains Mono'
+            },
+            spacing: 'comfortable'
+          },
+          settings: {
+            aspectRatio: '16:9',
+            slideSize: 'standard',
+            defaultTransition: 'slide'
+          },
+          collaborators: [],
+          lastModified: new Date(presentation.updated_at || presentation.created_at)
+        }
+      })
+      
+    } catch (error) {
+      console.error('Error loading from presentations table:', error)
       return NextResponse.json(
         { error: 'Presentation not found' },
         { status: 404 }
       )
     }
-
-    // Track view activity
-    await DeckPersistence.trackUserActivity('draft_viewed', {
-      draftId: id,
-      title: draft.title
-    })
-
-    return NextResponse.json({
-      success: true,
-      presentation: draft
-    })
   } catch (error) {
     console.error('Error loading presentation:', error)
     return NextResponse.json(

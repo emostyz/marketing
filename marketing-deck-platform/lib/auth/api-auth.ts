@@ -29,10 +29,16 @@ export interface AuthResult {
  */
 export async function getAuthenticatedUser(): Promise<AuthResult> {
   try {
-    // Check for auth cookie directly first
+    // Check for auth cookie directly first - try multiple cookie patterns
     const cookieStore = await cookies()
     const allCookies = cookieStore.getAll()
-    const authCookie = allCookies.find(c => c.name === 'sb-waddrfstpqkvdfwbxvfw-auth-token')
+    
+    // Try current project cookie first, then fallback to old project cookie
+    let authCookie = allCookies.find(c => c.name === 'sb-waddrfstpqkvdfwbxvfw-auth-token')
+    if (!authCookie || !authCookie.value) {
+      authCookie = allCookies.find(c => c.name === 'sb-qezexjgyvzwanfrgqaio-auth-token')
+      console.log('🔄 Using fallback cookie from old project')
+    }
     
     console.log('🔍 Auth cookie check - Found:', !!authCookie, 'Length:', authCookie?.value?.length)
     console.log('🍪 All available cookies:', allCookies.map(c => ({ name: c.name, length: c.value?.length })))
