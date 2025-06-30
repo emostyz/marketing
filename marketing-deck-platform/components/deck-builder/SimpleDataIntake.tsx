@@ -3,6 +3,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { supabase } from '@/lib/supabase/client'
 
 interface DataContext {
   description: string;
@@ -62,14 +63,27 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
       console.log('Saving data:', dataContext)
       
       try {
-        // Save to session
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!session) {
+          setErrors({ description: 'You must be logged in to save your data. Please log in and try again.' })
+          setIsSaving(false)
+          return
+        }
+        
+        // Save to session with auth token
         const sessionResponse = await fetch('/api/presentations/session', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
           credentials: 'include',
           body: JSON.stringify({
             step: 'data_intake',
             data: dataContext,
+            projectName: dataContext.description || 'New Presentation',
             timestamp: new Date().toISOString()
           })
         })
@@ -79,10 +93,14 @@ export const SimpleDataIntake: React.FC<SimpleDataIntakeProps> = ({ dataContext,
           nextStep()
         } else {
           const errorData = await sessionResponse.json()
+          console.error('Session save failed:', errorData)
           if (sessionResponse.status === 401) {
             setErrors({ description: 'You must be logged in to save your data. Please log in and try again.' })
           } else {
-            setErrors({ description: errorData.error || 'Failed to save data. Please try again.' })
+            const errorMessage = errorData.details ? 
+              `${errorData.error}: ${errorData.details}` : 
+              errorData.error || 'Failed to save data. Please try again.'
+            setErrors({ description: errorMessage })
           }
           console.error('Failed to save data:', errorData)
         }

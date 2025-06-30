@@ -1,0 +1,25 @@
+Date,Region,Product,Sales_Revenue,Units_Sold,Customer_Satisfaction,Marketing_Spend
+2024-01-01,North America,ProductA,125000,850,4.2,15000
+2024-01-01,Europe,ProductA,98000,720,4.1,12000
+2024-01-01,Asia,ProductA,87000,650,4.3,11000
+2024-01-01,North America,ProductB,78000,450,3.9,8000
+2024-01-01,Europe,ProductB,65000,380,4.0,7000
+2024-01-01,Asia,ProductB,58000,340,4.1,6000
+2024-02-01,North America,ProductA,135000,910,4.3,16000
+2024-02-01,Europe,ProductA,105000,780,4.2,13000
+2024-02-01,Asia,ProductA,92000,690,4.4,12000
+2024-02-01,North America,ProductB,82000,470,4.0,8500
+2024-02-01,Europe,ProductB,68000,400,4.1,7500
+2024-02-01,Asia,ProductB,61000,360,4.2,6500
+2024-03-01,North America,ProductA,142000,960,4.4,17000
+2024-03-01,Europe,ProductA,112000,820,4.3,14000
+2024-03-01,Asia,ProductA,98000,730,4.5,13000
+2024-03-01,North America,ProductB,85000,490,4.1,9000
+2024-03-01,Europe,ProductB,72000,420,4.2,8000
+2024-03-01,Asia,ProductB,64000,380,4.3,7000
+2024-04-01,North America,ProductA,148000,1000,4.5,18000
+2024-04-01,Europe,ProductA,118000,860,4.4,15000
+2024-04-01,Asia,ProductA,103000,770,4.6,14000
+2024-04-01,North America,ProductB,88000,510,4.2,9500
+2024-04-01,Europe,ProductB,75000,440,4.3,8500
+2024-04-01,Asia,ProductB,67000,400,4.4,7500

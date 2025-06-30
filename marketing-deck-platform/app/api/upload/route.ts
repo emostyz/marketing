@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth/api-auth'
+import { createClient } from '@supabase/supabase-js'
 import { processDataFile } from '@/lib/data/enhanced-file-processor'
 import { storeDataset } from '@/lib/data/dataset-storage'
 
@@ -23,9 +23,57 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get authenticated user with demo fallback
-    const user = await requireAuth()
-    const isDemo = user.demo === true
+    // Get auth from cookies/headers
+    const authHeader = request.headers.get('Authorization')
+    const cookieHeader = request.headers.get('Cookie') || ''
+    
+    let authToken = null
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      authToken = authHeader.slice(7)
+    } else {
+      const cookiePatterns = [
+        /sb-waddrfstpqkvdfwbxvfw-auth-token=([^;]+)/,
+        /sb-qezexjgyvzwanfrgqaio-auth-token=([^;]+)/
+      ]
+      
+      for (const pattern of cookiePatterns) {
+        const match = cookieHeader.match(pattern)
+        if (match) {
+          authToken = match[1]
+          break
+        }
+      }
+    }
+    
+    if (!authToken) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        }
+      }
+    )
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
+    const isDemo = false
     const userId = user.id
     
     console.log('🔍 Upload request from:', isDemo ? 'Demo user' : 'Authenticated user', userId)

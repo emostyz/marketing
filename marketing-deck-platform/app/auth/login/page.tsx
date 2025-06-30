@@ -115,6 +115,7 @@ export default function LoginPage() {
     }
   }
 
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
       <div className="w-full max-w-md mx-auto rounded-2xl p-8 bg-gray-900/50 border border-gray-700 shadow-xl backdrop-blur-sm">

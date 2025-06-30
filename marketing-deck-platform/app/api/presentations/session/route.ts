@@ -1,38 +1,95 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth/api-auth'
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
   try {
-    const { step, data, timestamp, presentationId, projectName } = await request.json()
+    const { step, data: requestData, timestamp, presentationId, projectName } = await request.json()
     
     console.log(`📝 Saving ${step} data for presentation:`, presentationId || 'new')
     
-    // Require real authentication - no demo fallback
-    const user = await requireAuth()
-    const userId = user.id
+    // Check for auth cookies directly
+    const authHeader = request.headers.get('Authorization')
+    const cookieHeader = request.headers.get('Cookie') || ''
     
-    console.log(`👤 Real User: ${userId.slice(0, 8)}...${userId.slice(-4)} (${user.email})`)
+    // Extract auth token from cookies or Authorization header
+    let authToken = null
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      authToken = authHeader.slice(7)
+    } else {
+      // Check multiple cookie patterns
+      const cookiePatterns = [
+        /sb-waddrfstpqkvdfwbxvfw-auth-token=([^;]+)/,
+        /sb-qezexjgyvzwanfrgqaio-auth-token=([^;]+)/
+      ]
+      
+      for (const pattern of cookiePatterns) {
+        const match = cookieHeader.match(pattern)
+        if (match) {
+          authToken = match[1]
+          break
+        }
+      }
+    }
+    
+    if (!authToken) {
+      console.error('❌ No auth token found')
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
+    // Create Supabase client with auth token
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        }
+      }
+    )
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      console.error('❌ Authentication failed:', authError?.message)
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = user.id
+    console.log(`👤 User: ${userId.slice(0, 8)}...${userId.slice(-4)} (${user.email})`)
 
     // For authenticated users, use database
     console.log('✅ Database operations enabled - saving to Supabase')
-    
-    // Create or update presentation in database
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
     
     let presentation: any
     
     if (presentationId) {
       // Update existing presentation
-      const { data, error } = await supabase
+      const { data: existingPresentation } = await supabase
+        .from('presentations')
+        .select('metadata')
+        .eq('id', presentationId)
+        .eq('user_id', userId)
+        .single()
+      
+      const updatedMetadata = {
+        ...(existingPresentation?.metadata || {}),
+        [step]: requestData
+      }
+      
+      const { data: updatedPresentation, error } = await supabase
         .from('presentations')
         .update({
           title: projectName,
           updated_at: new Date().toISOString(),
-          step_data: { [step]: data }
+          metadata: updatedMetadata
         })
         .eq('id', presentationId)
         .eq('user_id', userId)
@@ -43,18 +100,20 @@ export async function POST(request: NextRequest) {
         console.error('Error updating presentation:', error)
         throw error
       }
-      presentation = data
+      presentation = updatedPresentation
     } else {
       // Create new presentation
-      const { data, error } = await supabase
+      const { data: newPresentation, error } = await supabase
         .from('presentations')
         .insert({
           user_id: userId,
           title: projectName || `New Presentation - ${new Date().toLocaleDateString()}`,
-          description: `Draft created on ${new Date().toLocaleDateString()}`,
-          status: 'draft',
-          slides: [],
-          step_data: { [step]: data },
+          slides_data: [],
+          metadata: { 
+            [step]: requestData,
+            description: `Draft created on ${new Date().toLocaleDateString()}`,
+            status: 'draft'
+          },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -65,7 +124,7 @@ export async function POST(request: NextRequest) {
         console.error('Error creating presentation:', error)
         throw error
       }
-      presentation = data
+      presentation = newPresentation
     }
 
     console.log(`✅ Database data processed for authenticated user: ${user.email}`)
@@ -78,10 +137,14 @@ export async function POST(request: NextRequest) {
       message: `${step} data saved to database`
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error saving presentation session:', error)
     return NextResponse.json(
-      { error: 'Failed to save presentation session' },
+      { 
+        error: 'Failed to save presentation session',
+        details: error?.message || 'Unknown error',
+        code: error?.code
+      },
       { status: 500 }
     )
   }
@@ -92,13 +155,59 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const presentationId = searchParams.get('presentationId')
     
-    // Require real authentication - no demo fallback
-    const user = await requireAuth()
+    // Get auth from cookies/headers like in POST
+    const authHeader = request.headers.get('Authorization')
+    const cookieHeader = request.headers.get('Cookie') || ''
     
-    console.log(`👤 Real User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (${user.email})`)
+    let authToken = null
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      authToken = authHeader.slice(7)
+    } else {
+      const cookiePatterns = [
+        /sb-waddrfstpqkvdfwbxvfw-auth-token=([^;]+)/,
+        /sb-qezexjgyvzwanfrgqaio-auth-token=([^;]+)/
+      ]
+      
+      for (const pattern of cookiePatterns) {
+        const match = cookieHeader.match(pattern)
+        if (match) {
+          authToken = match[1]
+          break
+        }
+      }
+    }
+    
+    if (!authToken) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
+    const authSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        }
+      }
+    )
+    
+    const { data: { user }, error: authError } = await authSupabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
+    console.log(`👤 User: ${user.id.slice(0, 8)}...${user.id.slice(-4)} (${user.email})`)
 
     // For authenticated users, fetch from database
-    const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!

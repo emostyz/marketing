@@ -84,11 +84,27 @@ export function AIDeckBuilder({
         const response = await fetch(`/api/presentations/${presentationId}`)
         if (response.ok) {
           const data = await response.json()
-          if (data.final_deck_json?.slides) {
-            setSlides(processAISlides(data.final_deck_json.slides))
+          
+          // Enhanced: Support both legacy and new slide_json formats
+          let slidesToProcess = null
+          
+          if (data.slide_json?.slides) {
+            // New enhanced format from our AI pipeline
+            console.log('🎨 Loading enhanced slide_json format')
+            slidesToProcess = data.slide_json.slides
+          } else if (data.final_deck_json?.slides) {
+            // Legacy format
+            console.log('📄 Loading legacy final_deck_json format')
+            slidesToProcess = data.final_deck_json.slides
+          } else if (data.slides) {
+            // Direct slides format
+            console.log('📋 Loading direct slides format')
+            slidesToProcess = data.slides
           } else {
-            throw new Error('No slide data found')
+            throw new Error('No slide data found in any supported format')
           }
+          
+          setSlides(processAISlides(slidesToProcess))
         } else {
           throw new Error('Failed to fetch presentation data')
         }
@@ -102,18 +118,71 @@ export function AIDeckBuilder({
   }
 
   const processAISlides = (rawSlides: any[]): AISlide[] => {
-    return rawSlides.map((slide, index) => ({
-      id: slide.id || `slide-${index}`,
-      title: slide.title || `Slide ${index + 1}`,
-      elements: {
-        title: slide.elements?.title || slide.title,
-        bullets: slide.elements?.bullets || slide.content?.bullets || [],
-        charts: slide.elements?.charts || slide.charts || []
-      },
-      layout: slide.layout || 'default',
-      background: slide.background || '#1e293b',
-      transition: slide.transition || 'fade'
-    }))
+    return rawSlides.map((slide, index) => {
+      // Handle enhanced slide_json format with positioned elements
+      if (slide.elements && Array.isArray(slide.elements)) {
+        console.log(`🎨 Processing enhanced slide ${index + 1} with ${slide.elements.length} positioned elements`)
+        
+        return {
+          id: slide.id || `slide-${index}`,
+          title: slide.title || `Slide ${index + 1}`,
+          elements: {
+            title: slide.title,
+            bullets: extractBulletsFromElements(slide.elements),
+            charts: extractChartsFromElements(slide.elements),
+            positionedElements: slide.elements // Store all positioned elements
+          },
+          layout: slide.layout || 'enhanced',
+          background: slide.background?.value || slide.background || '#1e293b',
+          transition: slide.animation?.transition || slide.transition || 'slide'
+        }
+      }
+      
+      // Handle legacy format
+      console.log(`📄 Processing legacy slide ${index + 1}`)
+      return {
+        id: slide.id || `slide-${index}`,
+        title: slide.title || `Slide ${index + 1}`,
+        elements: {
+          title: slide.elements?.title || slide.title,
+          bullets: slide.elements?.bullets || slide.content?.bullets || [],
+          charts: slide.elements?.charts || slide.charts || []
+        },
+        layout: slide.layout || 'default',
+        background: slide.background || '#1e293b',
+        transition: slide.transition || 'fade'
+      }
+    })
+  }
+
+  // Helper function to extract bullets from positioned elements
+  const extractBulletsFromElements = (elements: any[]): string[] => {
+    const textElements = elements.filter(el => el.type === 'text' && el.content)
+    const bullets: string[] = []
+    
+    textElements.forEach(el => {
+      if (el.content.includes('•')) {
+        // Split by bullet points and clean up
+        const bulletLines = el.content.split('\n')
+          .filter(line => line.trim().startsWith('•'))
+          .map(line => line.replace('•', '').trim())
+        bullets.push(...bulletLines)
+      }
+    })
+    
+    return bullets.length > 0 ? bullets : textElements.map(el => el.content).filter(Boolean)
+  }
+
+  // Helper function to extract charts from positioned elements
+  const extractChartsFromElements = (elements: any[]): any[] => {
+    return elements
+      .filter(el => el.type === 'chart')
+      .map(el => ({
+        type: el.chartType || 'bar',
+        data: el.chartData || [],
+        title: el.content || 'Chart',
+        metadata: el.metadata || {}
+      }))
   }
 
   const renderSlideElement = (element: any, slideData: AISlide) => {
@@ -307,68 +376,100 @@ export function AIDeckBuilder({
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
                   }}
                 >
-                  {/* Default slide elements if no positioned elements */}
-                  {(!currentSlide.elements.title && !currentSlide.elements.bullets && !currentSlide.elements.charts) ? (
-                    <div className="p-16">
-                      <h1 className="text-4xl font-bold text-white mb-8">
-                        {currentSlide.title}
-                      </h1>
-                      {currentSlide.elements.bullets && currentSlide.elements.bullets.length > 0 && (
-                        <ul className="space-y-4 text-white text-xl">
-                          {currentSlide.elements.bullets.map((bullet, idx) => (
-                            <li key={idx} className="flex items-start">
-                              <span className="w-3 h-3 bg-blue-400 rounded-full mt-2 mr-4 flex-shrink-0" />
-                              <span>{bullet}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ) : (
-                    // Render positioned elements
+                  {/* Enhanced: Render positioned elements if available, otherwise use legacy layout */}
+                  {currentSlide.elements.positionedElements && currentSlide.elements.positionedElements.length > 0 ? (
+                    // Enhanced format: Render each positioned element using SlideElementRenderer
                     <>
-                      {/* Title */}
-                      {currentSlide.elements.title && (
-                        <div
-                          style={{ position: 'absolute', left: 64, top: 64, width: 896, height: 80 }}
-                          className="text-white"
-                          data-cy="slide-title"
-                        >
-                          <h1 className="text-4xl font-bold">{currentSlide.elements.title}</h1>
+                      {currentSlide.elements.positionedElements.map((element, idx) => (
+                        <SlideElementRenderer
+                          key={element.id || `element-${idx}`}
+                          element={{
+                            id: element.id || `element-${idx}`,
+                            type: element.type as any,
+                            position: element.position || { x: element.x || 0, y: element.y || 0 },
+                            size: element.size || { width: element.width || 200, height: element.height || 100 },
+                            rotation: element.rotation || 0,
+                            content: element.content,
+                            chartData: element.chartData,
+                            chartType: element.chartType,
+                            metadata: element.metadata,
+                            style: element.style,
+                            isVisible: element.isVisible !== false,
+                            isLocked: element.isLocked || false
+                          }}
+                          isSelected={false}
+                          isEditing={false}
+                          zoom={100}
+                          snapToGrid={false}
+                        />
+                      ))}
+                    </>
+                  ) : (
+                    // Legacy format: Use existing layout logic
+                    <>
+                      {(!currentSlide.elements.title && !currentSlide.elements.bullets && !currentSlide.elements.charts) ? (
+                        <div className="p-16">
+                          <h1 className="text-4xl font-bold text-white mb-8">
+                            {currentSlide.title}
+                          </h1>
+                          {currentSlide.elements.bullets && currentSlide.elements.bullets.length > 0 && (
+                            <ul className="space-y-4 text-white text-xl">
+                              {currentSlide.elements.bullets.map((bullet, idx) => (
+                                <li key={idx} className="flex items-start">
+                                  <span className="w-3 h-3 bg-blue-400 rounded-full mt-2 mr-4 flex-shrink-0" />
+                                  <span>{bullet}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
-                      )}
-                      
-                      {/* Bullets */}
-                      {currentSlide.elements.bullets && currentSlide.elements.bullets.length > 0 && (
-                        <div
-                          style={{ position: 'absolute', left: 64, top: 200, width: 500, height: 400 }}
-                          className="text-white"
-                          data-cy="slide-bullets"
-                        >
-                          <ul className="space-y-4 text-xl">
-                            {currentSlide.elements.bullets.map((bullet, idx) => (
-                              <li key={idx} className="flex items-start">
-                                <span className="w-3 h-3 bg-blue-400 rounded-full mt-2 mr-4 flex-shrink-0" />
-                                <span>{bullet}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {/* Charts */}
-                      {currentSlide.elements.charts && currentSlide.elements.charts.length > 0 && (
-                        <div
-                          style={{ position: 'absolute', right: 64, top: 200, width: 400, height: 400 }}
-                          data-cy="tremor-chart"
-                        >
-                          <TremorChartRenderer
-                            type={currentSlide.elements.charts[0].type || 'area'}
-                            data={currentSlide.elements.charts[0].data || []}
-                            title={currentSlide.elements.charts[0].title || 'Chart'}
-                            className="h-full"
-                          />
-                        </div>
+                      ) : (
+                        // Legacy positioned layout
+                        <>
+                          {/* Title */}
+                          {currentSlide.elements.title && (
+                            <div
+                              style={{ position: 'absolute', left: 64, top: 64, width: 896, height: 80 }}
+                              className="text-white"
+                              data-cy="slide-title"
+                            >
+                              <h1 className="text-4xl font-bold">{currentSlide.elements.title}</h1>
+                            </div>
+                          )}
+                          
+                          {/* Bullets */}
+                          {currentSlide.elements.bullets && currentSlide.elements.bullets.length > 0 && (
+                            <div
+                              style={{ position: 'absolute', left: 64, top: 200, width: 500, height: 400 }}
+                              className="text-white"
+                              data-cy="slide-bullets"
+                            >
+                              <ul className="space-y-4 text-xl">
+                                {currentSlide.elements.bullets.map((bullet, idx) => (
+                                  <li key={idx} className="flex items-start">
+                                    <span className="w-3 h-3 bg-blue-400 rounded-full mt-2 mr-4 flex-shrink-0" />
+                                    <span>{bullet}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {/* Charts */}
+                          {currentSlide.elements.charts && currentSlide.elements.charts.length > 0 && (
+                            <div
+                              style={{ position: 'absolute', right: 64, top: 200, width: 400, height: 400 }}
+                              data-cy="tremor-chart"
+                            >
+                              <TremorChartRenderer
+                                type={currentSlide.elements.charts[0].type || 'area'}
+                                data={currentSlide.elements.charts[0].data || []}
+                                title={currentSlide.elements.charts[0].title || 'Chart'}
+                                className="h-full"
+                              />
+                            </div>
+                          )}
+                        </>
                       )}
                     </>
                   )}

@@ -98,12 +98,21 @@ export async function processCSVFile(file: File): Promise<ProcessedDataset> {
     const text = await file.text();
     
     return new Promise((resolve, reject) => {
+      console.log('📄 CSV text length:', text.length);
+      console.log('📄 CSV preview:', text.substring(0, 200));
+      
       Papa.parse(text, {
         header: true,
         skipEmptyLines: true,
         transformHeader: (header: string) => header.trim(),
         complete: (results) => {
         try {
+          console.log('📊 Papa.parse results:', {
+            dataLength: results.data.length,
+            errors: results.errors,
+            meta: results.meta
+          });
+          
           const data = results.data as Record<string, any>[];
           const headers = Object.keys(data[0] || {});
           

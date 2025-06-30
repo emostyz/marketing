@@ -6,8 +6,17 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOi
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZGRyZnN0cHFrdmRmd2J4dmZ3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDM0NTc3NSwiZXhwIjoyMDY1OTIxNzc1fQ.iyqjg-2Ld4Nl6xOquPVO5ar9yIYQwP2GXL79iIaKexE'
 
 // Server-side client for API routes
-export async function createServerSupabaseClient() {
+export async function createServerSupabaseClient(authHeader?: string) {
   const cookieStore = await cookies()
+  
+  const headers: any = {
+    Cookie: cookieStore.toString()
+  }
+  
+  // If Authorization header is provided, use it
+  if (authHeader) {
+    headers.Authorization = authHeader
+  }
   
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
@@ -16,9 +25,7 @@ export async function createServerSupabaseClient() {
       detectSessionInUrl: false
     },
     global: {
-      headers: {
-        Cookie: cookieStore.toString()
-      }
+      headers
     }
   })
 }

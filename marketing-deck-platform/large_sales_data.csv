@@ -1,0 +1,55 @@
+Date,Region,Product,Sales_Revenue,Units_Sold,Customer_Satisfaction,Marketing_Spend,Customer_Segment,Channel,Campaign_Type
+2024-01-01,North America,ProductA,125000,850,4.2,15000,Enterprise,Direct,Digital
+2024-01-01,Europe,ProductA,98000,720,4.1,12000,SMB,Partner,Traditional
+2024-01-01,Asia,ProductA,87000,650,4.3,11000,Enterprise,Direct,Digital
+2024-01-01,North America,ProductB,78000,450,3.9,8000,SMB,Online,Social
+2024-01-01,Europe,ProductB,65000,380,4.0,7000,Enterprise,Partner,Traditional
+2024-01-01,Asia,ProductB,58000,340,4.1,6000,SMB,Direct,Digital
+2024-01-02,North America,ProductA,127000,860,4.3,15200,Enterprise,Direct,Digital
+2024-01-02,Europe,ProductA,99500,730,4.2,12100,SMB,Partner,Traditional
+2024-01-02,Asia,ProductA,88500,660,4.4,11200,Enterprise,Direct,Digital
+2024-01-02,North America,ProductB,79000,460,4.0,8100,SMB,Online,Social
+2024-01-02,Europe,ProductB,66000,390,4.1,7100,Enterprise,Partner,Traditional
+2024-01-02,Asia,ProductB,59000,350,4.2,6100,SMB,Direct,Digital
+2024-01-03,North America,ProductA,129000,870,4.4,15400,Enterprise,Direct,Digital
+2024-01-03,Europe,ProductA,101000,740,4.3,12200,SMB,Partner,Traditional
+2024-01-03,Asia,ProductA,90000,670,4.5,11400,Enterprise,Direct,Digital
+2024-01-03,North America,ProductB,80000,470,4.1,8200,SMB,Online,Social
+2024-01-03,Europe,ProductB,67000,400,4.2,7200,Enterprise,Partner,Traditional
+2024-01-03,Asia,ProductB,60000,360,4.3,6200,SMB,Direct,Digital
+2024-01-04,North America,ProductA,131000,880,4.5,15600,Enterprise,Direct,Digital
+2024-01-04,Europe,ProductA,102500,750,4.4,12300,SMB,Partner,Traditional
+2024-01-04,Asia,ProductA,91500,680,4.6,11600,Enterprise,Direct,Digital
+2024-01-04,North America,ProductB,81000,480,4.2,8300,SMB,Online,Social
+2024-01-04,Europe,ProductB,68000,410,4.3,7300,Enterprise,Partner,Traditional
+2024-01-04,Asia,ProductB,61000,370,4.4,6300,SMB,Direct,Digital
+2024-01-05,North America,ProductA,133000,890,4.6,15800,Enterprise,Direct,Digital
+2024-01-05,Europe,ProductA,104000,760,4.5,12400,SMB,Partner,Traditional
+2024-01-05,Asia,ProductA,93000,690,4.7,11800,Enterprise,Direct,Digital
+2024-01-05,North America,ProductB,82000,490,4.3,8400,SMB,Online,Social
+2024-01-05,Europe,ProductB,69000,420,4.4,7400,Enterprise,Partner,Traditional
+2024-01-05,Asia,ProductB,62000,380,4.5,6400,SMB,Direct,Digital
+2024-01-06,North America,ProductA,135000,900,4.7,16000,Enterprise,Direct,Digital
+2024-01-06,Europe,ProductA,105500,770,4.6,12500,SMB,Partner,Traditional
+2024-01-06,Asia,ProductA,94500,700,4.8,12000,Enterprise,Direct,Digital
+2024-01-06,North America,ProductB,83000,500,4.4,8500,SMB,Online,Social
+2024-01-06,Europe,ProductB,70000,430,4.5,7500,Enterprise,Partner,Traditional
+2024-01-06,Asia,ProductB,63000,390,4.6,6500,SMB,Direct,Digital
+2024-01-07,North America,ProductA,137000,910,4.8,16200,Enterprise,Direct,Digital
+2024-01-07,Europe,ProductA,107000,780,4.7,12600,SMB,Partner,Traditional
+2024-01-07,Asia,ProductA,96000,710,4.9,12200,Enterprise,Direct,Digital
+2024-01-07,North America,ProductB,84000,510,4.5,8600,SMB,Online,Social
+2024-01-07,Europe,ProductB,71000,440,4.6,7600,Enterprise,Partner,Traditional
+2024-01-07,Asia,ProductB,64000,400,4.7,6600,SMB,Direct,Digital
+2024-02-01,North America,ProductA,139000,920,4.9,16400,Enterprise,Direct,Digital
+2024-02-01,Europe,ProductA,108500,790,4.8,12700,SMB,Partner,Traditional
+2024-02-01,Asia,ProductA,97500,720,5.0,12400,Enterprise,Direct,Digital
+2024-02-01,North America,ProductB,85000,520,4.6,8700,SMB,Online,Social
+2024-02-01,Europe,ProductB,72000,450,4.7,7700,Enterprise,Partner,Traditional
+2024-02-01,Asia,ProductB,65000,410,4.8,6700,SMB,Direct,Digital
+2024-02-02,North America,ProductA,141000,930,5.0,16600,Enterprise,Direct,Digital
+2024-02-02,Europe,ProductA,110000,800,4.9,12800,SMB,Partner,Traditional
+2024-02-02,Asia,ProductA,99000,730,5.1,12600,Enterprise,Direct,Digital
+2024-02-02,North America,ProductB,86000,530,4.7,8800,SMB,Online,Social
+2024-02-02,Europe,ProductB,73000,460,4.8,7800,Enterprise,Partner,Traditional
+2024-02-02,Asia,ProductB,66000,420,4.9,6800,SMB,Direct,Digital
